@@ -1,6 +1,7 @@
 import * as React from "react";
-import { useState } from "react";
-import { ThemeType } from "../pages/_app";
+import type { MouseEvent } from "react";
+
+import type { ThemeType } from "../pages/_app";
 import { globalStyles } from "../styles/global-styles";
 
 export type LayoutProps = {
@@ -8,13 +9,10 @@ export type LayoutProps = {
   className?: string;
 };
 
-export default function AppLayout({
-  children,
-  className,
-}: LayoutProps): JSX.Element {
-  const [themeState, setThemeState] = useState<ThemeType>("light");
+export function AppLayout({ children, className }: LayoutProps): JSX.Element {
+  const [themeState, setThemeState] = React.useState<ThemeType>("light");
 
-  function toggleTheme(evt: React.MouseEvent) {
+  function toggleTheme(evt: MouseEvent) {
     evt.preventDefault();
     setThemeState((prevState) => {
       if (prevState === "light") {
