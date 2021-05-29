@@ -1,37 +1,37 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
-/.pnp
-.pnp.js
+/packages/client/node_modules
+/packages/client/.pnp
+/packages/client/.pnp.js
 
 # testing
-/coverage
+/packages/client/coverage
 
 # next.js
-/.next/
-/out/
+/packages/client/.next/
+/packages/client/out/
 
 # production
-/build
+/packages/client/build
 
 # misc
-.DS_Store
-*.pem
+/packages/client/.DS_Store
+/packages/client/*.pem
 
 # debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+/packages/client/npm-debug.log*
+/packages/client/yarn-debug.log*
+/packages/client/yarn-error.log*
 
 # local env files
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+/packages/client/.env.local
+/packages/client/.env.development.local
+/packages/client/.env.test.local
+/packages/client/.env.production.local
 
 # vercel
-.vercel
+/packages/client/.vercel
 
 # Linaria
-.linaria-cache/
+/packages/client/.linaria-cache/
