@@ -1,0 +1,9 @@
+{
+  "name": "spotify-clone",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "license": "MIT"
+}
