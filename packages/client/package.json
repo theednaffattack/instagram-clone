@@ -1,5 +1,5 @@
 {
-  "name": "spotify-clone",
+  "name": "@spotify-clone/client",
   "private": true,
   "version": "1.0.0",
   "scripts": {
@@ -12,9 +12,6 @@
     "test": "jest",
     "test-all": "yarn lint && yarn type-check && yarn test"
   },
-  "workspaces": [
-    "client"
-  ],
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
@@ -60,6 +57,7 @@
     "jest-watch-typeahead": "^0.6.4",
     "lint-staged": "^11.0.0",
     "prettier": "^2.3.0",
+    "rimraf": "^3.0.2",
     "typescript": "^4.3.2"
   },
   "license": "MIT"
