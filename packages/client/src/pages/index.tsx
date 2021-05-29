@@ -1,7 +1,7 @@
 import { NextSeo } from "next-seo";
 import React from "react";
 import { AudioPlayer } from "../components/audio-player";
-import AppLayout from "../components/layout.app";
+import { AppLayout } from "../components/layout.app";
 
 export function Home(): JSX.Element {
   return (
