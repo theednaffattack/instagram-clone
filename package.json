@@ -5,5 +5,12 @@
   "workspaces": [
     "packages/*"
   ],
-  "license": "MIT"
+  "scripts": {
+    "echo": "lerna run echo",
+    "new-version": "lerna version --conventional-commits --yes"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "lerna": "^4.0.0"
+  }
 }
