@@ -120,11 +120,11 @@ const host = internalIp
   .v4()
   .then((data) => data)
   .catch((error) => {
-    console.warn(error);
-    return undefined;
+    console.error(error);
+    throw Error(error);
   });
 
-configBuilder.set("db.host", host);
+configBuilder.set("db.host", "127.0.0.1");
 
 // Perform validation
 configBuilder.validate({ allowed: "strict" });
