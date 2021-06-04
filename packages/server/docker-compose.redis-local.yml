@@ -1,0 +1,14 @@
+version: "3.2"
+services:
+  spc-redis:
+    image: ${REDIS_IMAGE_NAME}
+    container_name: ${REDIS_CONTAINER_NAME}
+    environment:
+      REDIS_PASS: ${REDIS_PASS}
+      REDIS_CMD_OPTS: "--appendonly yes"
+    volumes:
+      - ${REDIS_DB_PATH}:/data:rw
+      - ${REDIS_PATH_TO_CERTS}:/certs:rw
+    ports:
+      - "0.0.0.0:${REDIS_EXTERIOR_PORT}:${REDIS_STANDARD_PORT}"
+    restart: on-failure
