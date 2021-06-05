@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "tsc && node -r dotenv/config dist/index.js",
+    "start": "tsc --build tsconfig.json && node -r dotenv/config dist/index.js",
     "dev": "nodemon -r dotenv/config --watch 'src/**/*.ts' --exec 'ts-node' src/main.ts",
+    "build": "tsc --build tsconfig.json",
     "test": "jest",
     "test-watch": "npx jest --watch",
     "lint": "eslint .",
@@ -12,6 +13,7 @@
     "echo": "echo testing server with: $npm_package_version"
   },
   "dependencies": {
+    "aggregate-error": "^4.0.0",
     "apollo-errors": "^1.9.0",
     "apollo-server-express": "^2.25.0",
     "aws-sdk": "^2.918.0",
@@ -36,7 +38,8 @@
     "pino-pretty": "^5.0.1",
     "type-graphql": "^1.1.1",
     "typeorm": "^0.2.32",
-    "webpack": "5"
+    "webpack": "5",
+    "zapatos": "^4.0.1"
   },
   "devDependencies": {
     "@types/connect-redis": "^0.0.16",
