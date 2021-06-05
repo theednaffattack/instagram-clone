@@ -10,7 +10,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 COPY tsconfig*.json ./
 COPY ./src ./src
-COPY ./yarn.lock ./
+# COPY ./yarn.lock ./
 RUN yarn install --frozen-lockfile && yarn build
 # RUN npm ci --quiet && npm run build
 
@@ -32,12 +32,12 @@ ENV NODE_ENV=production
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package.json ./
 COPY --from=builder /usr/src/app/dist ./dist
-COPY --from=builder /usr/src/app/db/postgres/migrations ./db/migrations
-COPY --from=builder /usr/src/app/certs ./certs
+# COPY --from=builder /usr/src/app/db/postgres/migrations ./db/migrations
+# COPY --from=builder /usr/src/app/certs ./certs
 
 
 # Inform Docker that the container is listening on the specified port at runtime.
-EXPOSE 5050
+EXPOSE 8080
 
 USER node
 
