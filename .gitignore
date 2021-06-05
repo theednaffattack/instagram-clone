@@ -50,5 +50,11 @@ node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# secrets
 packages/server/.env
 packages/server/src/secret.development-variables.json
+
+# Hide dev database files
+packages/server/dev/redis
+packages/server/dev/db
