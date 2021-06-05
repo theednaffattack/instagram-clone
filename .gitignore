@@ -38,8 +38,12 @@
 # Linaria
 /packages/client/.linaria-cache/
 
+# SERVER
+# ======
+packages/server/dist
+
 # WORKSPACES
-=============
+# ==========
 node_modules
 
 # debug
