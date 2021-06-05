@@ -1,5 +1,3 @@
-import AggregateError from "aggregate-error";
-import { config } from "./config";
 import { buildConfig } from "./config.build-config";
 
 import { server } from "./server";
