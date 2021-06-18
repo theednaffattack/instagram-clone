@@ -10,18 +10,18 @@ convict.addFormat(url);
 // Define a schema
 const configBuilder = convict({
   client_uri: {
-    default: "https://spc.eddienaff.dev",
+    default: "https://ic.eddienaff.dev",
     doc: "The URI of our client application.",
     format: "url",
   },
   cookieName: {
-    default: "mfg",
+    default: "icg",
     doc: "Cookie name used for our sessions.",
     env: "COOKIE_NAME",
     format: String,
   },
   domain: {
-    default: "spc.eddienaff.dev",
+    default: "ic.eddienaff.dev",
     doc: "The hostname to use for linking and documentation references.",
     env: "DOMAINS",
     format: String,
@@ -40,7 +40,7 @@ const configBuilder = convict({
       format: String,
     },
     host: {
-      default: "spc.eddienaff.dev",
+      default: "ic.eddienaff.dev",
       doc: "Database host name/IP",
       format: "*",
     },
@@ -51,7 +51,7 @@ const configBuilder = convict({
       format: String,
     },
     username: {
-      default: "spc",
+      default: "ic_user",
       doc: "Postgres username for database login.",
       env: "POSTGRES_USER",
       format: String,

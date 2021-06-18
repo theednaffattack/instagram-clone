@@ -1,6 +1,6 @@
 version: "3.2"
 services:
-  spc-db:
+  ic-db:
     container_name: ${DB_CONTAINER_NAME}
     command: -c ssl=off
     image: ${POSTGRES_IMAGE}

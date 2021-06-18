@@ -1,11 +1,11 @@
 version: "3.2"
 services:
-  # spc-api-server:
+  # ic-api-server:
   #   build: .
   #   container_name: spc_api_container
   #   depends_on:
-  #     - spc-redis
-  #     - spc-db
+  #     - ic-redis
+  #     - ic-db
   #   environment:
   #     API_PORT: ${API_PORT}
   #     SESSION_SECRET: ${SESSION_SECRET}
@@ -13,7 +13,7 @@ services:
   #   ports:
   #     - "${API_PORT}:${API_PORT}"
 
-  spc-redis:
+  ic-redis:
     image: ${REDIS_IMAGE_NAME}
     container_name: ${REDIS_CONTAINER_NAME}
     environment:
@@ -26,7 +26,7 @@ services:
       - "0.0.0.0:${REDIS_EXTERIOR_PORT}:${REDIS_INTERIOR_PORT}"
     restart: on-failure
 
-  spc-db:
+  ic-db:
     container_name: ${DB_CONTAINER_NAME}
     command: -c ssl=off
     image: ${POSTGRES_IMAGE}

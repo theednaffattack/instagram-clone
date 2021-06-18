@@ -9,9 +9,9 @@ export function Home(): JSX.Element {
       <NextSeo
         title="Spotify Clone"
         description="It's just an audio player"
-        canonical="https://spc.eddienaff.dev/"
+        canonical="https://ic.eddienaff.dev/"
         openGraph={{
-          url: "https://spc.eddienaff.dev/",
+          url: "https://ic.eddienaff.dev/",
           title: "Welcome",
           description: "Open Graph Description",
           images: [

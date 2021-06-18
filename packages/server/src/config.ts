@@ -63,7 +63,7 @@ const configBuilder = convict({
     default: null,
   },
   client_uri: {
-    default: "https://spc.eddienaff.dev",
+    default: "https://ic.eddienaff.dev",
     doc: "The URI of our client application.",
     format: "url",
   },
