@@ -12,7 +12,7 @@ import { configGraphQLSubscriptions, configSessionMiddleware } from "./config.ap
 import { ServerConfigProps } from "./config.build-config";
 import { formatGraphQLErrors } from "./config.format-apollo-errors";
 import { serverOnListen } from "./config.server.on-listen";
-import { createSchema } from "./create-schema";
+import { createSchema } from "./lib.apollo.create-schema";
 import { getConnectionOptionsCustom } from "./lib.dev-orm-config";
 
 export async function server(config: ServerConfigProps) {
@@ -21,7 +21,6 @@ export async function server(config: ServerConfigProps) {
   const connectOptions: PostgresConnectionOptions = getConnectionOptionsCustom(config);
 
   try {
-    console.log("VIEW CONNECTION OPTIONS", connectOptions);
     dbConnection = await createConnection(connectOptions);
   } catch (error) {
     console.warn("CONNECTION ERROR", error);
