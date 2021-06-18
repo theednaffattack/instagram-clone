@@ -2,7 +2,7 @@ import { CloudFront } from "aws-sdk";
 import { CookieOptions } from "express";
 import internalIp from "internal-ip";
 import { Arg, Ctx, Mutation, Resolver } from "type-graphql";
-import { User } from "./type.user";
+import { User } from "./entity.user";
 import { LoginResponse } from "./type.login-response";
 import { MyContext } from "./types";
 
