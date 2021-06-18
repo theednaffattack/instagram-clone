@@ -5,7 +5,7 @@ import type { ParsedQs } from "qs";
 import type { ParamsDictionary } from "express-serve-static-core";
 import connectRedis from "connect-redis";
 
-import { redis } from "./redis";
+import { redis } from "./config.redis";
 import { redisSessionPrefix } from "./constants";
 import { ServerConfigProps } from "./config.build-config";
 
