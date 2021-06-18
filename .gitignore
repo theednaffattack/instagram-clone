@@ -58,3 +58,6 @@ packages/server/src/secret.development-variables.json
 # Hide dev database files
 packages/server/dev/redis
 packages/server/dev/db
+packages/server/configure-Dokku-postgres.sh
+packages/server/configure-Dokku-redis.sh
+packages/server/deploy-to-DO.sh
