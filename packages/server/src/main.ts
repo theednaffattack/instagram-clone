@@ -1,10 +1,6 @@
-import { buildConfig } from "./config.build-config";
+import { config } from "./config.build-config";
 
 import { server } from "./server";
-
-interface EnvKeyProps {
-  [key: string]: string;
-}
 
 export interface IIndexable<T = unknown> {
   [key: string]: T;
@@ -32,8 +28,6 @@ process.on("uncaughtException", (err) => {
 });
 
 async function main() {
-  const config = await buildConfig();
-
   try {
     await server(config);
   } catch (serverInitErr) {
