@@ -4,6 +4,11 @@
 
 [Helpful TypeScript Notes](https://basarat.gitbook.io/typescript/)
 
+## TypeScript Notes
+
+Copying json files into build directory "/dist"
+[Methods for handling json files in TS](https://stackoverflow.com/a/59419449/9448010)
+
 ## Docker Notes
 
 docker-compose -f docker-compose.db-local.yml up
