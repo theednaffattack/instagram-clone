@@ -8,4 +8,6 @@
 
 docker-compose -f docker-compose.db-local.yml up
 
+docker-compose -f docker-compose.redis-local.yml up
+
 docker-compose -f docker-compose.dev.yml up
