@@ -3,14 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "tsc --build tsconfig.json && node -r dotenv/config dist/index.js",
+    "start": "yarn rm-build && yarn build && node -r dotenv/config dist/main.js",
+    "rm-build": "yarn rimraf dist",
     "dev": "nodemon -r dotenv/config --watch 'src/**/*.ts' --exec 'ts-node' src/main.ts",
     "build": "tsc --build tsconfig.json",
     "test": "jest",
     "test-watch": "npx jest --watch",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "echo": "echo testing server with: $npm_package_version"
+    "echo": "echo testing server with: $npm_package_version",
+    "postbuild": "cpy --cwd=src --parents '**/*.json' ../dist/"
   },
   "dependencies": {
     "aggregate-error": "^4.0.0",
@@ -34,6 +36,7 @@
     "http": "^0.0.1-security",
     "http-errors": "~1.6.3",
     "internal-ip": "^6.2.0",
+    "pg": "^8.6.0",
     "pino": "^6.11.3",
     "pino-pretty": "^5.0.1",
     "type-graphql": "^1.1.1",
@@ -52,6 +55,7 @@
     "@types/pino": "^6.3.8",
     "@typescript-eslint/eslint-plugin": "^4.25.0",
     "@typescript-eslint/parser": "^4.25.0",
+    "cpy-cli": "^3.1.1",
     "eslint": "^7.27.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-config-standard": "^16.0.3",
