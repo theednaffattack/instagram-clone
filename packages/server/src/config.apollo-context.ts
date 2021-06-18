@@ -21,10 +21,9 @@ export function configApolloContext({ req, res, connection }: ExpressContext) {
 }
 
 const getContextFromHttpRequest = (req: MyContext["req"], res: MyContext["res"]) => {
-  // old cookie implementation
+  // Cookie implementation
   if (req && req.session) {
     const { teamId, userId } = req.session;
-    console.log("I CAN SEE REQ.SESSION");
 
     return { userId, req, res, teamId };
   }
