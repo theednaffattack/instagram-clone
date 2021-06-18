@@ -48,7 +48,6 @@ export class Message extends BaseEntity {
   files: File[];
 
   @Field(() => User)
-  @Column({ nullable: true })
   @ManyToOne(() => User, (user) => user.sent_messages, { cascade: true })
   sentBy: User;
 
