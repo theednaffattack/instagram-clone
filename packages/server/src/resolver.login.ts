@@ -1,13 +1,10 @@
-import { Arg, Resolver, Mutation, Ctx, UseMiddleware } from "type-graphql";
-// import bcrypt from "bcryptjs";
 import { CloudFront } from "aws-sdk";
-
-import { User } from "./entity.user";
-import { MyContext } from "./types";
-import { Logger } from "./middleware.logger";
-import { LoginResponse } from "./login-response";
-import internalIp from "internal-ip";
 import { CookieOptions } from "express";
+import internalIp from "internal-ip";
+import { Arg, Ctx, Mutation, Resolver } from "type-graphql";
+import { User } from "./type.user";
+import { LoginResponse } from "./type.login-response";
+import { MyContext } from "./types";
 
 const expireAlso = Math.floor(new Date().getTime() / 1000) + 60 * 60 * 1; // Current Time in UTC + time in seconds, (60 * 60 * 1 = 1 hour)
 
