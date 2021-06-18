@@ -94,6 +94,13 @@ const configBuilder = convict({
     env: "PORT",
     format: "port",
   },
+  postmarkToken: {
+    default: "",
+    doc: "Secret token used to access the Postmark mailing API.",
+    env: "POSTMARK_API_TOKEN",
+    format: "*",
+    sensitive: true,
+  },
   secret: {
     default: "",
     doc: "Secret used for session cookies and CSRF tokens",
