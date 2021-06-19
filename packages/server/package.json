@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "yarn rm-build && yarn build && node -r dotenv/config dist/main.js",
+    "start": "node -r dotenv/config dist/main.js",
     "rm-build": "yarn rimraf dist",
     "dev": "nodemon -r dotenv/config --watch 'src/**/*.ts' --exec 'ts-node' src/main.ts",
     "build": "tsc --build tsconfig.json",
@@ -12,7 +12,10 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "echo": "echo testing server with: $npm_package_version",
-    "postbuild": "cpy --cwd=src --parents '**/*.json' ../dist/"
+    "push-image": "./push-to-dockerhub.sh",
+    "postbuild": "cpy --cwd=src --parents '**/*.json' ../dist/",
+    "spinup": "yarn rm-build && yarn build && docker-compose -f docker-compose.dev.yml up -d --build ic-api-server",
+    "spindown": "docker-compose -f docker-compose.dev.yml down"
   },
   "dependencies": {
     "aggregate-error": "^4.0.0",
