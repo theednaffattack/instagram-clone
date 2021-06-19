@@ -61,7 +61,7 @@ export async function server(config: ServerConfigProps) {
 
   const app = Express.default();
 
-  const allowedListOfOrigins = [config.client_uri];
+  const allowedListOfOrigins = [...config.allowedOrigins.split(",")];
 
   const corsOptions = {
     credentials: true,
