@@ -1,11 +1,13 @@
 /* eslint-disable no-console */
 import * as postmark from "postmark";
-import { config } from "./config.build-config";
+import { ServerConfigProps } from "./config.build-config";
+
 import { createWelcomeMessage } from "./lib.email.messages";
 
 export async function sendPostmarkEmail(
   toEmail: string,
-  uri: string
+  uri: string,
+  config: ServerConfigProps
 ): Promise<postmark.Models.MessageSendingResponse | undefined> {
   // Setup the Postmark client
 

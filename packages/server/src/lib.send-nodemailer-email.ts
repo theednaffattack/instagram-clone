@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
+import { ServerConfigProps } from "./config.build-config";
 
-export async function sendEtherealEmail(toEmail: string, confirmationUri: string) {
+export async function sendEtherealEmail(toEmail: string, confirmationUri: string, config: ServerConfigProps) {
   // Generate test SMTP service account from ethereal.email
   // Only needed if you don't have a real mail account for testing
   const account = await nodemailer.createTestAccount();
