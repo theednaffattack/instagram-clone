@@ -1,5 +1,5 @@
 import { ExpressContext } from "apollo-server-express";
-import { MyContext } from "./types";
+import { MyContext } from "./typings";
 
 export function configApolloContext({ req, res, connection }: ExpressContext) {
   if (connection) {

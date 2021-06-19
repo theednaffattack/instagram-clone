@@ -4,7 +4,7 @@ import internalIp from "internal-ip";
 import { Arg, Ctx, Mutation, Resolver } from "type-graphql";
 import { User } from "./entity.user";
 import { LoginResponse } from "./type.login-response";
-import { MyContext } from "./types";
+import { MyContext } from "./typings";
 
 const expireAlso = Math.floor(new Date().getTime() / 1000) + 60 * 60 * 1; // Current Time in UTC + time in seconds, (60 * 60 * 1 = 1 hour)
 

@@ -1,7 +1,7 @@
 import { Resolver, Query, UseMiddleware, Ctx } from "type-graphql";
 
 import { Logger } from "./middleware.logger";
-import { MyContext } from "./types";
+import { MyContext } from "./typings";
 
 @Resolver()
 export class HelloWorldResolver {
