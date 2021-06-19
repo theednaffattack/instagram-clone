@@ -1,7 +1,7 @@
 import { MiddlewareFn, NextFn, ResolverData } from "type-graphql";
 import pino from "pino";
 
-import { MyContext } from "./types";
+import { MyContext } from "./typings";
 
 const loggerTransport = pino({
   prettyPrint: true,
