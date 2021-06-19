@@ -1,0 +1,120 @@
+import { Args, Resolver, Ctx, Mutation, UseMiddleware } from "type-graphql";
+import { v4 } from "uuid";
+
+import { MyContext } from "./typings";
+import { isAuth } from "./middleware.is-auth";
+import { AddMessageToThreadInput } from "./gql-type.message-input";
+import { Thread } from "./entity.thread";
+import { Message } from "./entity.message";
+import { User } from "./entity.user";
+import { Image } from "./entity.image";
+
+@Resolver()
+export class CreateMessageThreadResolver {
+  @UseMiddleware(isAuth)
+  @Mutation(() => Thread)
+  async createMessageThread(
+    @Ctx() context: MyContext,
+    @Args(() => AddMessageToThreadInput)
+    { images, invitees: inputInvittes, message, sentTo, threadId }: AddMessageToThreadInput
+  ) {
+    const sentBy = await User.findOne(context.userId);
+
+    const collectInvitees: any[] = [];
+
+    const invitees = await Promise.all(
+      inputInvittes.map(async (person) => {
+        let tempPerson = await User.findOne(person);
+        collectInvitees.push(tempPerson);
+        return tempPerson;
+      })
+    );
+
+    const receiver = await User.findOne(sentTo);
+
+    let newThread;
+
+    const lastImage = images && images.length > 0 ? images.length - 1 : 0;
+
+    // if we have the user sending and receiving and if there IS AN IMAGE(S)
+    if (sentBy && receiver && images && images[lastImage] && invitees.length > 0) {
+      // if there are images save them. if not make the message without it
+      // const { filename } = await images[lastImage];
+
+      let imageName = `${v4()}.png`;
+
+      // let localImageUrl = `/../../../public/tmp/images/${imageName}`;
+
+      let publicImageUrl = `https://eddie-faux-gram.s3.amazonaws.com/${imageName}`;
+
+      // await new Promise((resolve, reject) => {
+      //   createReadStream()
+      //     .pipe(createWriteStream(__dirname + localImageUrl))
+      //     .on("finish", () => {
+      //       resolve(true);
+      //     })
+      //     .on("error", () => {
+      //       reject(false);
+      //     });
+      // });
+
+      let newImage = await Image.create({
+        uri: publicImageUrl,
+        //@ts-ignore
+        user: sentBy,
+      }).save();
+
+      let createMessage = {
+        message: message,
+        user: receiver,
+        sentBy,
+        images: [newImage],
+      };
+
+      // CREATING rather than REPLYING to message...
+      const newMessage = await Message.create(createMessage).save();
+
+      newImage.message = newMessage;
+
+      let createThread = {
+        user: sentBy,
+        last_message: message,
+        invitees: [sentBy, receiver, ...collectInvitees],
+        messages: [newMessage],
+      };
+
+      newThread = await Thread.create(createThread)
+        .save()
+        .catch((error: any) => error);
+
+      return newThread;
+    }
+
+    // if we have the user sending and receiving and if there IS NOT AN IMAGE
+    if ((sentBy && receiver && !images) || !images![lastImage]) {
+      let createMessage = {
+        user: receiver,
+        message: message,
+        sentBy,
+      };
+
+      const newMessage = await Message.create(createMessage).save();
+
+      let createThread = {
+        user: sentBy,
+        last_message: message,
+        invitees: [sentBy, receiver, ...collectInvitees],
+        messages: [newMessage],
+      };
+
+      // @ts-ignore
+      newThread = await Thread.create(createThread)
+        .save()
+        .catch((error: any) => error);
+
+      return newThread;
+    } else {
+      throw Error(`unable to find sender or receiver\nsender: ${sentBy}\nreceiver: ${receiver}`);
+    }
+  }
+}
