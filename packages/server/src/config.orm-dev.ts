@@ -1,6 +1,6 @@
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
 import internalIp from "internal-ip";
-import { ServerConfigProps } from "./config";
+import { ServerConfigProps } from "./config.build-config";
 
 const homeIp = internalIp.v4.sync();
 
