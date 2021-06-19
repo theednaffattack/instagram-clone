@@ -1,17 +1,25 @@
 version: "3.2"
 services:
-  # ic-api-server:
-  #   build: .
-  #   container_name: spc_api_container
-  #   depends_on:
-  #     - ic-redis
-  #     - ic-db
-  #   environment:
-  #     API_PORT: ${API_PORT}
-  #     SESSION_SECRET: ${SESSION_SECRET}
-  #     DATABASE_URL: ${DATABASE_URL}
-  #   ports:
-  #     - "${API_PORT}:${API_PORT}"
+  ic-api-server:
+    build:
+      context: ../..
+      dockerfile: ./packages/server/Dockerfile
+      shm_size: "1gb"
+    shm_size: "1gb"
+    container_name: ic_api_container
+    depends_on:
+      - ic-redis
+      - ic-db
+    environment:
+      API_PORT: ${API_PORT}
+      DATABASE_URL: ${DATABASE_URL}
+      SESSION_SECRET: ${SESSION_SECRET}
+      NODE_ENV: local_production
+      REDIS_PORT: ${REDIS_EXTERIOR_PORT}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    ports:
+      - "${API_PORT}:${API_PORT}"
 
   ic-redis:
     image: ${REDIS_IMAGE_NAME}
