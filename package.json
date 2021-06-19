@@ -7,7 +7,10 @@
   ],
   "scripts": {
     "echo": "lerna run echo",
-    "new-version": "lerna version --conventional-commits --yes"
+    "new-version": "lerna version --conventional-commits --yes",
+    "d-server": "./deploy-to-server-DO.sh",
+    "start-server": "yarn workdpace @instagram-clone/server spinup",
+    "stop-server": "yarn workdpace @instagram-clone/server spindown"
   },
   "license": "MIT",
   "devDependencies": {
