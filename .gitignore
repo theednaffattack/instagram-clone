@@ -63,3 +63,4 @@ packages/server/configure-Dokku-redis.sh
 packages/server/push-to-dockerhub.sh
 deploy-client-to-DO.sh
 deploy-server-to-DO.sh
+packages/client/.env

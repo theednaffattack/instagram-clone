@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next -p 3030",
     "build": "rimraf .next && next build",
+    "gen": "graphql-codegen -r dotenv/config --config codegen.yml && prettier --write './src/generated/graphql.tsx'",
     "start": "next start -p 3030",
     "type-check": "tsc --pretty --noEmit",
     "format": "prettier --write .",
@@ -41,6 +42,10 @@
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",
+    "@graphql-codegen/cli": "^1.21.5",
+    "@graphql-codegen/typescript": "^1.22.2",
+    "@graphql-codegen/typescript-operations": "^1.18.1",
+    "@graphql-codegen/typescript-react-apollo": "^2.2.6",
     "@linaria/webpack-loader": "3.0.0-beta.4",
     "@testing-library/react": "^11.2.7",
     "@types/jest": "^26.0.23",
