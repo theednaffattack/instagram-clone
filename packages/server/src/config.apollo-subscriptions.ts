@@ -56,7 +56,7 @@ export function configSessionMiddleware(config: ServerConfigProps): SessionMiddl
   return sessionMiddleware;
 }
 
-export function configGraphQLSubscriptions(sessionMiddleware: any): Partial<SubscriptionServerOptions> {
+export function configGraphQLSubscriptions(sessionMiddleware: SessionMiddle): Partial<SubscriptionServerOptions> {
   return {
     path: "/subscriptions",
     onConnect: (_, ws: any) => {
