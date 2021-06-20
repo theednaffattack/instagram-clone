@@ -74,10 +74,6 @@ export function AudioPlayer(): JSX.Element {
     setAudioState((prevState) => {
       if (prevState !== "isPlaying") {
         audioRef.current.play();
-        console.log("CHECK DURATION", {
-          audioRef: audioRef.current,
-          duration: audioRef.current.duration,
-        });
 
         animationRef.current = requestAnimationFrame(whilePlaying);
         return "isPlaying";
