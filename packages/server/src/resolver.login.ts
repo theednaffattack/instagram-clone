@@ -2,6 +2,8 @@ import { CloudFront } from "aws-sdk";
 import { CookieOptions } from "express";
 import internalIp from "internal-ip";
 import { Arg, Ctx, Mutation, Resolver } from "type-graphql";
+import bcrypt from "bcryptjs";
+
 import { User } from "./entity.user";
 import { LoginResponse } from "./type.login-response";
 import { MyContext } from "./typings";
@@ -18,17 +20,34 @@ export class LoginResolver {
     @Ctx() ctx: MyContext
   ): Promise<LoginResponse> {
     // Setup a fake user until we hook up the database.
-    const user = new User();
+    // const user = new User();
 
-    user.firstName = "test";
-    user.lastName = "test";
-    user.id = "testID";
-    user.password = password;
-    user.confirmed = true;
-    user.id = "123456789";
+    // user.firstName = "test";
+    // user.lastName = "test";
+    // user.id = "testID";
+    // user.password = password;
+    // user.confirmed = true;
+    // user.id = "123456789";
 
-    console.log("VIEW ARGS", { user, username });
-    // const user = await User.findOne({ where: { username } });
+    // console.log("VIEW ARGS", { user, username });
+    let user;
+
+    try {
+      user = await User.findOne({ where: { username } });
+    } catch (error) {
+      console.error(error);
+      throw Error(error);
+    }
+
+    let shot;
+
+    try {
+      shot = await User.find({ where: { username } });
+    } catch (error) {
+      console.error(error);
+      throw Error(error);
+    }
+
     // if we can't find a user return an obscure result (null) to prevent fishing
     if (!user) {
       return {
@@ -36,8 +55,8 @@ export class LoginResolver {
       };
     }
 
-    // const valid = await bcrypt.compare(password, user.password);
-    const valid = user.password === password;
+    const valid = await bcrypt.compare(password, user.password);
+    // const valid = user.password === password;
 
     // if the supplied password is invalid return early
     if (!valid) {
