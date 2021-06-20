@@ -64,3 +64,4 @@ packages/server/push-to-dockerhub.sh
 deploy-client-to-DO.sh
 deploy-server-to-DO.sh
 packages/client/.env
+deploy-to-server-DO.sh
