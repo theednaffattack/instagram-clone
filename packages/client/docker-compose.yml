@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  ic-client:
+    image: ${CONTAINER_IMAGE}
+    container_name: ${CONTAINER_NAME}
+    expose:
+      - 80
+    ports:
+      - "${VIRTUAL_PORT}:${VIRTUAL_PORT}"
+    environment:
+      VIRTUAL_PORT: ${VIRTUAL_PORT}
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+      LETSENCRYPT_KEYSIZE: ${LETSENCRYPT_KEYSIZE}
+      WEBSOCKETS: 1
+
+networks:
+  default:
+    external:
+      name: ${NETWORK}
