@@ -53,6 +53,19 @@ docker images -f dangling=true
 
 ## Dokku
 
+### Deployment Strategy
+
+Used for this project:
+[Docker Image Tag Deployment](https://dokku.com/docs/deployment/methods/images/#docker-image-tag-deployment)
+
+### Persistent Storage
+
+[Link to Dokku Docs](https://dokku.com/docs/advanced-usage/persistent-storage/#persistent-storage)
+
+### Environment Variables
+
+[Setting Up Env Vars](https://dokku.com/docs/configuration/environment-variables/#environment-variables)
+
 ### Disabling VHosts
 
 https://dokku.com/docs/configuration/domains/#disabling-vhosts
@@ -62,3 +75,87 @@ https://dokku.com/docs/configuration/domains/#disabling-vhosts
 ### Display ports used
 
 dokku proxy:report
+
+### List Dokku tags
+
+`dokku tags <the_app_name>`
+
+### Add Dokku certs & enable ports 80 and 443 forwarding
+
+A script exists at `/root/dokku-certs/eddienaff-dot-dev/` which controls
+certificate installation. A line must be added for each new domain.
+
+First, edit the install script
+`nano /root/dokku-certs/eddienaff-dot-dev/install`
+
+Then run it using:
+`/root/dokku-certs/eddienaff-dot-dev/install`
+
+After this is added you must add a new prox.conf file to
+`/home/dokku/<app_name>/nginx.proxy.d/`
+
+Then add port forwarding for port 80 to our app port
+`dokku proxy:ports-set <DOKKU_APP_NAME> http:80:<DOKKU_APP_PORT>`
+
+Then add port forwarding for port 443 to our app port
+`dokku proxy:ports-set <DOKKU_APP_NAME> https:443:<DOKKU_APP_PORT>`
+
+And then remove the default port mapping
+`dokku proxy:ports-remove <DOKKU_APP_NAME> http:<DOKKU_APP_PORT>:<DOKKU_APP_PORT>`
+
+```bash
+# Adapted from: https://stackoverflow.com/a/61775633/9448010
+# Additional helpful info from: https://stackoverflow.com/a/37729912/9448010
+# NGINX Restart: https://stackoverflow.com/a/57428645/9448010
+
+# Got it working by setting a reverse proxy on the client
+# app's nginx config file, pointing to the server app:
+#
+# - Disable VHOST support on server (or api) app, since it won't
+#   be reachable outside or by a domain name. This will create a
+#   local listening container on a high numbered port.
+#
+# - Add a proxy.conf file to /home/dokku/client/nginx.conf.d/
+#
+# - Set up a reverse proxy on a 'location /app/' block inside that
+#   file. Set the upstream to the server app's IP and PORT (from the
+#   first item).
+#
+# These are the basic steps. Had to tweak forwarded headers a bit to
+# get SSL working fine, but it works fine!
+
+
+## Beg - Pass http://ic.eddienaff.dev/api to http://127.0.0.1:8080/api
+
+location /api {
+  proxy_pass_header Set-Cookie;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header X-Forwarded-Proto $scheme;
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_set_header Host $http_host;
+  proxy_pass http://127.0.0.1:8080/api;
+  # proxy_pass http://172.18.0.6:8080/api;
+}
+
+
+## End - Pass http://ic.eddienaff.dev/api to http://127.0.0.1:8080/api
+
+
+
+## Beg - Add webscockets settings
+
+location /subscriptions {
+  proxy_pass_header Set-Cookie;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header X-Forwarded-Proto $scheme;
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_set_header Host $http_host;
+  proxy_set_header Upgrade $http_upgrade;
+  proxy_set_header Connection "upgrade";
+  proxy_http_version 1.1;
+  proxy_pass http://127.0.0.1:8080/subscriptions;
+  # proxy_pass http://172.18.0.6:8080/subscriptions;
+}
+## End - Add webscockets settings
+
+```
