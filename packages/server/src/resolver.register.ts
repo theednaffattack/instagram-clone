@@ -1,21 +1,13 @@
 import bcrypt from "bcryptjs";
-import { Arg, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
-
+import { Arg, Mutation, Query, Resolver } from "type-graphql";
 import { User } from "./entity.user";
 import { createConfirmationUrl } from "./lib.create-confirmation-url";
 import { sendEmail } from "./lib.send-email";
-import { Logger as logger } from "./middleware.logger";
 import { RegisterInput } from "./type.register-input";
 import { RegisterResponse } from "./type.register-response";
 
 @Resolver()
 export class RegisterResolver {
-  @UseMiddleware(logger)
-  @Query(() => String, { name: "helloWorld", nullable: false })
-  async hello() {
-    return "Hello World";
-  }
-
   @Mutation(() => RegisterResponse)
   async register(
     @Arg("data")
@@ -48,7 +40,7 @@ export class RegisterResolver {
       user = await User.create({
         firstName,
         lastName,
-        // email,
+        email,
         username,
         // count: 0,
         password: hashedPassword,
@@ -88,6 +80,12 @@ export class RegisterResolver {
             message: error.message,
           },
         ],
+      };
+    }
+
+    if (!user) {
+      return {
+        errors: [{ field: "username", message: "Unkown error creating user. Please try again." }],
       };
     }
 
