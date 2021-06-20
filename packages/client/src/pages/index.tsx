@@ -1,9 +1,14 @@
 import { NextSeo } from "next-seo";
-import React from "react";
+import { Router } from "next/router";
 import { AudioPlayer } from "../components/audio-player";
 import { AppLayout } from "../components/layout.app";
+import { PublicFeed } from "../components/public-feed";
 
-export function Home(): JSX.Element {
+interface HomeProps {
+  router: Router;
+}
+
+export function Home({ router }: HomeProps): JSX.Element {
   return (
     <>
       <NextSeo
@@ -47,6 +52,7 @@ export function Home(): JSX.Element {
       >
         Test Button
       </button>
+      <PublicFeed router={router} />
     </>
   );
 }
