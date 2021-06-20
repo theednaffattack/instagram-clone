@@ -2,7 +2,12 @@ import * as React from "react";
 
 export type ThemeType = "dark" | "light";
 
-function MyApp({ Component, pageProps }): JSX.Element {
+interface MyAppProps {
+  Component: any;
+  pageProps: any;
+}
+
+function MyApp({ Component, pageProps }: MyAppProps): JSX.Element {
   const [theme, setTheme] = React.useState<ThemeType>("light");
   const toggleTheme = () => {
     if (theme === "light") {
