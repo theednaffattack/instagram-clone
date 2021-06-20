@@ -45,6 +45,8 @@ export async function server(config: ServerConfigProps) {
     setTimeout(() => console.log("TIMEOUT FIRING"), 5000);
   }
 
+  let sessionMiddleware = configSessionMiddleware(config);
+
   const schema = createSchema();
 
   const apolloServer = new ApolloServer({
@@ -52,7 +54,7 @@ export async function server(config: ServerConfigProps) {
     playground: { version: "1.7.25", endpoint: config.apiEndpoint },
     schema,
     context: configApolloContext,
-    subscriptions: configGraphQLSubscriptions(config),
+    subscriptions: configGraphQLSubscriptions(sessionMiddleware),
     formatError: formatGraphQLErrors,
     validationRules: [],
   });
@@ -95,8 +97,6 @@ export async function server(config: ServerConfigProps) {
   );
 
   app.use(cookieParser());
-
-  let sessionMiddleware = configSessionMiddleware(config);
 
   app.use(sessionMiddleware);
 
