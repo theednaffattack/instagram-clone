@@ -61,6 +61,6 @@ packages/server/dev/db
 packages/server/configure-Dokku-postgres.sh
 packages/server/configure-Dokku-redis.sh
 packages/server/deploy-to-DO.sh
-deploy-to-server-DO.sh
 packages/server/push-to-dockerhub.sh
 deploy-client-to-DO.sh
+deploy-server-to-DO.sh
