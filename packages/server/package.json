@@ -15,7 +15,8 @@
     "push-image": "./push-to-dockerhub.sh",
     "postbuild": "cpy --cwd=src --parents '**/*.json' ../dist/",
     "spinup": "yarn rm-build && yarn build && docker-compose -f docker-compose.dev.yml up -d --build ic-api-server",
-    "spindown": "docker-compose -f docker-compose.dev.yml down"
+    "spindown": "docker-compose -f docker-compose.dev.yml down",
+    "c-dev": "yarn rm-build && yarn build && docker-compose -f docker-compose.dev-not-server.yml up -d && yarn dev"
   },
   "dependencies": {
     "aggregate-error": "^4.0.0",
