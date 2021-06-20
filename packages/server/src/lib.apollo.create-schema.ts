@@ -4,6 +4,7 @@ import { pubsub } from "./config.redis";
 import { ResolveTime } from "./middleware.resolve-time";
 import { HelloWorldResolver } from "./resolver.hello-world";
 import { LoginResolver } from "./resolver.login";
+import { MeResolver } from "./resolver.me";
 import { RegisterResolver } from "./resolver.register";
 
 export function createSchema(): GraphQLSchema {
@@ -20,6 +21,8 @@ export function createSchema(): GraphQLSchema {
     dateScalarMode: "isoDate",
     pubSub: pubsub,
     // Keep 'resolvers' below alphabetical please!
+    resolvers: [HelloWorldResolver, LoginResolver, MeResolver, RegisterResolver],
+
     globalMiddlewares: [ResolveTime],
   });
 }
