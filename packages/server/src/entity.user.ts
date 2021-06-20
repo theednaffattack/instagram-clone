@@ -16,6 +16,8 @@ import { Thread } from "./entity.thread";
 import { Message } from "./entity.message";
 import { File } from "./entity.file";
 import { Image } from "./entity.image";
+import { Like } from "./entity.like";
+import { Post } from "./entity.post";
 
 /**
  * User Entity (model)
@@ -69,8 +71,16 @@ export class User extends BaseEntity {
   })
   images: Image[];
 
+  @Field(() => [Like], { nullable: true })
+  @OneToMany(() => Like, (like) => like.user)
+  likes: Like[];
+
   @Field(() => [Message], { nullable: "itemsAndList" })
   mappedMessages: Message[];
+
+  @Field(() => Post, { nullable: true })
+  @OneToMany(() => Post, (post) => post.user)
+  posts?: Post[];
 
   @Field(() => [User], { nullable: "itemsAndList" })
   @ManyToMany(() => User, (user) => user.following, {

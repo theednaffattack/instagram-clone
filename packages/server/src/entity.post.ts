@@ -9,10 +9,10 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { Field, ID, ObjectType, Int } from "type-graphql";
-import { Image } from "./Image";
-import { User } from "./User";
-import { Like } from "./Like";
-import { Comment } from "./Comment";
+import { Image } from "./entity.image";
+import { User } from "./entity.user";
+import { Like } from "./entity.like";
+import { Comment } from "./entity.comment";
 
 @ObjectType()
 @Entity()
