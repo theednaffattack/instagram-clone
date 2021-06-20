@@ -1,0 +1,10 @@
+query GetListToCreateThread {
+  getListToCreateThread {
+    id
+    thoseICanMessage {
+      id
+      username
+      profileImgUrl
+    }
+  }
+}

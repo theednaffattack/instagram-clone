@@ -1,0 +1,21 @@
+query GetMessagesByThreadId($input: GetMessagesByThreadIdInput!) {
+  getMessagesByThreadId(input: $input) {
+    edges {
+      node {
+        id
+        created_at
+        message
+        sentBy {
+          id
+          profileImgUrl
+        }
+      }
+    }
+    pageInfo {
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
+  }
+}

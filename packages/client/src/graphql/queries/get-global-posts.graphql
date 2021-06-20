@@ -1,0 +1,16 @@
+query GetGlobalPosts($cursor: String, $skip: Int, $take: Int) {
+  getGlobalPosts(cursor: $cursor, skip: $skip, take: $take) {
+    id
+    title
+    text
+    images {
+      id
+      uri
+    }
+    likes {
+      id
+      count
+    }
+    created_at
+  }
+}

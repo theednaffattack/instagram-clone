@@ -1,0 +1,28 @@
+mutation AddMessageToThread(
+  $threadId: ID!
+  $sentTo: String!
+  $invitees: [ID!]!
+  $message: String!
+  $images: [String]
+) {
+  addMessageToThread(
+    threadId: $threadId
+    sentTo: $sentTo
+    invitees: $invitees
+    message: $message
+    images: $images
+  ) {
+    success
+    threadId
+    message {
+      id
+      created_at
+      message
+    }
+    user {
+      id
+      username
+      profileImgUrl
+    }
+  }
+}

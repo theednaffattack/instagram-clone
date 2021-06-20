@@ -1,0 +1,26 @@
+query GetOnlyThreads($feedinput: FeedInput!) {
+  getOnlyThreads(feedinput: $feedinput) {
+    edges {
+      node {
+        id
+        user {
+          id
+          username
+        }
+        last_message
+        created_at
+        invitees {
+          id
+          username
+          profileImgUrl
+        }
+      }
+    }
+    pageInfo {
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
+  }
+}

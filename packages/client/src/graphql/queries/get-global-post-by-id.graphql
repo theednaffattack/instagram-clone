@@ -1,0 +1,11 @@
+query GetGlobalPostById($getpostinput: GetGlobalPostByIdInput!) {
+  getGlobalPostById(getpostinput: $getpostinput) {
+    id
+    title
+    text
+    images {
+      id
+      uri
+    }
+  }
+}

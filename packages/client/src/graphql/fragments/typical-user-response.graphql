@@ -1,0 +1,8 @@
+fragment TypicalUserResponse on UserResponse {
+  errors {
+    ...ErrorTypical
+  }
+  user {
+    ...UserBase
+  }
+}
