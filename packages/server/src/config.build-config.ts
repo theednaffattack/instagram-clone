@@ -26,7 +26,6 @@ export interface ServerConfigProps {
   secret: string;
 }
 
-// export async function buildConfig(): Promise<ServerConfigProps> {
 // Define a schema
 export const configBuildAndValidate = async function () {
   const configBuilder = convict({
@@ -35,6 +34,29 @@ export const configBuildAndValidate = async function () {
       default: "ic.eddienaff.dev",
       env: "ALLOWED_ORIGINS",
       format: String,
+    },
+    awsConfig: {
+      awsAccessKeyId: {
+        default: "**********",
+        doc: "AWS Access Key ID used as sort of an identifier / user ID.",
+        env: "AWS_ACCESS_KEY_ID",
+        format: "*",
+        sensitive: true,
+      },
+      awsSecretKey: {
+        default: "**********",
+        doc: "AWS Secret key used to access various services. This project uses S3 and CloudFront.",
+        env: " AWS_SECRET_KEY",
+        format: "*",
+        sensitive: true,
+      },
+      s3Config: {
+        default: "**********",
+        doc: "Info for connecting to S3",
+        env: "S3_BUCKET",
+        format: "*",
+        sensitive: true,
+      },
     },
     client_uri: {
       default: "https://ic.eddienaff.dev",
