@@ -3,20 +3,20 @@ import { v4 } from "uuid";
 
 import { MyContext } from "./typings";
 import { isAuth } from "./middleware.is-auth";
-import { AddMessageToThreadInput } from "./gql-type.message-input";
+import { AddMessageToThreadArgsInput } from "./gql-type.message-input";
 import { Thread } from "./entity.thread";
 import { Message } from "./entity.message";
 import { User } from "./entity.user";
 import { Image } from "./entity.image";
 
 @Resolver()
-export class CreateMessageThreadResolver {
+export class CreateMessageThread {
   @UseMiddleware(isAuth)
   @Mutation(() => Thread)
   async createMessageThread(
     @Ctx() context: MyContext,
-    @Args(() => AddMessageToThreadInput)
-    { images, invitees: inputInvittes, message, sentTo, threadId }: AddMessageToThreadInput
+    @Args(() => AddMessageToThreadArgsInput)
+    { images, invitees: inputInvittes, message, sentTo, threadId }: AddMessageToThreadArgsInput
   ) {
     const sentBy = await User.findOne(context.userId);
 

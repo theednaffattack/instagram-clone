@@ -16,6 +16,15 @@ import { GetGlobalPosts } from "./resolver.get-global-posts";
 import { GetGlobalPostsSimplePagination } from "./resolver.get-global-posts-simple-pagination";
 import { GetGlobalPostsRelay } from "./resolver.get-global-posts-relay";
 import { SignS3 } from "./resolver.sign-s3";
+import { ForgotPassword } from "./resolver.forgot-password";
+import { CreatePost } from "./resolver.create-post";
+import { CreateOrUpdateLikes } from "./resolver.create-or-update-likes";
+import { ConfirmUser } from "./resolver.confirm-user";
+import { ChangePassword } from "./resolver.change-password";
+import { AddMessageToThread } from "./resolver.add-message-to-thread";
+import { CreateMessageThread } from "./resolver.create-message-thread";
+import { Logout } from "./resolver.logout";
+import { GetGlobalPostById } from "./resolver.get-global-posts-by-id";
 
 export function createSchema(): GraphQLSchema {
   return buildSchemaSync({
@@ -24,7 +33,15 @@ export function createSchema(): GraphQLSchema {
     pubSub: pubsub,
     // Keep 'resolvers' below alphabetical please!
     resolvers: [
+      AddMessageToThread,
+      ChangePassword,
+      ConfirmUser,
+      CreateMessageThread,
+      CreateOrUpdateLikes,
+      CreatePost,
+      ForgotPassword,
       GetGlobalPosts,
+      GetGlobalPostById,
       GetGlobalPostsRelay,
       GetGlobalPostsSimplePagination,
       GetListToCreateThread,
@@ -32,6 +49,7 @@ export function createSchema(): GraphQLSchema {
       GetOnlyThreads,
       HelloWorldResolver,
       LoginResolver,
+      Logout,
       MeResolver,
       RegisterResolver,
       SignS3,

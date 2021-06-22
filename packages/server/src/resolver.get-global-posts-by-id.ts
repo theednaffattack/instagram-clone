@@ -13,8 +13,8 @@ export class GetGlobalPostById {
     nullable: true,
   })
   async getGlobalPostById(
-    @Arg("getpostinput", () => GetGlobalPostByIdInput)
-    getpostinput: GetGlobalPostByIdInput,
+    @Arg("getpostinput")
+    { postId }: GetGlobalPostByIdInput,
     @Ctx() ctx: MyContext
   ): Promise<GlobalPostResponse | null> {
     let singleGlobalPost = await Post.createQueryBuilder("post")
@@ -23,7 +23,7 @@ export class GetGlobalPostById {
       .leftJoinAndSelect("post.user", "user")
       .leftJoinAndSelect("post.likes", "likes")
       .leftJoinAndSelect("likes.user", "l_user")
-      .where({ id: getpostinput.postId })
+      .where({ id: postId })
       .orderBy("comments.created_at", "ASC")
       .getOne();
 
