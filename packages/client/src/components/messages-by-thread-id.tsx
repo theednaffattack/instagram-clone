@@ -3,8 +3,8 @@ import {
   Flex,
   SkeletonCircle,
   SkeletonText,
-  Text
-} from "@chakra-ui/core";
+  Text,
+} from "@chakra-ui/react";
 import React from "react";
 import { useGetMessagesByThreadIdQuery } from "../generated/graphql";
 
@@ -13,9 +13,9 @@ export function MessagesByThreadId({ threadId }: { threadId: string }) {
     variables: {
       input: {
         threadId,
-        take: 15
-      }
-    }
+        take: 15,
+      },
+    },
   });
 
   if (data || loading) {
@@ -35,13 +35,13 @@ export function MessagesByThreadId({ threadId }: { threadId: string }) {
                 {loading ? (
                   <SkeletonCircle size="10" />
                 ) : (
-                  <Avatar src={node?.sentBy?.profileImgUrl ?? undefined} />
+                  <Avatar src={node?.sentBy?.profileImageUri ?? undefined} />
                 )}
 
                 {loading ? (
                   <SkeletonText mt="4" noOfLines={4} spacing="4" />
                 ) : (
-                  <Text>{node.message}</Text>
+                  <Text>{node.text}</Text>
                 )}
               </Flex>
             );
@@ -58,7 +58,7 @@ export function MessagesByThreadId({ threadId }: { threadId: string }) {
                   <SkeletonText mt="4" noOfLines={4} spacing="4" />
                 ) : (
                   <Flex flexWrap="wrap">
-                    <Text>{node.message}</Text>
+                    <Text>{node.text}</Text>
                   </Flex>
                 )}
                 {loading ? (
@@ -66,7 +66,7 @@ export function MessagesByThreadId({ threadId }: { threadId: string }) {
                 ) : (
                   <Avatar
                     ml="auto"
-                    src={node.sentBy.profileImgUrl || undefined}
+                    src={node.sentBy.profileImageUri || undefined}
                   />
                 )}
               </Flex>

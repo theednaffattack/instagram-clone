@@ -1,14 +1,9 @@
-import { Avatar, Button, Text } from "@chakra-ui/core";
+import { Avatar, Button, Text } from "@chakra-ui/react";
 import { NextPage } from "next";
-
 import { Layout } from "../components/layout.basic";
-import { MeDocument, useMeQuery } from "../generated/graphql";
-import { initializeApollo } from "../lib/config.apollo-client";
-import { MyContext } from "../lib/types";
+import { useMeQuery } from "../generated/graphql";
 
-
-
-const Profile:NextPage = () => {
+const Profile: NextPage = () => {
   const { data } = useMeQuery();
 
   return (
@@ -22,26 +17,23 @@ const Profile:NextPage = () => {
       </>
     </Layout>
   );
-}
+};
 
-Profile.getInitialProps = async (ctx: MyContext) =>{
-  if (!ctx.apolloClient) ctx.apolloClient = initializeApollo();
+// Profile.getInitialProps = async (ctx: MyContext) => {
+//   if (!ctx.apolloClient) ctx.apolloClient = initializeApollo();
 
-  
+//   let meResponse;
+//   try {
+//     meResponse = await ctx.apolloClient.mutate({
+//       mutation: MeDocument,
+//     });
+//   } catch (error) {
+//     console.warn("ERROR", error);
+//   }
 
-  let meResponse;
-  try {
-    meResponse = await ctx.apolloClient.mutate({
-      mutation: MeDocument
-    });
-  } catch (error) {
-    console.warn("ERROR", error);
-  }
-
-  return {
-    me: meResponse?.data ? meResponse?.data : {},
-  };
-  
-}
+//   return {
+//     me: meResponse?.data ? meResponse?.data : {},
+//   };
+// };
 
 export default Profile;

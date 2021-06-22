@@ -1,4 +1,4 @@
-import { Avatar, Button, Flex, GridColumn, Stack, Text } from "@chakra-ui/core";
+import { Avatar, Button, Flex, Grid, Stack, Text } from "@chakra-ui/react";
 import { Formik } from "formik";
 import { NextPage } from "next";
 import React, { useState } from "react";
@@ -9,7 +9,7 @@ import {
   GetMessagesByThreadIdQuery,
   useAddMessageToThreadMutation,
   useGetOnlyThreadsQuery,
-  User
+  User,
 } from "../../generated/graphql";
 
 type MessagesProps = {
@@ -19,11 +19,12 @@ type MessagesProps = {
 const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
   // const [imageFiles, setImageFiles] = useState<File[]>();
 
-  const [invitees, setInvitees] = useState<
-    ({
-      __typename?: "User" | undefined;
-    } & Pick<User, "id" | "username" | "profileImgUrl">)[]
-  >();
+  const [invitees, setInvitees] =
+    useState<
+      ({
+        __typename?: "User" | undefined;
+      } & Pick<User, "id" | "username" | "profileImageUri">)[]
+    >();
   const [threadId, setThreadId] = useState<string | undefined>(undefined);
 
   const [addMessage] = useAddMessageToThreadMutation();
@@ -31,9 +32,9 @@ const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
   const { data: dataThreads } = useGetOnlyThreadsQuery({
     variables: {
       feedinput: {
-        take: 6
-      }
-    }
+        take: 6,
+      },
+    },
   });
 
   const initialFormValues = {
@@ -41,7 +42,7 @@ const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
     images: [],
     invitees: [] as any[],
     threadId: "",
-    sentTo: ""
+    sentTo: "",
   };
 
   return (
@@ -55,21 +56,20 @@ const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
               message: values.message,
               threadId: values.threadId,
               sentTo: values.sentTo,
-              images: values?.images?.map(({ name }) => name) ?? []
+              images: values?.images?.map(({ name }) => name) ?? [],
             },
             update(cache, { data }) {
               try {
-                const cacheMessagesByThread = cache.readQuery<
-                  GetMessagesByThreadIdQuery
-                >({
-                  query: GetMessagesByThreadIdDocument,
-                  variables: {
-                    input: {
-                      threadId: values.threadId,
-                      take: 15
-                    }
-                  }
-                });
+                const cacheMessagesByThread =
+                  cache.readQuery<GetMessagesByThreadIdQuery>({
+                    query: GetMessagesByThreadIdDocument,
+                    variables: {
+                      input: {
+                        threadId: values.threadId,
+                        take: 15,
+                      },
+                    },
+                  });
 
                 if (cacheMessagesByThread?.getMessagesByThreadId && data) {
                   const updatedCache: GetMessagesByThreadIdQuery = {
@@ -84,18 +84,18 @@ const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
                           node: {
                             __typename: "Message",
                             id: data.addMessageToThread.message.id,
-                            message: data.addMessageToThread.message.message,
+                            text: data.addMessageToThread.message.text,
                             created_at:
                               data.addMessageToThread.message.created_at,
                             sentBy: {
                               __typename: "User",
-                              id: data.addMessageToThread.user.id
-                            }
+                              id: data.addMessageToThread.user.id,
+                            },
                           },
-                          __typename: "MessageEdge"
-                        }
-                      ]
-                    }
+                          __typename: "MessageEdge",
+                        },
+                      ],
+                    },
                   };
 
                   cache.writeQuery<GetMessagesByThreadIdQuery>({
@@ -104,15 +104,15 @@ const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
                     variables: {
                       input: {
                         threadId: values.threadId,
-                        take: 15
-                      }
-                    }
+                        take: 15,
+                      },
+                    },
                   });
                 }
               } catch (error) {
                 console.warn("CACHE READ ERROR", error);
               }
-            }
+            },
           });
           resetForm({
             values: {
@@ -120,8 +120,8 @@ const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
               images: [],
               threadId: values.threadId,
               invitees: values.invitees,
-              sentTo: values.sentTo
-            }
+              sentTo: values.sentTo,
+            },
           });
         } catch (error) {
           console.warn("ADD MESSAGE SUBMIT ERROR", error);
@@ -140,7 +140,7 @@ const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
               values={values}
             >
               <>
-                <GridColumn
+                <Grid
                   w="100%"
                   bg={{ sm: "crimson", md: "tomato", lg: "limegreen" }}
                   display={["none", "none", "none", "block"]}
@@ -151,13 +151,13 @@ const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
                       sm: "relative",
                       md: "relative",
                       lg: "fixed",
-                      xl: "fixed"
+                      xl: "fixed",
                     }}
                     maxWidth={{
                       sm: "100%",
                       md: "100%",
                       lg: "250px",
-                      xl: "250px"
+                      xl: "250px",
                     }}
                     width="100%"
                   >
@@ -171,6 +171,7 @@ const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
                             alignItems="center"
                             key={id}
                             onClick={() => {
+                              // eslint-disable-next-line no-console
                               console.log("OH NO");
 
                               if (invitees && id && invitees.length > 0) {
@@ -194,7 +195,7 @@ const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
                       }
                     )}
                   </Stack>
-                </GridColumn>
+                </Grid>
 
                 <Flex
                   bg="rgba(255,255,255)"
@@ -212,13 +213,13 @@ const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
                         sm: "relative",
                         md: "relative",
                         lg: "fixed",
-                        xl: "fixed"
+                        xl: "fixed",
                       }}
                       maxWidth={{
                         sm: "100%",
                         md: "100%",
                         lg: "250px",
-                        xl: "250px"
+                        xl: "250px",
                       }}
                       width="100%"
                     >
@@ -235,6 +236,7 @@ const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
                               alignItems="center"
                               key={id}
                               onClick={() => {
+                                // eslint-disable-next-line no-console
                                 console.log("OH NO");
 
                                 if (invitees && id && invitees.length > 0) {
@@ -275,7 +277,7 @@ const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
                     >
                       <Avatar
                         name={user.username}
-                        src={user.profileImgUrl ?? ""}
+                        src={user.profileImageUri ?? ""}
                       />
                       <Text isTruncated>{user.username}</Text>
                     </Flex>

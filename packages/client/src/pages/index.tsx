@@ -1,6 +1,5 @@
 import { NextSeo } from "next-seo";
 import { Router } from "next/router";
-import { AudioPlayer } from "../components/audio-player";
 import { AppLayout } from "../components/layout.app";
 import { PublicFeed } from "../components/public-feed";
 
@@ -12,7 +11,7 @@ export function Home({ router }: HomeProps): JSX.Element {
   return (
     <>
       <NextSeo
-        title="Spotify Clone"
+        title="Instagram Clone"
         description="It's just an audio player"
         canonical="https://ic.eddienaff.dev/"
         openGraph={{
@@ -43,15 +42,7 @@ export function Home({ router }: HomeProps): JSX.Element {
           cardType: "summary_large_image",
         }}
       />
-      <AudioPlayer />
 
-      <button
-        onClick={() => {
-          window.alert("With typescript and Jest");
-        }}
-      >
-        Test Button
-      </button>
       <PublicFeed router={router} />
     </>
   );

@@ -4,7 +4,7 @@ import {
   dedupExchange,
   Exchange,
   fetchExchange,
-  stringifyVariables
+  stringifyVariables,
 } from "urql";
 import { pipe, tap } from "wonka";
 import {
@@ -13,26 +13,28 @@ import {
   LogoutMutation,
   MeDocument,
   MeQuery,
-  RegisterMutation
+  RegisterMutation,
 } from "../generated/graphql";
 import { development_qql_uri } from "./config";
-import { betterUpdateQuery } from "./utilities.better-update-query";
+import { betterUpdateQuery } from "./utilities.better-update-query.HIDE_tsx";
 import { isServer } from "./utilities.is-server";
 
-const errorExchange: Exchange = ({ forward }) => (ops$) => {
-  return pipe(
-    forward(ops$),
-    tap(({ error }) => {
-      // If the OperationResult has an error check for specific errors
-      // listed below.
-      // ["Not authenticated"]
-      // the error is a CombinedError with networkError and graphqlErrors properties
-      if (error?.message.includes("Not authenticated") && !isServer()) {
-        Router.replace("/login");
-      }
-    })
-  );
-};
+const errorExchange: Exchange =
+  ({ forward }) =>
+  (ops$) => {
+    return pipe(
+      forward(ops$),
+      tap(({ error }) => {
+        // If the OperationResult has an error check for specific errors
+        // listed below.
+        // ["Not authenticated"]
+        // the error is a CombinedError with networkError and graphqlErrors properties
+        if (error?.message.includes("Not authenticated") && !isServer()) {
+          Router.replace("/login");
+        }
+      })
+    );
+  };
 
 // import { stringifyVariables } from "@urql/core";
 // import { Resolver, Variables, NullArray } from "../types";
@@ -43,7 +45,7 @@ export interface PaginationParams {
 }
 
 export const cursorPagination = ({
-  cursorArgument = "cursor"
+  cursorArgument = "cursor",
 }: PaginationParams = {}): Resolver => {
   return (_parent, fieldArgs, cache, info) => {
     const { parentKey: entityKey, fieldName } = info;
@@ -148,9 +150,9 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
       credentials: "include" as const,
       headers: cookie
         ? {
-            cookie
+            cookie,
           }
-        : undefined
+        : undefined,
     },
     url: development_qql_uri,
     exchanges: [
@@ -158,8 +160,8 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
       cacheExchange({
         resolvers: {
           Query: {
-            getGlobalPostsSimplePagination: cursorPagination()
-          }
+            getGlobalPostsSimplePagination: cursorPagination(),
+          },
         },
         updates: {
           Mutation: {
@@ -174,7 +176,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                   } else {
                     return {
                       me: result.changePassword?.user,
-                      __typename: "Query"
+                      __typename: "Query",
                     };
                   }
                 }
@@ -191,7 +193,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                   } else {
                     return {
                       me: result.login?.user,
-                      __typename: "Query"
+                      __typename: "Query",
                     };
                   }
                 }
@@ -216,23 +218,23 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                   } else {
                     return {
                       me: result.register.user,
-                      __typename: "Query"
+                      __typename: "Query",
                     };
                   }
                 }
               );
-            }
-          }
+            },
+          },
           // Subscription: {
           //   newTodo: (result, args, cache, info) => {
           //     // ...
           //   }
           // }
-        }
+        },
       }),
       errorExchange,
       ssrExchange,
-      fetchExchange
-    ]
+      fetchExchange,
+    ],
   };
 };

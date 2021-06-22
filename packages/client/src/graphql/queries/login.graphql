@@ -1,5 +1,12 @@
 mutation Login($username: String!, $password: String!) {
   login(username: $username, password: $password) {
-    ...TypicalUserResponse
+    errors {
+      field
+      message
+    }
+    user {
+      id
+      username
+    }
   }
 }

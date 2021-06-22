@@ -1,5 +1,12 @@
 mutation Register($data: RegisterInput!) {
   register(data: $data) {
-    ...TypicalUserResponse
+    user {
+      id
+      username
+    }
+    errors {
+      field
+      message
+    }
   }
 }

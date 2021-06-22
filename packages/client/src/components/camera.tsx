@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Flex, Button } from "@chakra-ui/core";
+import { Flex, Button } from "@chakra-ui/react";
 
 import Camera from "./old-camera";
 // import FauxCamera from "./faux-camera";
@@ -12,7 +12,7 @@ interface CameraModuleProps {
 
 export const CameraModule: React.FunctionComponent<CameraModuleProps> = ({
   cameraDispatch,
-  cameraState
+  cameraState,
 }) => {
   return (
     <Flex
@@ -35,12 +35,12 @@ export const CameraModule: React.FunctionComponent<CameraModuleProps> = ({
               type:
                 cameraState.cameraStatus === "cameraIsClosed"
                   ? "openCameraInit"
-                  : "closeCamera"
+                  : "closeCamera",
             });
 
             if (cameraState.cameraStatus === "cameraIsOpen") {
               cameraDispatch({
-                type: "clearCardImage"
+                type: "clearCardImage",
               });
             }
           }}

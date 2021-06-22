@@ -1,4 +1,4 @@
-import { Avatar, Box, Flex, Link as ChLink } from "@chakra-ui/core";
+import { Avatar, Box, Flex, Link as ChLink } from "@chakra-ui/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";

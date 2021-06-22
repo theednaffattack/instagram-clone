@@ -4,8 +4,8 @@ import {
   Code,
   List,
   ListIcon,
-  ListItem
-} from "@chakra-ui/core";
+  ListItem,
+} from "@chakra-ui/react";
 import { CheckCircleIcon, LinkIcon } from "@chakra-ui/icons";
 
 import { Hero } from "../components/Hero";
@@ -15,7 +15,7 @@ import { DarkModeSwitch } from "../components/dark-mode-switch";
 import { CTA } from "../components/CTA";
 import { Footer } from "../components/Footer";
 
-const Index = () => {
+const Index = (): JSX.Element => {
   return (
     <Container height="100vh">
       <Hero />

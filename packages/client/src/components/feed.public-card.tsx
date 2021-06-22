@@ -1,18 +1,18 @@
-import { Box, Flex, Skeleton, Text } from "@chakra-ui/core";
+import { Box, Flex, Skeleton, Text } from "@chakra-ui/react";
 import React from "react";
 import {
-  GlobalPostReturnType,
+  GlobalPostResponse,
   Image as ImageType,
   Like,
   Maybe,
-  User
+  User,
 } from "../generated/graphql";
 import { LikesAndCommentsSummary } from "./home.global-feed.likes";
 
 type PostNode = {
-  __typename?: "GlobalPostReturnType";
+  __typename?: "GlobalPostResponse";
 } & Pick<
-  GlobalPostReturnType,
+  GlobalPostResponse,
   | "id"
   | "title"
   | "text"
@@ -22,7 +22,10 @@ type PostNode = {
   | "created_at"
 > & {
     user?: Maybe<
-      { __typename?: "User" } & Pick<User, "id" | "username" | "profileImgUrl">
+      { __typename?: "User" } & Pick<
+        User,
+        "id" | "username" | "profileImageUri"
+      >
     >;
     images?: Maybe<
       Array<
@@ -45,7 +48,7 @@ type CardProps = {
   loadingPosts: boolean;
 };
 
-export function PublicPostCard({ cardProps }: CardProps) {
+export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
   const {
     created_at,
     comments_count,
@@ -53,7 +56,7 @@ export function PublicPostCard({ cardProps }: CardProps) {
     id,
     images,
     likes_count,
-    text
+    text,
   } = cardProps;
 
   return (

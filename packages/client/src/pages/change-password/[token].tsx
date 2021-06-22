@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Link, Text } from "@chakra-ui/core";
+import { Box, Button, Flex, Link, Text } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
 import { NextPage } from "next";
 import NextLink from "next/link";
@@ -9,7 +9,7 @@ import { InputField } from "../../components/forms.input-field";
 import {
   ChangePasswordMutation,
   FieldError,
-  useChangePasswordMutation
+  useChangePasswordMutation,
 } from "../../generated/graphql";
 import { formatValidationErrors } from "../../lib/utilities.graphQLErrors.format-apollo-validation-errors";
 import { toErrorMap } from "../../lib/utilities.toErrorMap";
@@ -27,9 +27,11 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
             data: {
               password: values.password,
               token:
-                typeof router.query.token === "string" ? router.query.token : ""
-            }
-          }
+                typeof router.query.token === "string"
+                  ? router.query.token
+                  : "",
+            },
+          },
         });
         let validationErrors: FieldError[];
         if (response.errors) {
@@ -44,7 +46,7 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
         const successfulUser = response.data?.changePassword?.user;
 
         if (changePassErrors) {
-          const errorMap = toErrorMap(changePassErrors);
+          const errorMap = toErrorMap([changePassErrors]);
 
           if ("token" in errorMap) {
             setTokenErrorHelper(

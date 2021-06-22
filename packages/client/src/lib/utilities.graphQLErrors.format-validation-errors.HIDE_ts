@@ -1,4 +1,4 @@
-import { OperationResult } from "urql";
+// import { OperationResult } from "urql";
 import { FieldError } from "../generated/graphql";
 
 export function formatUrqlValidationErrors<Operation>(
@@ -24,8 +24,8 @@ export function formatUrqlValidationErrors<Operation>(
   // been formatted to FieldError format, so they're
   // easy to map.
 
-  const extractedValErrors: FieldError[] = filteredValidationErrors![0]
-    .extensions!.valErrors;
+  const extractedValErrors: FieldError[] =
+    filteredValidationErrors![0].extensions!.valErrors;
 
   return extractedValErrors;
   // }

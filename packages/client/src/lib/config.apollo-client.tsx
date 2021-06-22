@@ -4,11 +4,11 @@ import {
   HttpLink,
   InMemoryCache,
   NormalizedCacheObject,
-  split
+  split,
 } from "@apollo/client";
 import {
   getMainDefinition,
-  relayStylePagination
+  relayStylePagination,
 } from "@apollo/client/utilities";
 import { setContext } from "@apollo/link-context";
 import { WebSocketLink } from "@apollo/client/link/ws";
@@ -29,7 +29,7 @@ const httpLink = new HttpLink({
   uri: isProduction
     ? process.env.NEXT_PUBLIC_PRODUCTION_GQL_URI
     : process.env.NEXT_PUBLIC_DEVELOPMENT_GQL_URI,
-  credentials: "include"
+  credentials: "include",
 });
 
 // Create a WebSocket link (browser only):
@@ -37,11 +37,11 @@ const wsLink = !isServer()
   ? new WebSocketLink(
       new SubscriptionClient(
         isProduction
-          ? process.env.NEXT_PUBLIC_PRODUCTION_WEBSOCKET_URL!
-          : process.env.NEXT_PUBLIC_DEVELOPMENT_WEBSOCKET_URL!,
+          ? process.env.NEXT_PUBLIC_PRODUCTION_WEBSOCKET_URL
+          : process.env.NEXT_PUBLIC_DEVELOPMENT_WEBSOCKET_URL,
         {
           lazy: true,
-          reconnect: true
+          reconnect: true,
         }
       )
     )
@@ -64,13 +64,13 @@ const splitLink = !isServer()
   : httpLink;
 
 const authLink = setContext((_, { headers, req }) => {
-  const token = parseCookies(req)[process.env.NEXT_PUBLIC_COOKIE_PREFIX!];
+  const token = parseCookies(req)[process.env.NEXT_PUBLIC_COOKIE_PREFIX];
 
   return {
     headers: {
       ...headers,
-      cookie: token ? `${process.env.NEXT_PUBLIC_COOKIE_PREFIX!}=${token}` : ""
-    }
+      cookie: token ? `${process.env.NEXT_PUBLIC_COOKIE_PREFIX}=${token}` : "",
+    },
   };
 });
 
@@ -92,8 +92,6 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
     return;
   }
 
-  console.log("STILL GOING?");
-
   const filteredRoutes =
     graphQLErrors &&
     graphQLErrors?.filter((errorThing) => {
@@ -108,12 +106,12 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
     (graphQLErrors && !filteredRoutes)
   ) {
     graphQLErrors.map(({ message, locations, path }) =>
-      console.warn(
+      console.error(
         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
       )
     );
   }
-  if (networkError) console.log(`[Network error]: ${networkError}`);
+  if (networkError) console.error(`[Network error]: ${networkError}`);
 });
 
 function createApolloClient() {
@@ -128,17 +126,19 @@ function createApolloClient() {
             getMessagesByThreadId: {
               merge(existing = {}, incoming: any, { mergeObjects }) {
                 return mergeObjects(existing, incoming);
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     }),
-    link: errorLink.concat(authLink.concat(new RetryLink().concat(splitLink)))
+    link: errorLink.concat(authLink.concat(new RetryLink().concat(splitLink))),
   });
 }
 
-export function initializeApollo(initialState = null) {
+export function initializeApollo(
+  initialState = null
+): ApolloClient<NormalizedCacheObject> {
   const _apolloClient = apolloClient ?? createApolloClient();
 
   // If your page has Next.js data fetching methods that use Apollo Client, the initial state
@@ -161,7 +161,9 @@ export function initializeApollo(initialState = null) {
   return _apolloClient;
 }
 
-export function useApollo(initialState: any) {
+export function useApollo(
+  initialState: any
+): ApolloClient<NormalizedCacheObject> {
   const store = useMemo(() => initializeApollo(initialState), [initialState]);
   return store;
 }

@@ -1,13 +1,13 @@
-import { Box, Flex, Grid, Heading, Link, Text } from "@chakra-ui/core";
+import { Box, Flex, Grid, Heading, Link, Text } from "@chakra-ui/react";
 import NavLink from "next/link";
 import * as React from "react";
 
 export function LayoutAuthenticated({
-  children
+  children,
 }: {
   children: React.ReactChild | React.ReactChildren;
   isNOTLgScreen?: boolean;
-}) {
+}): JSX.Element {
   // const [isNOTLgScreen, isBrowser] = useMediaQuery("(max-width: 62em)");
   const maxie = 1000;
   return (
@@ -58,10 +58,11 @@ export function LayoutAuthenticated({
             sm: "1fr",
             md: "1fr",
             lg: "1fr 250px",
-            xl: "1fr 250px"
+            xl: "1fr 250px",
           }}
           height="100%"
           position="relative"
+          border="2px dashed crimson"
         >
           {children}
           <div>
@@ -73,10 +74,11 @@ export function LayoutAuthenticated({
               top={0}
               // right={0}
               right="calc(50% - 500px)"
+              border="2px dashed hotpink"
             >
               {navLinks.map(({ href, name }) => {
                 return (
-                  <Box key={href} border="2px dashed crimson">
+                  <Box key={href}>
                     <NavLink href={href} passHref>
                       <Link>
                         <Text>{name}</Text>
@@ -108,14 +110,14 @@ const navLinks = [
   // },
   {
     href: "/create-post",
-    name: "create post"
+    name: "create post",
   },
   {
     href: "/",
-    name: "home"
+    name: "home",
   },
   {
     href: "/messages",
-    name: "messages"
-  }
+    name: "messages",
+  },
 ];

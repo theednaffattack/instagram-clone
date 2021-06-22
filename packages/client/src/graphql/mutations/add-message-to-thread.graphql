@@ -17,12 +17,12 @@ mutation AddMessageToThread(
     message {
       id
       created_at
-      message
+      text
     }
     user {
       id
       username
-      profileImgUrl
+      profileImageUri
     }
   }
 }

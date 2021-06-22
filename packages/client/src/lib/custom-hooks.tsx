@@ -1,43 +1,8 @@
 import * as React from "react";
-import {
-  GlobalPostReturnType,
-  Image,
-  Like,
-  Maybe,
-  PostEdge,
-  User
-} from "../generated/graphql";
+import { GlobalPostsRelayEdges } from "../components/public-feed";
 import { isServer } from "./utilities.is-server";
 
 export type PossibleMediaStream = null | MediaStream;
-
-type PostEdgeSubstitute =
-  | Array<
-      { __typename?: "PostEdge" } & Pick<PostEdge, "cursor"> & {
-          node: { __typename?: "GlobalPostReturnType" } & Pick<
-            GlobalPostReturnType,
-            | "id"
-            | "title"
-            | "text"
-            | "likes_count"
-            | "comments_count"
-            | "currently_liked"
-            | "created_at"
-          > & {
-              user?: Maybe<
-                { __typename?: "User" } & Pick<
-                  User,
-                  "id" | "username" | "profileImgUrl"
-                >
-              >;
-              images?: Maybe<
-                Array<{ __typename?: "Image" } & Pick<Image, "id" | "uri">>
-              >;
-              likes?: Maybe<Array<{ __typename?: "Like" } & Pick<Like, "id">>>;
-            };
-        }
-    >
-  | undefined;
 
 // imported from:
 // https://www.smashingmagazine.com/2020/03/infinite-scroll-lazy-image-loading-react/
@@ -45,7 +10,7 @@ type PostEdgeSubstitute =
 export function useInfiniteScroll(
   scrollRef: React.MutableRefObject<HTMLDivElement | null>,
   setInfState: React.Dispatch<React.SetStateAction<"idle" | "fetch-more">>
-) {
+): void {
   const scrollObserver = React.useCallback(
     (node) => {
       new IntersectionObserver((entries) => {
@@ -69,8 +34,8 @@ export function useInfiniteScroll(
 // lazy load images with intersection observer
 export const useLazyLoading = (
   imgSelector: string,
-  items: PostEdgeSubstitute
-) => {
+  items: GlobalPostsRelayEdges // PostEdgeSubstitute
+): void => {
   const imgObserver = React.useCallback((node: HTMLImageElement) => {
     const intObs = new IntersectionObserver((entries) => {
       entries.forEach((en) => {
@@ -108,8 +73,10 @@ export const useLazyLoading = (
  * width (regardless of the resolution of the camera). This is achieved by calculating a ratio
  * that is always >= 1 by dividing by the largest dimension.
  **/
-export function useCardRatio(initialParams: any) {
-  const [aspectRatio, setAspectRatio] = React.useState(initialParams);
+export function useCardRatio(
+  initialParams: number
+): [number, (height: number, width: number) => void] {
+  const [aspectRatio, setAspectRatio] = React.useState<number>(initialParams);
 
   const calculateRatio = React.useCallback((height: number, width: number) => {
     if (height && width) {
@@ -123,10 +90,11 @@ export function useCardRatio(initialParams: any) {
   return [aspectRatio, calculateRatio];
 }
 
-export function useUserMedia(requestedMedia: MediaStreamConstraints) {
-  const [mediaStream, setMediaStream] = React.useState<PossibleMediaStream>(
-    null
-  );
+export function useUserMedia(
+  requestedMedia: MediaStreamConstraints
+): MediaStream {
+  const [mediaStream, setMediaStream] =
+    React.useState<PossibleMediaStream>(null);
 
   React.useEffect(() => {
     async function enableVideoStream() {
@@ -139,7 +107,7 @@ export function useUserMedia(requestedMedia: MediaStreamConstraints) {
         // Handle the error
         console.warn("Error accessing navigator.mediaDevices", {
           err,
-          navigator
+          navigator,
         });
       }
     }
@@ -158,6 +126,11 @@ export function useUserMedia(requestedMedia: MediaStreamConstraints) {
   return mediaStream;
 }
 
+interface IOffsets {
+  x: number;
+  y: number;
+}
+
 /**
  * In the event that the video (v) is larger than it's parent container (c), calculate offsets
  * to center the container in the middle of the video.
@@ -167,7 +140,7 @@ export function useOffsets(
   vHeight: number,
   cWidth: number,
   cHeight: number
-) {
+): IOffsets {
   const [offsets, setOffsets] = React.useState({ x: 0, y: 0 });
 
   React.useEffect(() => {

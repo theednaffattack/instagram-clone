@@ -1,4 +1,4 @@
-import { Box, Link, Text } from "@chakra-ui/core";
+import { Box, Link, Text } from "@chakra-ui/react";
 import NextLink from "next/link";
 import React, { ReactElement } from "react";
 
@@ -13,7 +13,7 @@ type FormatErrorType = {
 export function formatErrors({
   errors,
   setErrors,
-  setUserConfirmedHelper
+  setUserConfirmedHelper,
 }: FormatErrorType): void {
   const errorMap = toErrorMap(errors);
   //

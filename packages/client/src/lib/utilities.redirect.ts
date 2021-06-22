@@ -2,10 +2,8 @@ import Router from "next/router";
 import { MyContext } from "./types";
 import { isServer } from "./utilities.is-server";
 
-function redirect(context: MyContext, target: string) {
+function redirect(context: MyContext, target: string): void {
   if (context.res) {
-    console.log("VIEW CONTEXT", context);
-
     // server
     // 303: "See other"
     context.res.writeHead(303, { Location: target });
@@ -18,7 +16,7 @@ function redirect(context: MyContext, target: string) {
     }
   } else {
     //
-    console.log("ERROR UNEXPECTED STATE DURING RE-ROUTE", context);
+    console.error("ERROR UNEXPECTED STATE DURING RE-ROUTE", context);
   }
 }
 

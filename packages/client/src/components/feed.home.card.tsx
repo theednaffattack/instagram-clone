@@ -1,20 +1,20 @@
-import { Box, Flex, Image, Text, Avatar, IconButton } from "@chakra-ui/core";
+import { Box, Flex, Image, Text, Avatar, IconButton } from "@chakra-ui/react";
 import React from "react";
 import { BiDotsHorizontalRounded } from "react-icons/bi";
 import {
   Image as ImageType,
   Like,
-  GlobalPostReturnType,
+  GlobalPostResponse,
   Maybe,
-  User
+  User,
 } from "../generated/graphql";
 
 import { LikesAndCommentsSummary } from "./home.global-feed.likes";
 
 type PostNode = {
-  __typename?: "GlobalPostReturnType";
+  __typename?: "GlobalPostResponse";
 } & Pick<
-  GlobalPostReturnType,
+  GlobalPostResponse,
   | "id"
   | "title"
   | "text"
@@ -24,7 +24,10 @@ type PostNode = {
   | "created_at"
 > & {
     user?: Maybe<
-      { __typename?: "User" } & Pick<User, "id" | "username" | "profileImgUrl">
+      { __typename?: "User" } & Pick<
+        User,
+        "id" | "username" | "profileImageUri"
+      >
     >;
     images?: Maybe<
       Array<
@@ -46,7 +49,7 @@ type CardProps = {
   cardProps: PostNode;
 };
 
-export function PostCard({ cardProps }: CardProps) {
+export function PostCard({ cardProps }: CardProps): JSX.Element {
   const {
     created_at,
     comments_count,
@@ -55,12 +58,12 @@ export function PostCard({ cardProps }: CardProps) {
     images,
     likes_count,
     text,
-    user
+    user,
   } = cardProps;
   return (
     <Box key={id}>
       <Flex alignItems="center" p={3}>
-        <Avatar src={user?.profileImgUrl ?? ""} name={user?.username} />{" "}
+        <Avatar src={user?.profileImageUri ?? ""} name={user?.username} />{" "}
         <Text ml={4}>{user?.username}</Text>
         <IconButton
           ml="auto"

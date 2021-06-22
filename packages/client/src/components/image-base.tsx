@@ -1,4 +1,4 @@
-import { Image } from "@chakra-ui/core";
+import { Image } from "@chakra-ui/react";
 import React from "react";
 import { Maybe, Image as ImageType } from "../generated/graphql";
 

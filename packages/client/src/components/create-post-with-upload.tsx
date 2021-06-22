@@ -1,4 +1,4 @@
-import { Button, Flex, Text } from "@chakra-ui/core";
+import { Button, Flex, Text } from "@chakra-ui/react";
 import { Field, FieldArray, Form, Formik } from "formik";
 import Axios from "axios";
 import React from "react";
@@ -7,7 +7,7 @@ import { v4 } from "uuid";
 import {
   useSignS3Mutation,
   useCreatePostMutation,
-  PostConnection
+  PostConnection,
 } from "../generated/graphql";
 import { useRouter } from "next/router";
 import { InputField } from "./forms.input-field";
@@ -21,7 +21,7 @@ interface CreatePostWithuploadProps {
 const blobToFile: any = (theBlob: Blob, filename: string) => {
   const theFile = new File([theBlob], filename, {
     type: "image/png",
-    endings: "native"
+    endings: "native",
   });
 
   return theFile;
@@ -30,71 +30,67 @@ const blobToFile: any = (theBlob: Blob, filename: string) => {
 const uploadToS3 = async ({ file, signedRequest }: any) => {
   const options = {
     headers: {
-      "Content-Type": "image/png"
-    }
+      "Content-Type": "image/png",
+    },
   };
   const theFile = file;
 
-  const s3ReturnInfo = await Axios.put(
-    signedRequest,
-    theFile,
-    options
-  ).catch((error) => console.error({ error }));
+  const s3ReturnInfo = await Axios.put(signedRequest, theFile, options).catch(
+    (error) => console.error({ error })
+  );
 
   return s3ReturnInfo;
 };
 
 export const CreatePostWithupload: React.FC<CreatePostWithuploadProps> = ({
-  cardImage
+  cardImage,
   // router
 }) => {
   const router = useRouter();
   const [
-    signS3
+    signS3,
     // { data: dataSignS3, error: errorSignS3, loading: loadingSignS3 }
   ] = useSignS3Mutation();
 
-  const [
-    createPost,
-    { data: dataCreatePost, error: errorCreatePost }
-  ] = useCreatePostMutation({
-    update(cache, { data: postMutationData }) {
-      // if there's no data don't screw around with the cache
-      if (!postMutationData) return;
+  const [createPost, { data: dataCreatePost, error: errorCreatePost }] =
+    useCreatePostMutation({
+      update(cache, { data: postMutationData }) {
+        // if there's no data don't screw around with the cache
+        if (!postMutationData) return;
 
-      cache.modify({
-        fields: {
-          getGlobalPostsRelay(existingPosts): PostConnection {
-            const { edges, __typename, pageInfo } = existingPosts;
+        cache.modify({
+          fields: {
+            getGlobalPostsRelay(existingPosts): PostConnection {
+              const { edges, __typename, pageInfo } = existingPosts;
 
-            return {
-              edges: [
-                {
-                  __typename: "PostEdge",
-                  cursor: new Date().toISOString(),
-                  node: {
-                    comments_count: 0,
-                    likes_count: 0,
-                    currently_liked: false,
-                    likes: [],
-                    created_at: new Date().toISOString(),
-                    __typename: postMutationData?.createPost.__typename,
-                    images: postMutationData?.createPost.images,
-                    text: postMutationData?.createPost.text,
-                    title: postMutationData?.createPost.title,
-                    id: postMutationData?.createPost.id
-                  }
-                },
-                ...edges
-              ],
-              __typename,
-              pageInfo
-            };
-          }
-        }
-      });
-    }
-  });
+              return {
+                edges: [
+                  {
+                    __typename: "PostEdge",
+                    cursor: new Date().toISOString(),
+                    node: {
+                      comments_count: 0,
+                      likes_count: 0,
+                      currently_liked: false,
+                      likes: [],
+                      created_at: new Date().toISOString(),
+                      __typename: postMutationData?.createPost.__typename,
+                      images: postMutationData?.createPost.images,
+                      text: postMutationData?.createPost.text,
+                      title: postMutationData?.createPost.title,
+                      id: postMutationData?.createPost.id,
+                    },
+                  },
+                  ...edges,
+                ],
+                __typename,
+                pageInfo,
+              };
+            },
+          },
+        });
+      },
+    });
 
   return (
     <Flex
@@ -104,7 +100,7 @@ export const CreatePostWithupload: React.FC<CreatePostWithuploadProps> = ({
       p={3}
       flexDirection="column"
       style={{
-        position: "relative"
+        position: "relative",
       }}
     >
       <Text>{dataCreatePost ? "post created" : ""}</Text>
@@ -123,17 +119,17 @@ export const CreatePostWithupload: React.FC<CreatePostWithuploadProps> = ({
               files: [
                 {
                   filename: getVariables.name,
-                  filetype: getVariables.name
-                }
-              ]
-            }
+                  filetype: getVariables.name,
+                },
+              ],
+            },
           });
 
           if (s3SignatureResponse && s3SignatureResponse.data) {
             await uploadToS3({
               file: cardImage,
               signedRequest:
-                s3SignatureResponse.data.signS3.signatures[0].signedRequest
+                s3SignatureResponse.data.signS3.signatures[0].signedRequest,
             });
 
             resetForm();
@@ -143,19 +139,19 @@ export const CreatePostWithupload: React.FC<CreatePostWithuploadProps> = ({
                 data: {
                   images: [s3SignatureResponse.data.signS3.signatures[0].url],
                   text,
-                  title
-                }
-              }
+                  title,
+                },
+              },
             });
           }
 
           await createPost({
-            variables: { data: { text, title, images } }
+            variables: { data: { text, title, images } },
           });
 
           setSubmitting(false);
           resetForm({
-            values: { text: "", title: "", images: [] }
+            values: { text: "", title: "", images: [] },
           });
           if (!errorCreatePost && router) {
             router.push("/");

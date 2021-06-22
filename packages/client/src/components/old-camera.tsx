@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Measure, { ContentRect } from "react-measure";
 import { disableBodyScroll } from "body-scroll-lock";
-import { Button, Flex } from "@chakra-ui/core";
+import { Button, Flex } from "@chakra-ui/react";
 
 import styles from "../components/camera.module.css";
 
@@ -15,7 +15,7 @@ export interface SizeRect {
 
 const CAPTURE_OPTIONS: MediaStreamConstraints = {
   audio: false,
-  video: { facingMode: "environment" }
+  video: { facingMode: "environment" },
 };
 
 interface CameraProps {
@@ -67,7 +67,7 @@ const Camera: React.FunctionComponent<CameraProps> = ({ cameraDispatch }) => {
     if (contentRect && contentRect.bounds && typeof aspectRatio === "number") {
       setContainer({
         width: contentRect.bounds.width,
-        height: Math.round(contentRect.bounds.width / aspectRatio)
+        height: Math.round(contentRect.bounds.width / aspectRatio),
       });
     } else {
       const contentRectError = "Error! contentRect is undefined";
@@ -154,7 +154,7 @@ const Camera: React.FunctionComponent<CameraProps> = ({ cameraDispatch }) => {
         contextError: !get2dContext && "Cannot retrieve the canvas context",
         videoRefError:
           !videoRef.current &&
-          "No video ref is set (cannot access the video DOM node)"
+          "No video ref is set (cannot access the video DOM node)",
       };
       throw Error(`${JSON.stringify(errorObj)}`);
     }
@@ -177,7 +177,7 @@ const Camera: React.FunctionComponent<CameraProps> = ({ cameraDispatch }) => {
         style={{
           height: "100%",
           // overflowY: "scroll",
-          WebkitOverflowScrolling: "touch"
+          WebkitOverflowScrolling: "touch",
         }}
       >
         <Measure bounds onResize={handleResize}>
@@ -207,7 +207,7 @@ const Camera: React.FunctionComponent<CameraProps> = ({ cameraDispatch }) => {
                   position: "relative",
                   // overflowY: "scroll",
                   maxHeight: container.height,
-                  overflow: "hidden"
+                  overflow: "hidden",
                 }}
               >
                 <div
@@ -217,7 +217,7 @@ const Camera: React.FunctionComponent<CameraProps> = ({ cameraDispatch }) => {
                     height: "100%",
                     // height: `${videoHeight}px`,
                     maxHeight: videoHeight,
-                    width: `${videoWidth}px`
+                    width: `${videoWidth}px`,
                   }}
                 >
                   <video
@@ -230,7 +230,7 @@ const Camera: React.FunctionComponent<CameraProps> = ({ cameraDispatch }) => {
                     muted
                     style={{
                       top: `-${offsets.y}px`,
-                      left: `-${offsets.x}px`
+                      left: `-${offsets.x}px`,
                       // right: 0,
                       // bottom: 0
                     }}

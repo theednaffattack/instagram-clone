@@ -1,7 +1,8 @@
-import { Icon } from "@chakra-ui/core";
+import { Icon } from "@chakra-ui/react";
 import React from "react";
 
-export function AddFileIcon(props: any) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function AddFileIcon(props: any): JSX.Element {
   return (
     <Icon viewBox="0 0 149.85 199.8" {...props}>
       {/* <g id="Layer_2" data-name="Layer 2">

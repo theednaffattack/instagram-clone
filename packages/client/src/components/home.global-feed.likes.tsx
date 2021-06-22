@@ -5,8 +5,8 @@ import {
   IconButton,
   CloseButton,
   Flex,
-  Text
-} from "@chakra-ui/core";
+  Text,
+} from "@chakra-ui/react";
 import React, { useState } from "react";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { FaRegComment } from "react-icons/fa";
@@ -14,7 +14,7 @@ import {
   GetGlobalPostsRelayDocument,
   GetGlobalPostsRelayQuery,
   GetGlobalPostsRelayQueryVariables,
-  useCreateOrUpdateLikesMutation
+  useCreateOrUpdateLikesMutation,
 } from "../generated/graphql";
 
 type LikesAndCommentsSummaryProps = {
@@ -30,13 +30,12 @@ export function LikesAndCommentsSummary({
   currently_liked,
   disabled,
   likes_count,
-  postId
-}: LikesAndCommentsSummaryProps) {
-  const [errorFlashes, setErrorFlashes] = useState<"hidden" | "visible">(
-    "hidden"
-  );
+  postId,
+}: LikesAndCommentsSummaryProps): JSX.Element {
+  const [errorFlashes, setErrorFlashes] =
+    useState<"hidden" | "visible">("hidden");
   const [createOrUpdateLikes] = useCreateOrUpdateLikesMutation({
-    variables: { input: { postId } }
+    variables: { input: { postId } },
   });
 
   return (
@@ -73,8 +72,8 @@ export function LikesAndCommentsSummary({
                           after: null,
                           before: null,
                           first: 2,
-                          last: null
-                        }
+                          last: null,
+                        },
                       });
 
                       const returnObj: GetGlobalPostsRelayQuery = {
@@ -97,16 +96,16 @@ export function LikesAndCommentsSummary({
                                     images: edge.node.images,
                                     text: edge.node.text,
                                     title: edge.node.title,
-                                    id: edge.node.id
-                                  }
+                                    id: edge.node.id,
+                                  },
                                 };
                               } else {
                                 return edge;
                               }
                             }
                           ),
-                          pageInfo: existing!.getGlobalPostsRelay!.pageInfo
-                        }
+                          pageInfo: existing.getGlobalPostsRelay.pageInfo,
+                        },
                       };
 
                       cache.writeQuery<
@@ -119,13 +118,13 @@ export function LikesAndCommentsSummary({
                           after: null,
                           before: null,
                           first: 2,
-                          last: null
-                        }
+                          last: null,
+                        },
                       });
-                    }
+                    },
                   });
                 } catch (error) {
-                  console.log(
+                  console.error(
                     "UPDATE LIKES ERROR - CURRENTLY LIKED",
                     error.message
                   );
@@ -152,15 +151,15 @@ export function LikesAndCommentsSummary({
                           after: null,
                           before: null,
                           first: 2,
-                          last: null
-                        }
+                          last: null,
+                        },
                       });
 
                       const updatedCacheData: GetGlobalPostsRelayQuery = {
                         __typename: existing?.__typename,
                         getGlobalPostsRelay: {
                           __typename: existing?.getGlobalPostsRelay?.__typename,
-                          edges: existing!.getGlobalPostsRelay!.edges.map(
+                          edges: existing.getGlobalPostsRelay.edges.map(
                             (edge) => {
                               if (edge.node.id === postId) {
                                 return {
@@ -176,16 +175,16 @@ export function LikesAndCommentsSummary({
                                     images: edge.node.images,
                                     text: edge.node.text,
                                     title: edge.node.title,
-                                    id: edge.node.id
-                                  }
+                                    id: edge.node.id,
+                                  },
                                 };
                               } else {
                                 return edge;
                               }
                             }
                           ),
-                          pageInfo: existing!.getGlobalPostsRelay!.pageInfo
-                        }
+                          pageInfo: existing.getGlobalPostsRelay.pageInfo,
+                        },
                       };
 
                       cache.writeQuery<
@@ -198,13 +197,13 @@ export function LikesAndCommentsSummary({
                           after: null,
                           before: null,
                           first: 2,
-                          last: null
-                        }
+                          last: null,
+                        },
                       });
-                    }
+                    },
                   });
                 } catch (error) {
-                  console.log(
+                  console.error(
                     "UPDATE LIKES ERROR - NOT CURRENTLY LIKED",
                     error.message
                   );

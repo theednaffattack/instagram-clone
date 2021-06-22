@@ -1,4 +1,4 @@
-import { Box, Button, Heading, Image, Stack, Text } from "@chakra-ui/core";
+import { Box, Button, Heading, Image, Stack, Text } from "@chakra-ui/react";
 import React, { ReactElement, ReactNode } from "react";
 import { ApolloError } from "@apollo/client";
 import { GetGlobalPostsRelayQuery } from "../generated/graphql";
@@ -16,7 +16,7 @@ type GlobalWithChildrenProps = {
 export function GlobalPostsStack({
   posts,
   postsError,
-  postsFetching
+  postsFetching,
 }: GlobalPostsProps): ReactElement {
   // If loading and there aren't posts
   // loaded yet. Useful for a loading
@@ -45,7 +45,13 @@ export function GlobalPostsStack({
     const boxes = [];
     for (const post of posts.edges) {
       boxes.push(
-        <Box key={post.node.id} p={5} shadow="md" borderWidth="1px" width={1 / 2}>
+        <Box
+          key={post.node.id}
+          p={5}
+          shadow="md"
+          borderWidth="1px"
+          width={1 / 2}
+        >
           <Heading fontSize="xl">{post.node.title}</Heading>
           <Image
             src={post.node.images ? post.node.images[0].uri : ""}
@@ -101,7 +107,7 @@ function GlobalPostsError({ children }: GlobalWithChildrenProps): ReactElement {
 }
 
 function GlobalPostsFetching({
-  children
+  children,
 }: GlobalWithChildrenProps): ReactElement {
   return (
     <Stack spacing={8}>
@@ -113,7 +119,7 @@ function GlobalPostsFetching({
 }
 
 function GlobalPostsUnexpectedState({
-  children
+  children,
 }: GlobalWithChildrenProps): ReactElement {
   return (
     <Stack spacing={8}>

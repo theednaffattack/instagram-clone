@@ -28,7 +28,7 @@ query GetGlobalPostsRelay(
         user {
           id
           username
-          profileImgUrl
+          profileImageUri
         }
         images {
           id

@@ -4,7 +4,7 @@ import styles from "../components/chat.module.css";
 
 // }
 
-const ChatContainer = () => {
+const ChatContainer = (): JSX.Element => {
   return (
     <div id="wrapper" className={styles.wrapper}>
       <div id="chat-container" className={styles.chatContainer}>

@@ -1,4 +1,4 @@
-import { Center, Flex, Grid, IconButton, Stack, Text } from "@chakra-ui/core";
+import { Center, Flex, Grid, IconButton, Stack, Text } from "@chakra-ui/react";
 import { Form } from "formik";
 import React, { ReactChild, ReactChildren } from "react";
 import { useDropzone } from "react-dropzone";
@@ -34,17 +34,18 @@ export function MessagesGrid({
   handleSubmit,
   setFieldValue,
   threadId,
-  values
-}: MessagesGridProps) {
+  values,
+}: MessagesGridProps): JSX.Element {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: "image/*",
     noClick: true,
     onDrop: (acceptedFiles) => {
+      // eslint-disable-next-line no-console
       console.log("ACCEPTED DROP FILES", acceptedFiles);
 
       // setImageFiles(acceptedFiles);
       setFieldValue("images", acceptedFiles);
-    }
+    },
   });
 
   return (
@@ -53,7 +54,7 @@ export function MessagesGrid({
         sm: "1fr",
         md: "1fr",
         lg: "250px 1fr",
-        xl: "250px 1fr"
+        xl: "250px 1fr",
       }}
       w="100%"
       height="100%"

@@ -1,20 +1,16 @@
-import { Box, Button, Text } from "@chakra-ui/core";
+import { Box, Button, Text } from "@chakra-ui/react";
 import { Field, FieldArray, Form, Formik } from "formik";
 import { NextPage } from "next";
 import { Router } from "next/router";
 import React from "react";
-
 import { InputField } from "../components/forms.input-field";
 import { TextArea } from "../components/forms.textarea";
 import { LayoutAuthenticated } from "../components/layout-authenticated";
 import {
-  MeDocument,
   MeQuery,
   PostConnection,
-  useCreatePostMutation
+  useCreatePostMutation,
 } from "../generated/graphql";
-import { initializeApollo } from "../lib/config.apollo-client";
-import { MyContext } from "../lib/types";
 
 type CreatePostProps = {
   me: MeQuery;
@@ -47,18 +43,18 @@ const CreatePost: NextPage<CreatePostProps> = ({ router }) => {
                     images: postMutationData?.createPost.images,
                     text: postMutationData?.createPost.text,
                     title: postMutationData?.createPost.title,
-                    id: postMutationData?.createPost.id
-                  }
+                    id: postMutationData?.createPost.id,
+                  },
                 },
-                ...edges
+                ...edges,
               ],
               __typename,
-              pageInfo
+              pageInfo,
             };
-          }
-        }
+          },
+        },
       });
-    }
+    },
   });
   return (
     <LayoutAuthenticated>
@@ -68,12 +64,12 @@ const CreatePost: NextPage<CreatePostProps> = ({ router }) => {
           initialValues={{ title: "", text: "", images: [] }}
           onSubmit={async ({ text, title, images }, actions) => {
             await createPost({
-              variables: { data: { text, title, images } }
+              variables: { data: { text, title, images } },
             });
 
             actions.setSubmitting(false);
             actions.resetForm({
-              values: { text: "", title: "", images: [] }
+              values: { text: "", title: "", images: [] },
             });
             if (!errorCreatePost && router) {
               router.push("/");
@@ -147,21 +143,21 @@ const CreatePost: NextPage<CreatePostProps> = ({ router }) => {
   );
 };
 
-CreatePost.getInitialProps = async (ctx: MyContext) => {
-  if (!ctx.apolloClient) ctx.apolloClient = initializeApollo();
+// CreatePost.getInitialProps = async (ctx: MyContext) => {
+//   if (!ctx.apolloClient) ctx.apolloClient = initializeApollo();
 
-  let meResponse;
-  try {
-    meResponse = await ctx.apolloClient.mutate({
-      mutation: MeDocument
-    });
-  } catch (error) {
-    console.warn("ERROR", error);
-  }
+//   let meResponse;
+//   try {
+//     meResponse = await ctx.apolloClient.mutate({
+//       mutation: MeDocument,
+//     });
+//   } catch (error) {
+//     console.warn("ERROR", error);
+//   }
 
-  return {
-    me: meResponse?.data ? meResponse?.data : {}
-  };
-};
+//   return {
+//     me: meResponse?.data ? meResponse?.data : {},
+//   };
+// };
 
 export default CreatePost;

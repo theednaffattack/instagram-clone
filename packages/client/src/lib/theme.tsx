@@ -1,10 +1,10 @@
-import { theme as chakraTheme } from "@chakra-ui/core";
+import { theme as chakraTheme } from "@chakra-ui/react";
 
 const fonts = { ...chakraTheme.fonts, mono: `'Menlo', monospace` };
 
 const colors = {
   ...chakraTheme.colors,
-  black: "#16161D"
+  black: "#16161D",
 };
 
 const fontSizes = {
@@ -17,7 +17,7 @@ const fontSizes = {
   "3xl": "1.875rem",
   "4xl": "2.25rem",
   "5xl": "3rem",
-  "6xl": "4rem"
+  "6xl": "4rem",
 };
 
 const spaces = {
@@ -35,8 +35,8 @@ const spaces = {
     "3xl": "48rem",
     "4xl": "56rem",
     "5xl": "64rem",
-    "6xl": "72rem"
-  }
+    "6xl": "72rem",
+  },
 };
 
 const theme = {
@@ -48,10 +48,10 @@ const theme = {
   styles: {
     global: {
       "html, body, #__next": {
-        height: "100%"
-      }
-    }
-  }
+        height: "100%",
+      },
+    },
+  },
 };
 
 export default theme;

@@ -1,15 +1,8 @@
+import { Box, Flex, Heading, Image, Text } from "@chakra-ui/react";
 import { NextPage } from "next";
 import { Router } from "next/router";
 import React from "react";
-import { Box, Flex, Heading, Image, Text } from "@chakra-ui/core";
-
-import {
-  MeDocument,
-  MeQuery,
-  useGetGlobalPostByIdQuery
-} from "../../generated/graphql";
-import { initializeApollo } from "../../lib/config.apollo-client";
-import { MyContext } from "../../lib/types";
+import { MeQuery, useGetGlobalPostByIdQuery } from "../../generated/graphql";
 
 type PostByIdProps = {
   router?: Router;
@@ -20,9 +13,9 @@ const PostById: NextPage<PostByIdProps> = ({ router }) => {
   const { data } = useGetGlobalPostByIdQuery({
     variables: {
       getpostinput: {
-        postId: router?.query.postId as string
-      }
-    }
+        postId: router?.query.postId as string,
+      },
+    },
   });
   return (
     <Flex flexDirection="column">
@@ -38,21 +31,21 @@ const PostById: NextPage<PostByIdProps> = ({ router }) => {
   );
 };
 
-PostById.getInitialProps = async (ctx: MyContext) => {
-  if (!ctx.apolloClient) ctx.apolloClient = initializeApollo();
+// PostById.getInitialProps = async (ctx: MyContext) => {
+//   if (!ctx.apolloClient) ctx.apolloClient = initializeApollo();
 
-  let meResponse;
-  try {
-    meResponse = await ctx.apolloClient.mutate({
-      mutation: MeDocument
-    });
-  } catch (error) {
-    console.warn("ME ERROR - POST ROUTE", error);
-  }
+//   let meResponse;
+//   try {
+//     meResponse = await ctx.apolloClient.mutate({
+//       mutation: MeDocument,
+//     });
+//   } catch (error) {
+//     console.warn("ME ERROR - POST ROUTE", error);
+//   }
 
-  return {
-    me: meResponse?.data ? meResponse?.data : {}
-  };
-};
+//   return {
+//     me: meResponse?.data ? meResponse?.data : {},
+//   };
+// };
 
 export default PostById;

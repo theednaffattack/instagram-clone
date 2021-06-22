@@ -1,7 +1,7 @@
 // import React, { useState, useRef } from "react";
 import React, { useState } from "react";
 import Measure, { ContentRect } from "react-measure";
-import { Flex, Button } from "@chakra-ui/core";
+import { Flex, Button } from "@chakra-ui/react";
 
 import { CreatePostWithupload } from "./create-post-with-upload";
 import { CameraAction, CameraStateType } from "../pages/post/new";
@@ -32,7 +32,7 @@ interface FauxCameraProps {
 
 const FauxCamera: React.FunctionComponent<FauxCameraProps> = ({
   // cameraDispatch,
-  cameraState
+  cameraState,
 }) => {
   // const canvasRef = useRef<HTMLCanvasElement>(null);
   // const videoRef = useRef<HTMLVideoElement>(null);
@@ -76,7 +76,7 @@ const FauxCamera: React.FunctionComponent<FauxCameraProps> = ({
       // && typeof aspectRatio === "number"
       setContainer({
         width: contentRect.bounds.width,
-        height: Math.round(contentRect.bounds.width / 2) // aspectRatio
+        height: Math.round(contentRect.bounds.width / 2), // aspectRatio
       });
     } else {
       const contentRectError = "Error! contentRect is undefined";
@@ -170,7 +170,7 @@ const FauxCamera: React.FunctionComponent<FauxCameraProps> = ({
       flex="1 1 auto"
       style={{
         height: "100%",
-        overflowY: "scroll"
+        overflowY: "scroll",
       }}
     >
       <Flex
@@ -206,6 +206,7 @@ const FauxCamera: React.FunctionComponent<FauxCameraProps> = ({
           <Button
             mt={3}
             type="button"
+            // eslint-disable-next-line no-console
             onClick={() => console.log("button click")}
           >
             Take a picture

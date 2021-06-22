@@ -1,6 +1,6 @@
 import React from "react";
 import { NextPage } from "next";
-import { Flex, Heading } from "@chakra-ui/core";
+import { Flex, Heading } from "@chakra-ui/react";
 
 const TermsAndConditions: NextPage = () => {
   return (
@@ -21,7 +21,7 @@ const TermsAndConditions: NextPage = () => {
             p={4}
             sx={{
               borderRadius: "10px",
-              boxShadow: "0 2px 16px rgba(0, 0, 0, 0.25)"
+              boxShadow: "0 2px 16px rgba(0, 0, 0, 0.25)",
             }}
             bg="rgb(242,242,242)"
           >

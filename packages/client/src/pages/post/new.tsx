@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Text } from "@chakra-ui/core";
+import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import Axios from "axios";
 import { Field, FieldArray, Form, Formik } from "formik";
 import { NextPage } from "next";
@@ -12,7 +12,7 @@ import { Thumb } from "../../components/thumb";
 import {
   PostConnection,
   useCreatePostMutation,
-  useSignS3Mutation
+  useSignS3Mutation,
 } from "../../generated/graphql";
 
 export interface CameraStateType {
@@ -28,13 +28,13 @@ export type CameraAction =
 
 const initialCameraState: CameraStateType = {
   cameraStatus: "cameraIsClosed",
-  cardImage: null
+  cardImage: null,
 };
 
 function initCamera(theInitialCameraState: CameraStateType): CameraStateType {
   return {
     cameraStatus: theInitialCameraState.cameraStatus,
-    cardImage: theInitialCameraState.cardImage
+    cardImage: theInitialCameraState.cardImage,
   };
 }
 
@@ -46,25 +46,25 @@ function cameraReducer(
     case "openCameraInit":
       return {
         cameraStatus: "cameraIsOpen",
-        cardImage: null
+        cardImage: null,
       };
 
     case "closeCamera":
       return {
         cameraStatus: "cameraIsClosed",
-        cardImage: null
+        cardImage: null,
       };
 
     case "clearCardImage":
       return {
         cameraStatus: state.cameraStatus,
-        cardImage: null
+        cardImage: null,
       };
 
     case "setCardImage":
       return {
         cameraStatus: state.cameraStatus,
-        cardImage: action.payload
+        cardImage: action.payload,
       };
 
     default:
@@ -82,10 +82,11 @@ const New: NextPage<NewProps> = ({ router }) => {
     initialCameraState,
     initCamera
   );
+  // eslint-disable-next-line no-console
   console.log({ cameraState, cameraDispatch });
 
   const [
-    signS3
+    signS3,
     // { data: dataSignS3, error: errorSignS3, loading: loadingSignS3 }
   ] = useSignS3Mutation();
 
@@ -114,18 +115,18 @@ const New: NextPage<NewProps> = ({ router }) => {
                     images: postMutationData?.createPost.images,
                     text: postMutationData?.createPost.text,
                     title: postMutationData?.createPost.title,
-                    id: postMutationData?.createPost.id
-                  }
+                    id: postMutationData?.createPost.id,
+                  },
                 },
-                ...edges
+                ...edges,
               ],
               __typename,
-              pageInfo
+              pageInfo,
             };
-          }
-        }
+          },
+        },
       });
-    }
+    },
   });
 
   return (
@@ -147,10 +148,10 @@ const New: NextPage<NewProps> = ({ router }) => {
                   files: [
                     {
                       filename: getVariables.name,
-                      filetype: getVariables.name
-                    }
-                  ]
-                }
+                      filetype: getVariables.name,
+                    },
+                  ],
+                },
               });
 
               if (s3SignatureResponse && s3SignatureResponse.data) {
@@ -158,7 +159,7 @@ const New: NextPage<NewProps> = ({ router }) => {
                 await uploadToImageService({
                   file: images[0], // cardImage,
                   signedRequest:
-                    s3SignatureResponse.data.signS3.signatures[0].signedRequest
+                    s3SignatureResponse.data.signS3.signatures[0].signedRequest,
                 });
 
                 resetForm();
@@ -167,22 +168,22 @@ const New: NextPage<NewProps> = ({ router }) => {
                   variables: {
                     data: {
                       images: [
-                        s3SignatureResponse.data.signS3.signatures[0].url
+                        s3SignatureResponse.data.signS3.signatures[0].url,
                       ],
                       text,
-                      title
-                    }
-                  }
+                      title,
+                    },
+                  },
                 });
               }
 
               await createPost({
-                variables: { data: { text, title, images } }
+                variables: { data: { text, title, images } },
               });
 
               setSubmitting(false);
               resetForm({
-                values: { text: "", title: "", images: [] }
+                values: { text: "", title: "", images: [] },
               });
               if (!errorCreatePost && router) {
                 router.push("/");
@@ -197,7 +198,7 @@ const New: NextPage<NewProps> = ({ router }) => {
                       sm: "none",
                       md: "none",
                       lg: "block",
-                      xl: "block"
+                      xl: "block",
                     }}
                   >
                     or upload a picture from your file system
@@ -230,7 +231,7 @@ const New: NextPage<NewProps> = ({ router }) => {
                                   style={{
                                     position: "absolute",
                                     top: 0,
-                                    right: 0
+                                    right: 0,
                                   }}
                                 >
                                   <button
@@ -258,10 +259,6 @@ const New: NextPage<NewProps> = ({ router }) => {
                                       Array.from(event.currentTarget.files)
                                     );
                                   }
-                                  console.log(
-                                    "VIEW IMAGES",
-                                    event.currentTarget.files
-                                  );
                                 }}
                                 className="form-control"
                                 multiple
@@ -311,7 +308,7 @@ export default New;
 const blobToFile = (theBlob: Blob, filename: string) => {
   const theFile = new File([theBlob], filename, {
     type: "image/png",
-    endings: "native"
+    endings: "native",
   });
 
   return theFile;
@@ -320,14 +317,14 @@ const blobToFile = (theBlob: Blob, filename: string) => {
 const uploadToImageService = async ({ file, signedRequest }: any) => {
   const options = {
     headers: {
-      "Content-Type": "image/png"
-    }
+      "Content-Type": "image/png",
+    },
   };
   const theFile = file;
 
   const uploadReturnInfo = {
     error: null,
-    response: null
+    response: null,
   };
 
   try {

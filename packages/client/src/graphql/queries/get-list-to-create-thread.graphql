@@ -4,7 +4,7 @@ query GetListToCreateThread {
     thoseICanMessage {
       id
       username
-      profileImgUrl
+      profileImageUri
     }
   }
 }

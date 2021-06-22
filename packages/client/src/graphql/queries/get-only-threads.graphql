@@ -12,7 +12,7 @@ query GetOnlyThreads($feedinput: FeedInput!) {
         invitees {
           id
           username
-          profileImgUrl
+          profileImageUri
         }
       }
     }

@@ -2,8 +2,8 @@ import {
   FormControl,
   FormErrorMessage,
   FormLabel,
-  Textarea as ChakraTextarea
-} from "@chakra-ui/core";
+  Textarea as ChakraTextarea,
+} from "@chakra-ui/react";
 import { useField } from "formik";
 import React, { TextareaHTMLAttributes } from "react";
 

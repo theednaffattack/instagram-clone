@@ -1,10 +1,19 @@
-import { CloseButton, Stack } from "@chakra-ui/core";
+import { CloseButton, Stack } from "@chakra-ui/react";
 import { Router } from "next/router";
 import React from "react";
 import Modal from "react-modal";
+
 import { PostCard } from "../components/feed.home.card";
 import { LayoutAuthenticated } from "../components/layout-authenticated";
-import { useGetGlobalPostsRelayQuery } from "../generated/graphql";
+import {
+  GlobalPostResponse,
+  Like,
+  Image,
+  Maybe,
+  PostEdge,
+  useGetGlobalPostsRelayQuery,
+  User,
+} from "../generated/graphql";
 import { useInfiniteScroll, useLazyLoading } from "../lib/custom-hooks";
 import { PublicPostCard } from "./feed.public-card";
 
@@ -12,26 +21,54 @@ Modal.setAppElement("#__next");
 
 type IndexProps = { router: Router };
 
-export function PublicFeed({ router }: IndexProps) {
+export type GlobalPostsRelayEdges = Array<
+  { __typename?: "PostEdge" } & Pick<PostEdge, "cursor"> & {
+      node: { __typename?: "GlobalPostResponse" } & Pick<
+        GlobalPostResponse,
+        | "id"
+        | "title"
+        | "text"
+        | "likes_count"
+        | "comments_count"
+        | "currently_liked"
+        | "created_at"
+      > & {
+          user?: Maybe<
+            { __typename?: "User" } & Pick<
+              User,
+              "id" | "username" | "profileImageUri"
+            >
+          >;
+          images?: Maybe<
+            Array<{ __typename?: "Image" } & Pick<Image, "id" | "uri">>
+          >;
+          likes?: Maybe<Array<{ __typename?: "Like" } & Pick<Like, "id">>>;
+        };
+    }
+>;
+
+export function PublicFeed({ router }: IndexProps): JSX.Element {
   const [infState, setInfState] = React.useState<"idle" | "fetch-more">("idle");
 
   const initialGlobalPostsVariables = {
     after: null,
     before: null,
     first: 10,
-    last: null
+    last: null,
   };
 
   const {
     data: dataPosts,
     loading: loadingPosts,
-    // error,
-    fetchMore: fetchMorePosts
+    error: errorPosts,
+    fetchMore: fetchMorePosts,
   } = useGetGlobalPostsRelayQuery({
-    variables: initialGlobalPostsVariables
+    variables: initialGlobalPostsVariables,
   });
 
-  useLazyLoading(".card-img-top", dataPosts?.getGlobalPostsRelay?.edges);
+  console.log("PUBLIC FEED QUERY", { dataPosts, errorPosts, loadingPosts });
+
+  // useLazyLoading(".card-img-top", dataPosts.getGlobalPostsRelay?.edges);
 
   React.useEffect(() => {
     // If there's a next page, cursor it in.
@@ -42,8 +79,8 @@ export function PublicFeed({ router }: IndexProps) {
           after:
             dataPosts?.getGlobalPostsRelay?.edges[
               dataPosts?.getGlobalPostsRelay?.edges?.length - 1
-            ].cursor
-        }
+            ].cursor,
+        },
       });
     }
     // Reset infinite scroller state to "idle", regardless
@@ -81,8 +118,8 @@ export function PublicFeed({ router }: IndexProps) {
               backgroundColor: "rgba(0,0,0,0.25)",
               position: "fixed",
               top: 0,
-              bottom: 0
-            }
+              bottom: 0,
+            },
 
             // content: {
             //   color: "lightsteelblue"

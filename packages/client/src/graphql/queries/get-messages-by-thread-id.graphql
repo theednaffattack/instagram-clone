@@ -4,10 +4,10 @@ query GetMessagesByThreadId($input: GetMessagesByThreadIdInput!) {
       node {
         id
         created_at
-        message
+        text
         sentBy {
           id
-          profileImgUrl
+          profileImageUri
         }
       }
     }

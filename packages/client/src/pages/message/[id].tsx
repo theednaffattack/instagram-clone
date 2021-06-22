@@ -1,4 +1,4 @@
-import { Flex, Heading, Image, Text } from "@chakra-ui/core";
+import { Flex, Heading, Image, Text } from "@chakra-ui/react";
 import { NextPage } from "next";
 import { Router } from "next/router";
 import React from "react";
@@ -10,14 +10,14 @@ interface MessageByIdProps {
 
 const MessageById: NextPage<MessageByIdProps> = ({ router }) => {
   const {
-    query: { id }
+    query: { id },
   } = router;
   const { data, error, loading } = useGetGlobalPostByIdQuery({
     variables: {
       getpostinput: {
-        postId: id as string
-      }
-    }
+        postId: id as string,
+      },
+    },
   });
   return (
     <Flex>
