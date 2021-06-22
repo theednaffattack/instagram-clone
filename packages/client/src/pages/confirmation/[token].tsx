@@ -1,6 +1,6 @@
 // import { useConfirmUserMutation } from "../../generated/graphql";
 import { Button, Flex, Link, Text } from "@chakra-ui/react";
-import { GetServerSideProps, NextPage } from "next";
+import { NextPage } from "next";
 import NextLink from "next/link";
 import React, { ReactElement } from "react";
 import { Wrapper } from "../../components/box-wrapper";

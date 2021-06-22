@@ -9,7 +9,7 @@ type NavbarProps = {
   loadingMe?: boolean;
 };
 
-export function Navbar({ dataMe }: NavbarProps) {
+export function NavbarAuthenticated({ dataMe }: NavbarProps): JSX.Element {
   const router = useRouter();
 
   // user is not logged in

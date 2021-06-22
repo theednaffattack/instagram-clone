@@ -80,7 +80,7 @@ export function LikesAndCommentsSummary({
                         __typename: existing?.__typename,
                         getGlobalPostsRelay: {
                           __typename: existing?.getGlobalPostsRelay?.__typename,
-                          edges: existing!.getGlobalPostsRelay!.edges.map(
+                          edges: existing.getGlobalPostsRelay.edges.map(
                             (edge) => {
                               if (edge.node.id === postId) {
                                 return {

@@ -8,7 +8,11 @@ import {
 import React from "react";
 import { useGetMessagesByThreadIdQuery } from "../generated/graphql";
 
-export function MessagesByThreadId({ threadId }: { threadId: string }) {
+export function MessagesByThreadId({
+  threadId,
+}: {
+  threadId: string;
+}): JSX.Element {
   const { data, error, loading } = useGetMessagesByThreadIdQuery({
     variables: {
       input: {

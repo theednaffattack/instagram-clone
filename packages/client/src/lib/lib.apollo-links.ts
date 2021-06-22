@@ -44,7 +44,7 @@ export const splitLink = !isServer()
           definition.operation === "subscription"
         );
       },
-      wsLink!,
+      wsLink,
       httpLink
     )
   : httpLink;

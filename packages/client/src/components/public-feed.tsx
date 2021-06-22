@@ -2,13 +2,12 @@ import { CloseButton, Stack } from "@chakra-ui/react";
 import { Router } from "next/router";
 import React from "react";
 import Modal from "react-modal";
-
 import { PostCard } from "../components/feed.home.card";
 import { LayoutAuthenticated } from "../components/layout-authenticated";
 import {
   GlobalPostResponse,
-  Like,
   Image,
+  Like,
   Maybe,
   PostEdge,
   useGetGlobalPostsRelayQuery,
@@ -60,15 +59,13 @@ export function PublicFeed({ router }: IndexProps): JSX.Element {
   const {
     data: dataPosts,
     loading: loadingPosts,
-    error: errorPosts,
+    // error: errorPosts,
     fetchMore: fetchMorePosts,
   } = useGetGlobalPostsRelayQuery({
     variables: initialGlobalPostsVariables,
   });
 
-  console.log("PUBLIC FEED QUERY", { dataPosts, errorPosts, loadingPosts });
-
-  // useLazyLoading(".card-img-top", dataPosts.getGlobalPostsRelay?.edges);
+  useLazyLoading(".card-img-top", dataPosts?.getGlobalPostsRelay?.edges);
 
   React.useEffect(() => {
     // If there's a next page, cursor it in.

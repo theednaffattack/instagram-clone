@@ -8,7 +8,7 @@ import { InputField } from "../components/forms.input-field";
 import { useRegisterMutation } from "../generated/graphql";
 import { toErrorMap } from "../lib/utilities.toErrorMap";
 
-function Register() {
+function Register(): JSX.Element {
   const [register, { error }] = useRegisterMutation();
   const [registrationStatus, setRegistrationStatus] =
     useState<"isNotRegistered" | "hasRegistered">("isNotRegistered");

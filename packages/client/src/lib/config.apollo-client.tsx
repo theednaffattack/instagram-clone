@@ -58,7 +58,7 @@ const splitLink = !isServer()
           definition.operation === "subscription"
         );
       },
-      wsLink!,
+      wsLink,
       httpLink
     )
   : httpLink;
@@ -162,6 +162,7 @@ export function initializeApollo(
 }
 
 export function useApollo(
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   initialState: any
 ): ApolloClient<NormalizedCacheObject> {
   const store = useMemo(() => initializeApollo(initialState), [initialState]);

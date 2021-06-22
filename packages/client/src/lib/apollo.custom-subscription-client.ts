@@ -4,6 +4,7 @@ export class CustomSubscriptionClient extends SubscriptionClient {
   constructor(
     url: string,
     options?: ClientOptions,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     webSocketImpl?: any,
     webSocketProtocols?: string | string[]
   ) {

@@ -3,13 +3,13 @@ import { useMeQuery } from "../generated/graphql";
 import { useIsAuth } from "../lib/utilities.hooks.useIsAuth";
 // import { isServer } from "../lib/utilities.is-server";
 import { Wrapper } from "./box-wrapper";
-import { Navbar } from "./navbar-authenticated";
+import { NavbarAuthenticated } from "./navbar-authenticated";
 
 type LayoutProps = {
   children: ReactChild | ReactChildren;
 };
 
-export function Layout({ children }: LayoutProps) {
+export function Layout({ children }: LayoutProps): JSX.Element {
   // const router = useRouter();
   useIsAuth();
   const { data: dataMe, loading: loadingMe } = useMeQuery({
@@ -21,7 +21,7 @@ export function Layout({ children }: LayoutProps) {
   if (loadingMe) {
     return (
       <>
-        <Navbar dataMe={dataMe} loadingMe={loadingMe} />
+        <NavbarAuthenticated dataMe={dataMe} loadingMe={loadingMe} />
         <Wrapper>loading...</Wrapper>
       </>
     );
@@ -33,7 +33,7 @@ export function Layout({ children }: LayoutProps) {
   // the first-load flash of content.
   return (
     <>
-      <Navbar dataMe={dataMe} loadingMe={loadingMe} />
+      <NavbarAuthenticated dataMe={dataMe} loadingMe={loadingMe} />
       <Wrapper>
         {!loadingMe && !dataMe?.me ? "unexpected state" : children}
       </Wrapper>

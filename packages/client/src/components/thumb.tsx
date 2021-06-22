@@ -74,7 +74,7 @@ type ThumbProps = {
 //   init
 // );
 
-export function Thumb({ file }: ThumbProps) {
+export function Thumb({ file }: ThumbProps): JSX.Element {
   const [thumb, setThumb] = React.useState<string | undefined>();
 
   React.useEffect(() => {
@@ -88,7 +88,6 @@ export function Thumb({ file }: ThumbProps) {
     };
 
     reader.readAsDataURL(file);
-    console.log("MOUNTED THUMB");
   }, [file]);
 
   return (

@@ -72,7 +72,7 @@ function Login({ router, Component, err }: AppProps): JSX.Element {
 
           // SUCCESS
           if (response.data?.login?.user) {
-            // console.log("SUCCESS!!!");
+            // console.log("SUCCESS!!!");w
 
             // if we've set a redirect after login,
             // follow it. Otherwise go to home page.
