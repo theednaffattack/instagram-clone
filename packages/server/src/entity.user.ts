@@ -42,11 +42,11 @@ export class User extends BaseEntity {
   updated_at?: Date;
 
   @Field({ nullable: true })
-  @Column()
+  @Column({ nullable: true })
   firstName: string;
 
   @Field({ nullable: true })
-  @Column()
+  @Column({ nullable: true })
   lastName: string;
 
   @Field({ nullable: true })
