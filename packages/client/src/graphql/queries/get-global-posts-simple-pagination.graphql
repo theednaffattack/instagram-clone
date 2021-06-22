@@ -1,0 +1,15 @@
+query GetGlobalPostsSimplePagination($after: String, $first: Float) {
+  getGlobalPostsSimplePagination(after: $after, first: $first) {
+    hasMore
+    posts {
+      id
+      title
+      text
+      created_at
+      images {
+        id
+        uri
+      }
+    }
+  }
+}

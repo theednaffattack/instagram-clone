@@ -1,8 +1,8 @@
-import { ArgsType, Field, ID } from "type-graphql";
+import { ArgsType, Field, ID, InputType } from "type-graphql";
 import { Upload } from "./gql-type.upload";
 
 @ArgsType()
-export class AddMessageToThreadInput {
+export class AddMessageToThreadArgsInput {
   @Field(() => ID)
   threadId: string;
 
@@ -13,6 +13,27 @@ export class AddMessageToThreadInput {
   invitees: string[];
 
   @Field(() => String)
+  message: string;
+
+  @Field(() => [String], { nullable: "itemsAndList" })
+  images: string[];
+}
+
+@InputType()
+export class AddMessageToThreadInputType {
+  // @ts-ignore
+  @Field((type) => ID)
+  threadId: string;
+
+  // @ts-ignore
+  @Field((type) => String)
+  sentTo: string;
+
+  @Field(() => [ID])
+  invitees: string[];
+
+  // @ts-ignore
+  @Field((type) => String)
   message: string;
 
   @Field(() => [String], { nullable: "itemsAndList" })

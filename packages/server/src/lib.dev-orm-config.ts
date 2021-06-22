@@ -5,13 +5,13 @@ export const getConnectionOptionsCustom = (config: ServerConfigProps): PostgresC
   switch (config.env) {
     case "production":
       return {
-        name: "development",
+        name: config.env,
         type: "postgres",
         ssl: false,
         url: config.db.connectionString,
         logging: false,
         synchronize: false,
-        entities: ["src/entity/**/*.ts"],
+        entities: ["src/**/entity.*.ts"],
         migrations: ["src/migration/**/*.ts"],
         subscribers: ["src/subscriber/**/*.ts"],
         cli: {
@@ -28,7 +28,7 @@ export const getConnectionOptionsCustom = (config: ServerConfigProps): PostgresC
         url: config.db.connectionString,
         logging: false,
         synchronize: true,
-        entities: ["src/entity/**/*.ts"],
+        entities: ["src/**/entity.*.ts"],
         migrations: ["src/migration/**/*.ts"],
         subscribers: ["src/subscriber/**/*.ts"],
         cli: {
@@ -39,13 +39,13 @@ export const getConnectionOptionsCustom = (config: ServerConfigProps): PostgresC
       };
     case "development":
       return {
-        name: config.env,
+        name: "default",
         type: "postgres",
         ssl: false,
         url: config.db.connectionString,
         logging: false,
         synchronize: true,
-        entities: ["src/entity/**/*.ts"],
+        entities: ["src/**/entity.*.ts"],
         migrations: ["src/migration/**/*.ts"],
         subscribers: ["src/subscriber/**/*.ts"],
         cli: {
@@ -63,7 +63,7 @@ export const getConnectionOptionsCustom = (config: ServerConfigProps): PostgresC
         url: config.db.connectionString,
         logging: false,
         synchronize: false,
-        entities: ["src/entity/**/*.ts"],
+        entities: ["src/**/entity.*.ts"],
         migrations: ["src/migration/**/*.ts"],
         subscribers: ["src/subscriber/**/*.ts"],
         cli: {
