@@ -1,0 +1,8 @@
+mutation SignS3($files: [ImageSubInput!]!) {
+  signS3(files: $files) {
+    signatures {
+      url
+      signedRequest
+    }
+  }
+}

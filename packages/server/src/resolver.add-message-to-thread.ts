@@ -17,7 +17,7 @@ import { Message } from "./entity.message";
 import { Thread } from "./entity.thread";
 import { User } from "./entity.user";
 import { Image } from "./entity.image";
-import { AddMessageToThreadInput } from "./gql-type.message-input";
+import { AddMessageToThreadArgsInput, AddMessageToThreadInputType } from "./gql-type.message-input";
 import { MyContext } from "./typings";
 
 export interface IAddMessagePayload {
@@ -47,7 +47,7 @@ export class AddMessagePayload {
 }
 
 @Resolver()
-export class AddMessageToThreadResolver {
+export class AddMessageToThread {
   @Subscription(() => AddMessagePayload, {
     // @ts-ignore
     topics: ({ context }: any) => {
@@ -59,7 +59,7 @@ export class AddMessageToThreadResolver {
     },
 
     // @ts-ignore
-    filter: ({ payload, args }: ResolverFilterData<IAddMessagePayload, AddMessageToThreadInput>) => {
+    filter: ({ payload, args }: ResolverFilterData<IAddMessagePayload, AddMessageToThreadArgsInput>) => {
       // filter for followers;
 
       // @ts-ignore
@@ -75,8 +75,8 @@ export class AddMessageToThreadResolver {
   messageThreads(
     @Root() threadPayload: AddMessagePayload,
     // @ts-ignore
-    @Arg("data", () => AddMessageToThreadInput_v2)
-    input: AddMessageToThreadInput
+    @Arg("data", () => AddMessageToThreadInputType)
+    input: AddMessageToThreadInputType
   ): AddMessagePayload {
     console.log("forced to use input".toUpperCase(), Object.keys(input));
 
@@ -87,7 +87,7 @@ export class AddMessageToThreadResolver {
   @Mutation((type) => AddMessagePayload)
   async addMessageToThread(
     @Ctx() context: MyContext,
-    @Args(() => AddMessageToThreadInput) input: AddMessageToThreadInput,
+    @Args(() => AddMessageToThreadArgsInput) input: AddMessageToThreadInputType,
     @PubSub("THREADS") publish: Publisher<AddMessagePayload>
   ): Promise<IAddMessagePayload> {
     const sentBy = await User.findOne(context.userId);

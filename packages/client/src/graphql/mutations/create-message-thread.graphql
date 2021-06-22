@@ -1,0 +1,24 @@
+mutation CreateMessageThread(
+  $sentTo: String!
+  $invitees: [ID!]!
+  $message: String!
+  $images: [String]
+  $threadId: ID!
+) {
+  createMessageThread(
+    sentTo: $sentTo
+    invitees: $invitees
+    message: $message
+    images: $images
+    threadId: $threadId
+  ) {
+    id
+    last_message
+    message_count
+    created_at
+    invitees {
+      id
+      username
+    }
+  }
+}

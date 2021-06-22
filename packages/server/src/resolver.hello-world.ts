@@ -1,12 +1,9 @@
-import { Resolver, Query, UseMiddleware, Ctx } from "type-graphql";
-
-import { Logger } from "./middleware.logger";
+import { Ctx, Query, Resolver } from "type-graphql";
 import { MyContext } from "./typings";
 
 @Resolver()
 export class HelloWorldResolver {
   @Query(() => String, { name: "helloWorld", nullable: false })
-  // @UseMiddleware(Logger)
   async hello(@Ctx() ctx: MyContext): Promise<string> {
     return "Hello World";
   }
