@@ -128,8 +128,10 @@ export type Image = {
 };
 
 export type ImageSubInput = {
-  filename: Scalars["String"];
-  filetype: Scalars["String"];
+  lastModified: Scalars["Float"];
+  name: Scalars["String"];
+  size: Scalars["Int"];
+  type: Scalars["String"];
 };
 
 export type Like = {
