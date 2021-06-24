@@ -56,6 +56,7 @@ export function MessagesGrid({
         lg: "250px 1fr",
         xl: "250px 1fr",
       }}
+      bg={isDragActive ? "teal" : "pink"}
       w="100%"
       height="100%"
       {...getRootProps({ className: "dropzone" })}
@@ -104,7 +105,7 @@ export function MessagesGrid({
                 // onClick={()=>console.log("NO DRAFT FEAR THIS YEAR")}
                 // onClick={handleSubmit}
                 // colorScheme="blue"
-                aria-label="Search database"
+                aria-label="Add File"
                 icon={<AddFileIcon boxSize={10} color="crimson" />}
               />
               <UploadComponent
