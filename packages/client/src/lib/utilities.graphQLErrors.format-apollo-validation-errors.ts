@@ -1,13 +1,9 @@
-import { FetchResult } from "@apollo/client";
+import { GraphQLError } from "graphql/error";
 
 import { FieldError } from "../generated/graphql";
 
-export function formatValidationErrors<ApolloQueryType>(
-  errors: FetchResult<
-    ApolloQueryType,
-    Record<string, any>,
-    Record<string, any>
-  >["errors"]
+export function formatValidationErrors(
+  errors: ReadonlyArray<GraphQLError>
 ): FieldError[] {
   if (!errors) {
     return [
