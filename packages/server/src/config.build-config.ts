@@ -43,14 +43,14 @@ export const configBuildAndValidate = async function () {
         format: "*",
         sensitive: true,
       },
-      awsSecretKey: {
+      awsSecretAccessKey: {
         default: "**********",
         doc: "AWS Secret key used to access various services. This project uses S3 and CloudFront.",
-        env: " AWS_SECRET_KEY",
+        env: "AWS_SECRET_KEY",
         format: "*",
         sensitive: true,
       },
-      s3Config: {
+      s3Bucket: {
         default: "**********",
         doc: "Info for connecting to S3",
         env: "S3_BUCKET",
