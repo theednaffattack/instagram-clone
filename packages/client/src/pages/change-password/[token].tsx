@@ -6,11 +6,7 @@ import { useRouter } from "next/router";
 import React, { ReactElement, useState } from "react";
 import { Wrapper } from "../../components/box-wrapper";
 import { InputField } from "../../components/forms.input-field";
-import {
-  ChangePasswordMutation,
-  FieldError,
-  useChangePasswordMutation,
-} from "../../generated/graphql";
+import { FieldError, useChangePasswordMutation } from "../../generated/graphql";
 import { formatValidationErrors } from "../../lib/utilities.graphQLErrors.format-apollo-validation-errors";
 import { toErrorMap } from "../../lib/utilities.toErrorMap";
 
@@ -35,9 +31,7 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
         });
         let validationErrors: FieldError[];
         if (response.errors) {
-          validationErrors = formatValidationErrors<ChangePasswordMutation>(
-            response.errors
-          );
+          validationErrors = formatValidationErrors(response.errors);
           const errorMap = toErrorMap(validationErrors);
           setErrors(errorMap);
         }
