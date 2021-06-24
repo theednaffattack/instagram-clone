@@ -62,7 +62,6 @@ export function LayoutAuthenticated({
           }}
           height="100%"
           position="relative"
-          border="2px dashed crimson"
         >
           {children}
           <div>
@@ -74,7 +73,6 @@ export function LayoutAuthenticated({
               top={0}
               // right={0}
               right="calc(50% - 500px)"
-              border="2px dashed hotpink"
             >
               {navLinks.map(({ href, name }) => {
                 return (
