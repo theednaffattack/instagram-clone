@@ -159,3 +159,19 @@ location /subscriptions {
 ## End - Add webscockets settings
 
 ```
+
+## AWS
+
+### Signed Cookies
+
+[AWS CloudFront Signed Cookies](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-setting-signed-cookie-custom-policy.html)
+
+### Test User Permissions for S3 Uploads
+
+#### Test Put Object
+
+`aws s3api put-object --bucket awsexamplebucket1 --key HappyFace.jpg --body HappyFace.jpg --profile UserDaveAccountA`
+
+#### List Items in Bucket
+
+`aws s3 ls s3://<bucket_name> --profile <profile_name_in_config>`
