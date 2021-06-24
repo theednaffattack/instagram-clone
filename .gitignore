@@ -67,3 +67,6 @@ packages/client/.env
 deploy-to-server-DO.sh
 packages/client/report.20210621.180250.82452.0.001.json
 packages/client/report.20210621.180505.85908.0.001.json
+packages/client/secret/policy.s3.aws
+packages/client/secret/private_key.pem
+packages/client/secret/public_key.pem
