@@ -16,6 +16,14 @@ const theme = extendTheme({
   },
   fonts,
   breakpoints,
+
+  styles: {
+    global: {
+      "html, body, #__next": {
+        height: "100%",
+      },
+    },
+  },
 });
 
 export default theme;
