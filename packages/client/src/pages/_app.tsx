@@ -1,7 +1,7 @@
 import { ApolloProvider } from "@apollo/client";
 import type Router from "next/dist/next-server/lib/router/router";
 import * as React from "react";
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, Grid } from "@chakra-ui/react";
 
 import chakraTheme from "../styles/styles";
 import { useApollo } from "../lib/lib.apollo-client";
@@ -43,5 +43,9 @@ function MyApp({ Component, pageProps, router }: MyAppProps): JSX.Element {
 export default MyApp;
 
 function TemporaryFakeLayout({ children }): JSX.Element {
-  return <div>{children}</div>;
+  return (
+    <Grid w="100%" height="100%">
+      {children}
+    </Grid>
+  );
 }
