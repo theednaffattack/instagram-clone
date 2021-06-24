@@ -21,14 +21,6 @@ import { PostInput } from "./gql-type.post-input";
 import { isAuth } from "./middleware.is-auth";
 import { MyContext } from "./typings";
 
-// import { PostInput } from "./createPost/CreatePostInput";
-// import { logger } from "../middleware/logger";
-// import { isAuth } from "../middleware/isAuth";
-// import { Image } from "../../entity/Image";
-// import { User } from "../../entity/User";
-// import { Post } from "../../entity/Post";
-// import { MyContext } from "../../types/MyContext";
-
 /**
  * Post type for returns to client
  */
