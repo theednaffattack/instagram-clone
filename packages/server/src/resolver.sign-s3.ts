@@ -1,14 +1,21 @@
-import { Args, Resolver, Mutation, ObjectType, ArgsType, Field, InputType } from "type-graphql";
+import { Args, Resolver, Mutation, ObjectType, ArgsType, Field, InputType, Int, Float } from "type-graphql";
 import aws from "aws-sdk";
 import { configBuildAndValidate } from "./config.build-config";
+import { File } from "aws-sdk/lib/dynamodb/document_client";
 
 @InputType()
 class ImageSubInput {
-  @Field(() => String, { nullable: false })
-  filename: string;
+  @Field(() => Float, { nullable: false })
+  lastModified: number;
 
   @Field(() => String, { nullable: false })
-  filetype: string;
+  name: string;
+
+  @Field(() => Int, { nullable: false })
+  size: number;
+
+  @Field(() => String, { nullable: false })
+  type: string;
 }
 
 @ArgsType()
@@ -32,7 +39,6 @@ class SignedS3Payload {
   signatures: SignedS3SubPayload[];
 }
 // const USER_ADDED = "USER_ADDED";
-const s3Bucket = process.env.S3_BUCKET;
 
 // const formatErrors = (e, models) => {
 //   if (e instanceof models.sequelize.ValidationError) {
@@ -45,17 +51,22 @@ const s3Bucket = process.env.S3_BUCKET;
 export class SignS3 {
   @Mutation(() => SignedS3Payload)
   async signS3(@Args(() => SignS3Input) input: SignS3Input): Promise<SignedS3Payload> {
+    console.log("SIGN S3 CHECK");
+
     const configBuilt = await configBuildAndValidate();
 
     const config = configBuilt.getProperties();
 
-    // @ts-ignore
-    // const { filename, filetype } = input;
-
     const credentials = {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_KEY,
+      accessKeyId: config.awsConfig.awsAccessKeyId,
+      secretAccessKey: config.awsConfig.awsSecretAccessKey,
     };
+
+    console.log("VIEW CREDENTIALS", credentials, {
+      bucket: process.env.S3_BUCKET,
+      accKey: process.env.AWS_ACCESS_KEY_ID,
+      secKey: process.env.AWS_SECRET_KEY,
+    });
 
     aws.config.update(credentials);
 
@@ -64,29 +75,36 @@ export class SignS3 {
       region: "us-west-2",
     });
 
-    const s3Path = `images`;
-
-    const s3Params = input.files.map((file: any) => {
+    const s3Params = input.files.map((file) => {
       return {
-        Bucket: s3Bucket,
-        Key: `${s3Path}/${file.filename}`,
+        Bucket: config.awsConfig.s3Bucket,
+        Key: `images/${file.name}`,
         Expires: 60,
-        ContentType: file.filetype,
+        ContentType: file.type,
         // ACL: "public-read"
       };
     });
 
-    const signedRequests = await Promise.all(
-      s3Params.map((param) => {
-        let signedRequest = s3.getSignedUrl("putObject", param);
-        const url = `https://${s3Bucket}.s3.amazonaws.com/${param.Key}`;
+    // const signedRequests = await Promise.all(
+    //   s3Params.map((param) => {
+    //     let signedRequest = s3.getSignedUrl("putObject", param);
+    //     const url = `https://${config.awsConfig.s3Bucket}.s3.amazonaws.com/${param.Key}`;
 
-        return { url, signedRequest };
-      })
-    );
+    //     return { url, signedRequest };
+    //   })
+    // );
+
+    const signedStuff = s3Params.map((param) => {
+      let signedRequest = s3.getSignedUrl("putObject", param);
+      const url = `https://${config.awsConfig.s3Bucket}.s3.amazonaws.com/${param.Key}`;
+
+      return { url, signedRequest };
+    });
+
+    console.log("VIEW SIGNED STUFF", signedStuff);
 
     return {
-      signatures: [...signedRequests],
+      signatures: [...signedStuff],
     };
   }
 }
