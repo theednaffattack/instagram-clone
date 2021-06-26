@@ -132,7 +132,7 @@ export const configBuildAndValidate = async function () {
     },
     ip: {
       default: "127.0.0.1",
-      doc: "The IP address to bind.",
+      doc: "The IP address to bind our server to.",
       env: "IP_ADDRESS",
       format: "ipaddress",
     },
@@ -149,6 +149,32 @@ export const configBuildAndValidate = async function () {
       env: "POSTMARK_API_TOKEN",
       format: "*",
       sensitive: true,
+    },
+    redis: {
+      connectionString: {
+        default: "redis://:<REDIS_PASSWORD???>@dokku-redis-<DOKKU_REDIS_SERVICE_NAME>:6379",
+        doc: "The redis instance connection string",
+        env: "REDIS_URL",
+        format: String,
+      },
+      host: {
+        default: "dokku-redis-ic-redis",
+        doc: "The name of the redis host used to create the connection.",
+        env: "REDIS_HOST",
+        format: String,
+      },
+      interiorPort: {
+        default: "6379",
+        doc: "The number of the redis port used to create the connection.",
+        env: "REDIS_INTERIOR_PORT",
+        format: Number,
+      },
+      exteriorPort: {
+        default: "56379",
+        doc: "The number of the redis port used to create the connection.",
+        env: "REDIS_EXTERIOR_PORT",
+        format: Number,
+      },
     },
     secret: {
       default: "",
