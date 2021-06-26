@@ -6,6 +6,7 @@
     "start": "node -r dotenv/config dist/main.js",
     "dt": "dt ",
     "rm-build": "yarn rimraf dist",
+    "env": "ts-node src/p-script.dokku-env2.ts",
     "dev": "nodemon -r dotenv/config --watch 'src/**/*.ts' --exec 'ts-node' src/main.ts",
     "build": "tsc --build tsconfig.json",
     "test": "jest",
