@@ -13,9 +13,9 @@ const developmentOptions: Redis.RedisOptions = {
 
 const productionOptions: Redis.RedisOptions = {
   host: process.env.REDIS_HOST,
-  port: parseInt(process.env.REDIS_PORT!, 10), // parseInt(process.env.REDIS_INTERIOR_PORT!, 10),
   name: "myredis",
   password: process.env.REDIS_PASSWORD,
+  port: parseInt(process.env.REDIS_INTERIOR_PORT!, 10),
   retryStrategy: (times: any) => Math.max(times * 100, 3000),
   showFriendlyErrorStack: true,
 };
@@ -30,9 +30,9 @@ const developmentPubsubOptions: Redis.RedisOptions = {
 
 const productionPubsubOptions: Redis.RedisOptions = {
   host: process.env.REDIS_HOST,
-  port: parseInt(process.env.REDIS_PORT!, 10), // parseInt(process.env.REDIS_INTERIOR_PORT!, 10),
   name: "pubsubRedis",
-  password: process.env.REDIS_PASSWORD,
+  password: process.env.NODE_ENV === "production" ? process.env.REDIS_PASSWORD : process.env.DEV_REDIS_PASSWORD,
+  port: parseInt(process.env.REDIS_INTERIOR_PORT!, 10),
   retryStrategy: (times: any) => Math.max(times * 100, 3000),
   showFriendlyErrorStack: true,
 };
@@ -43,7 +43,6 @@ export function redisError(error: Error) {
     developmentOptions,
     productionOptions,
     env: process.env.NODE_ENV,
-    isNotProd: nodeEnvIs_NOT_Prod,
   });
 }
 
@@ -53,16 +52,16 @@ export function redisReady() {
 export function pubsubError(error: Error) {
   console.warn("redis pubsub error", {
     error,
-    developmentPubsubOptions,
     productionPubsubOptions,
     env: process.env.NODE_ENV,
-    isNotProd: nodeEnvIs_NOT_Prod,
   });
 }
 
 export function pubsubReady() {
   console.log("redis pubsub is ready");
 }
+
+const whatRedis = new Redis(process.env.REDIS_URL);
 
 export const redis =
   process.env.NODE_ENV !== "production" ? new Redis(developmentOptions) : new Redis(productionOptions); // new Redis(productionOptions);
