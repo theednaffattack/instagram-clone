@@ -118,8 +118,10 @@ export const CreatePostWithupload: React.FC<CreatePostWithuploadProps> = ({
             variables: {
               files: [
                 {
-                  filename: getVariables.name,
-                  filetype: getVariables.name,
+                  lastModified: 0,
+                  size: 0,
+                  name: getVariables.name,
+                  type: getVariables.name,
                 },
               ],
             },
