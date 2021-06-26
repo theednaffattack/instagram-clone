@@ -103,6 +103,9 @@ Then add port forwarding for port 443 to our app port
 And then remove the default port mapping
 `dokku proxy:ports-remove <DOKKU_APP_NAME> http:<DOKKU_APP_PORT>:<DOKKU_APP_PORT>`
 
+Finally
+`dokku proxy:build-config <DOKKU_APP_NAME>`
+
 ```bash
 # Adapted from: https://stackoverflow.com/a/61775633/9448010
 # Additional helpful info from: https://stackoverflow.com/a/37729912/9448010
@@ -159,6 +162,27 @@ location /subscriptions {
 ## End - Add webscockets settings
 
 ```
+
+### Restart Dokku
+
+dokku ps:restart <app>
+
+### List Dokku apps
+
+dokku apps
+
+### Fix Dokku port issues
+
+(where APP is your app name)
+
+`dokku config:set APP DOKKU_PROXY_PORT=8080 DOKKU_PROXY_SSL_PORT=8443`
+
+### Environment Variables
+
+`dokku config:set <app_name> <KEY1>=<VALUE1> <KEY2>=<VALUE2>`
+
+Example:
+`dokku config:set some-app ENV=test PORT=9090`
 
 ## AWS
 
