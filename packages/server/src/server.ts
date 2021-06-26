@@ -123,7 +123,7 @@ export async function server(config: ServerConfigProps) {
     });
   }
 
-  httpServer.listen(config.port, config.host, () =>
+  httpServer.listen(config.port, config.ip, () =>
     serverOnListen(config, {
       graphqlPath: apolloServer.graphqlPath,
       subscriptionsPath: apolloServer.subscriptionsPath || "uknown error, undefined",
