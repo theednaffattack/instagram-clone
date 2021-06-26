@@ -92,7 +92,7 @@ const CreatePost: NextPage<CreatePostProps> = ({ router }) => {
         <Text fontSize="3xl">Create Post</Text>
         <Formik
           initialValues={{ title: "", text: "", images: [] }}
-          onSubmit={async ({ text, title, images }, actions) => {
+          onSubmit={async (argOne, actions) => {
             // First we'll send the files up to S3.
             // Then we'll pass the results to the database.
             let signS3Response: FetchResult<
@@ -102,7 +102,7 @@ const CreatePost: NextPage<CreatePostProps> = ({ router }) => {
             >[];
             try {
               signS3Response = await signAndUploadFiles(
-                images,
+                argOne.images,
                 signFile,
                 previewFiles
               );
@@ -116,19 +116,25 @@ const CreatePost: NextPage<CreatePostProps> = ({ router }) => {
             // ======================================
             // BEG - IT'S RIGHT HERE, REDO THIS - BEG
             // ======================================
-            const [initialArray] = signS3Response;
-
-            const imageUris = [];
-
-            // Pull out just the Image uris we need to create the new Post.
-            for (const responseObj of initialArray.data.signS3.signatures) {
-              imageUris.push(responseObj.url);
-            }
-
             // Create a new Post
             try {
+              const [initialArray] = signS3Response;
+
+              const imageUris = [];
+
+              // Pull out just the Image uris we need to create the new Post.
+              for (const responseObj of initialArray.data.signS3.signatures) {
+                imageUris.push(responseObj.url);
+              }
+
               await createPost({
-                variables: { data: { text, title, images: [...imageUris] } },
+                variables: {
+                  data: {
+                    text: argOne.text,
+                    title: argOne.title,
+                    images: [...imageUris],
+                  },
+                },
               });
             } catch (error) {
               console.error("Error creating Post", error);
@@ -144,7 +150,7 @@ const CreatePost: NextPage<CreatePostProps> = ({ router }) => {
               values: { text: "", title: "", images: [] },
             });
             if (!errorCreatePost && router) {
-              // router.push("/");
+              router.push("/");
             }
           }}
         >
@@ -327,8 +333,6 @@ function makeObjectUrls(someArray: File[]): PreviewFile[] {
 }
 
 function formatFilename(filename: string): string {
-  console.log("WHAT IS FILENAME BEFORE FORMATTING", filename);
-
   // from: https://stackoverflow.com/questions/48495289/javascript-not-able-to-rename-file-before-upload
   const date = format(new Date(), "yyyyMMdd");
   const randomString = Math.random().toString(36).substring(2, 7);
@@ -348,7 +352,6 @@ async function signAndUploadFiles(
 ) {
   return await Promise.all(
     previewFiles.map(async (imageFile) => {
-      console.log("VIEW IMAGE FILE", imageFile);
       if (imageFile.type.includes("image")) {
         const preppedFile = {
           // arrayBuffer: imageFile.blobUrl,
@@ -375,8 +378,6 @@ async function signAndUploadFiles(
         // Utilize the signatures to upload the files to our storage bucket
         // via the axios 'PUT' method.
 
-        console.log("VIEW RESPONSE DATA", response?.data);
-
         const [{ signedRequest }] = response?.data?.signS3.signatures;
         if (!signedRequest) {
           throw Error("Unexpected error while uploading. Please try again");
@@ -401,7 +402,6 @@ async function uploadToS3(file: PreviewFile, signedRequest: string) {
       "Content-Type": file.type,
     },
   };
-  console.log("VIEW UPLOAD TO S3 OPTIONS", { file, options });
 
   // const newFileToUpload = makeAFileFromBlob(file.blobUrl, file.name, file.type);
   let newFileToUpload: File;
@@ -420,26 +420,12 @@ async function uploadToS3(file: PreviewFile, signedRequest: string) {
     throw Error("Error uploading file to web storage.");
   }
 
-  console.log("VIEW NEW FILE TO UPLOAD", newFileToUpload);
-
-  let putResponse;
   try {
-    putResponse = await axios.put(signedRequest, newFileToUpload, options);
+    await axios.put(signedRequest, newFileToUpload, options);
   } catch (error) {
     console.error("ERROR SENDING FILES TO S3.", error);
     throw Error(error);
   }
-  console.log("VIEW AXIOS PUT RESPONSE TO AWS", putResponse);
-}
-
-function makeAFileFromBlob(
-  blobUri: string,
-  filename: string,
-  type: string
-): File {
-  return new File([blobUri], filename, {
-    type,
-  });
 }
 
 async function makeBlobUrlsFromReference({
@@ -454,13 +440,6 @@ async function makeBlobUrlsFromReference({
   return await fetch(blobUri)
     .then((r) => r.blob())
     .then((blobFile) => {
-      console.log("VIEW MY FILE MAKE BLOB URLS FROM REFERENCE", { filename });
-
-      console.log({
-        teams: new File([blobFile], filename, {
-          type: type,
-        }),
-      });
       return new File([blobFile], filename, {
         type: type,
       });
