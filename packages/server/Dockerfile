@@ -35,16 +35,12 @@ FROM node:12.16.2-slim
 WORKDIR /app
 ENV NODE_ENV=production
 
-# COPY package*.json ./
-# RUN yarn install --frozen-lockfile --production
 # RUN npm ci --quiet --only=production
 
 ## We just need the build to execute the command
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package.json ./
 COPY --from=builder /usr/src/app/dist ./dist
-# COPY --from=builder /usr/src/app/db/postgres/migrations ./db/migrations
-# COPY --from=builder /usr/src/app/certs ./certs
 
 
 # Inform Docker that the container is listening on the specified port at runtime.
