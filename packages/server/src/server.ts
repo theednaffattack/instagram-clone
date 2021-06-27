@@ -13,7 +13,7 @@ import { ServerConfigProps } from "./config.build-config";
 import { formatGraphQLErrors } from "./config.format-apollo-errors";
 import { serverOnListen } from "./config.server.on-listen";
 import { createSchema } from "./lib.apollo.create-schema";
-import { getConnectionOptionsCustom } from "./lib.dev-orm-config";
+import { getConnectionOptionsCustom } from "./lib.orm-config";
 
 export async function server(config: ServerConfigProps) {
   let dbConnection: Connection | undefined;
@@ -30,16 +30,19 @@ export async function server(config: ServerConfigProps) {
   // Loop to run migrations. Keep
   // trying until
   while (retries) {
+    console.log("VIEW MIGRATIONS", { connectOptions, migrations: dbConnection?.migrations });
     try {
-      await dbConnection?.runMigrations();
-      console.log("MIGRATIONS HAVE BEEN RUN");
+      const viewMigrations = await dbConnection?.runMigrations();
+      if (viewMigrations) {
+        console.log("MIGRATIONS HAVE BEEN RUN", viewMigrations);
+      }
       break;
     } catch (error) {
       console.error("ERROR RUNNING TYPEORM MIGRATIONS");
     }
 
     retries -= 1;
-    // eslint-disable-next-line no-console
+
     console.log(`\n\nRETRIES LEFT: ${retries}\n\n`);
     // wait 5 seconds
     setTimeout(() => console.log("TIMEOUT FIRING"), 5000);
