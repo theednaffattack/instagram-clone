@@ -9,6 +9,7 @@ RUN yarn install --frozen-lockfile --production
 # Rebuild the source code only when needed
 FROM node:alpine AS builder
 WORKDIR /app
+ADD  packages/client/.env.local ./.env.local
 COPY packages/client/styles ./styles
 COPY packages/client/public ./public
 COPY packages/client/src ./src
