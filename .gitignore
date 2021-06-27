@@ -70,3 +70,4 @@ packages/client/report.20210621.180505.85908.0.001.json
 packages/client/secret/policy.s3.aws
 packages/client/secret/private_key.pem
 packages/client/secret/public_key.pem
+ormconfig.json
