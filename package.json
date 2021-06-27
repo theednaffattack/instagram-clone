@@ -9,8 +9,11 @@
     "echo": "lerna run echo",
     "new-version": "lerna version --conventional-commits --yes",
     "d-server": "./deploy-to-server-DO.sh",
-    "start-server": "yarn workdpace @instagram-clone/server spinup",
-    "stop-server": "yarn workdpace @instagram-clone/server spindown"
+    "start-server": "yarn workspace @instagram-clone/server spinup",
+    "stop-server": "yarn workspace @instagram-clone/server spindown",
+    "typeorm": "ts-node -r dotenv/config --project packages/server/tsconfig.json node_modules/.bin/typeorm",
+    "mig:gen": "yarn run typeorm -- migration:generate",
+    "mig:run": "yarn run typeorm -- migration:run"
   },
   "license": "MIT",
   "devDependencies": {
