@@ -5,15 +5,17 @@ import type { ParsedQs } from "qs";
 import type { ParamsDictionary } from "express-serve-static-core";
 import connectRedis from "connect-redis";
 
-import { redis } from "./config.redis";
+// import { redis } from "./config.redis";
 import { redisSessionPrefix } from "./constants";
 import { ServerConfigProps } from "./config.build-config";
+import { returnRedisInstance } from "./config.redis";
 
 const RedisStore = connectRedis(session);
 
 type SessionMiddle = RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>;
 
-export function configSessionMiddleware(config: ServerConfigProps): SessionMiddle {
+export async function configSessionMiddleware(config: ServerConfigProps): Promise<SessionMiddle> {
+  const redis = await returnRedisInstance(config);
   let sessionMiddleware: SessionMiddle;
 
   // old cookie implentation

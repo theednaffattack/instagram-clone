@@ -78,7 +78,9 @@ export class CreateOrUpdateLikes {
     let { postId }: UpdateLikesInput = input;
     let { userId }: MyContext = ctx;
 
-    let retrievedLikes = await Like.createQueryBuilder("likes")
+    let retrievedLikes = await ctx.dbConnection
+      .getRepository(Like)
+      .createQueryBuilder("likes")
       .innerJoinAndSelect("likes.post", "post")
       .innerJoinAndSelect("likes.user", "user")
       .where("post.id = :postId", {
@@ -94,7 +96,9 @@ export class CreateOrUpdateLikes {
     if (!retrievedLikes) {
       // if this user hasn't liked then add a like
 
-      let newlyCreatedLike: InsertResult = await Like.createQueryBuilder("likes")
+      let newlyCreatedLike: InsertResult = await ctx.dbConnection
+        .getRepository(Like)
+        .createQueryBuilder("likes")
         .insert()
         .into(Like)
         .values({ user: { id: ctx.userId }, post: { id: input.postId } })
@@ -108,7 +112,9 @@ export class CreateOrUpdateLikes {
             : LikeStatus.Undetermined,
       };
 
-      countLikes = await Like.createQueryBuilder("likes")
+      countLikes = await ctx.dbConnection
+        .getRepository(Like)
+        .createQueryBuilder("likes")
         .innerJoinAndSelect("likes.post", "post")
         .where("post.id = :postId", {
           postId,
@@ -132,7 +138,9 @@ export class CreateOrUpdateLikes {
       // if the logged in user has ALREADY liked this post...
       // then delete that user's like
 
-      let deleteLikes: DeleteResult = await Like.createQueryBuilder("likes")
+      let deleteLikes: DeleteResult = await ctx.dbConnection
+        .getRepository(Like)
+        .createQueryBuilder("likes")
         .delete()
         .from(Like)
         .where("id = :id", { id: retrievedLikes.id })
@@ -143,7 +151,9 @@ export class CreateOrUpdateLikes {
         status: deleteLikes.affected === 1 ? LikeStatus.Deleted : LikeStatus.Undetermined,
       };
 
-      countLikes = await Like.createQueryBuilder("likes")
+      countLikes = await ctx.dbConnection
+        .getRepository(Like)
+        .createQueryBuilder("likes")
         .innerJoinAndSelect("likes.post", "post")
         .where("post.id = :postId", {
           postId,

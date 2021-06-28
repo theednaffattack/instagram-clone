@@ -37,7 +37,9 @@ export class GetOnlyThreads {
     // export const MoreThanDate = (date: Date) => MoreThan(format(date, 'YYYY-MM-DD HH:MM:SS'))
     // export const LessThanDate = (date: Date) => LessThan(format(date, 'YYYY-MM-DD HH:MM:SS')
 
-    let findThreads = await Thread.createQueryBuilder("thread")
+    let findThreads = await context.dbConnection
+      .getRepository(Thread)
+      .createQueryBuilder("thread")
       .loadRelationCountAndMap("thread.message_count", "thread.messages")
       .leftJoinAndSelect("thread.user", "user")
       .leftJoinAndSelect("thread.invitees", "inviteduser")
@@ -66,7 +68,9 @@ export class GetOnlyThreads {
     const startCursor = feedinput.cursor ? feedinput.cursor : new Date().toISOString();
 
     // BEFORE BOOLEAN
-    const beforeThreads = await Thread.createQueryBuilder("thread")
+    const beforeThreads = await context.dbConnection
+      .getRepository(Thread)
+      .createQueryBuilder("thread")
       .leftJoinAndSelect("thread.invitees", "inviteduser")
       .leftJoinAndSelect("thread.invitees", "invitee")
       .where("inviteduser.id = :id", { id: context.userId })
@@ -79,7 +83,9 @@ export class GetOnlyThreads {
       .getMany();
 
     // AFTER  BOOLEAN
-    const afterThreads = await Thread.createQueryBuilder("thread")
+    const afterThreads = await context.dbConnection
+      .getRepository(Thread)
+      .createQueryBuilder("thread")
       .leftJoinAndSelect("thread.invitees", "inviteduser")
       .leftJoinAndSelect("thread.invitees", "invitee")
       .where("inviteduser.id = :id", { id: context.userId })

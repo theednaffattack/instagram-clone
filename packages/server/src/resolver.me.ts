@@ -15,7 +15,7 @@ export class MeResolver {
     }
 
     try {
-      return User.findOne(ctx.userId);
+      return ctx.dbConnection.getRepository(User).findOne(ctx.userId);
     } catch (error) {
       console.error(error);
       throw Error(error);

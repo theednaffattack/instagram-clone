@@ -1,14 +1,23 @@
 import convict from "convict";
 import { ipaddress, url } from "convict-format-with-validator";
+import { v4 } from "internal-ip";
+import { readFile } from "./lib.readFile";
 
 convict.addFormat(ipaddress);
 convict.addFormat(url);
 
 export interface ServerConfigProps {
+  apiEndpoint: string;
   allowedOrigins: string;
+  awsConfig: {
+    awsAccessKeyId: string;
+    awsSecretAccessKey: string;
+    s3Bucket: string;
+  };
   client_uri: string;
   cookieName: string;
   domain: string;
+  env: string;
   host: string;
   db: {
     connectionString: string;
@@ -18,11 +27,15 @@ export interface ServerConfigProps {
     password: string;
     port: string;
   };
-  env: string;
-  apiEndpoint: string;
   ip: string;
   port: number;
   postmarkToken: string;
+  redis: {
+    connectionString: string;
+    host: string;
+    interiorPort: string;
+    exteriorPort: string;
+  };
   secret: string;
 }
 
@@ -185,8 +198,74 @@ export const configBuildAndValidate = async function () {
     },
   });
 
+  // Extract properties to a POJO
+  const config = configBuilder.getProperties();
+
+  let host: string | undefined;
+  let finalConfig;
+  if (config.env === "development") {
+    try {
+      host = v4.sync();
+    } catch (error) {
+      console.error("Error determining IP address.", error);
+      host = undefined;
+    }
+
+    // // override default settings (load env file) to use development
+    // // settings instead.
+    // configBuilt.loadFile(`${__dirname}/secret.${env}-variables.json`);
+    let configOverride: string | undefined;
+
+    try {
+      configOverride = await readFile(`${__dirname}/secret.development-variables.json`);
+    } catch (error) {
+      console.error("Error reading development override configuration file.");
+      console.error(error);
+      configOverride = undefined;
+    }
+
+    if (configOverride) {
+      // Override values set via .env file by manually loading, parsing,
+      // and looping over it.
+      for (const [key, value] of Object.entries(JSON.parse(configOverride))) {
+        // If the value is not an object we don't need
+        // traverse it.
+        if (value && typeof value !== "object") {
+          configBuilder.set(key, value);
+        }
+        // If the value IS AN OBJECT we break up it's
+        // values and loop over it, setting our config values
+        // in the loop
+        if (value && typeof value === "object") {
+          const what = value;
+          for (const [nestedKey, nestedValue] of Object.entries(value)) {
+            configBuilder.set(`${key}.${nestedKey}`, nestedValue);
+          }
+        }
+      }
+    }
+
+    // Set a few values that don't make as much
+    // sense (naming-wise) for local dev.
+    if (typeof host === "string") {
+      configBuilder.set("domain", host);
+      configBuilder.set("host", host);
+      configBuilder.set("db.host", host);
+      configBuilder.set("ip", host);
+    }
+
+    finalConfig = configBuilder.getProperties();
+  }
+
   // Perform validation
-  return configBuilder.validate({ allowed: "strict" });
+  configBuilder.validate({ allowed: "strict" });
+
+  // We get final properties here. This is easier
+  // if we ever need to stack exceptions that AREN'T
+  // caused by the development environment variable.
+  finalConfig = configBuilder.getProperties();
+
+  return finalConfig;
 };
 
 // const config = configBuilder.getProperties();

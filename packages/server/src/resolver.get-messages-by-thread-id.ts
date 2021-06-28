@@ -1,4 +1,15 @@
-import { Resolver, Query, UseMiddleware, Arg, InputType, Field, Int, Subscription, ObjectType } from "type-graphql";
+import {
+  Resolver,
+  Query,
+  UseMiddleware,
+  Arg,
+  InputType,
+  Field,
+  Int,
+  Subscription,
+  ObjectType,
+  Ctx,
+} from "type-graphql";
 
 import { format, parseISO } from "date-fns";
 
@@ -7,6 +18,7 @@ import { GetMessagesByThreadIdInput } from "./gql-type.get-message-by-thread-id-
 import { PaginatedRelayMessageResponse } from "./gql-type.paginated-relay-response";
 import { isAuth } from "./middleware.is-auth";
 import { AddMessagePayload } from "./resolver.add-message-to-thread";
+import { MyContext } from "./typings";
 
 const formatDate = (date: any) => format(date, "yyyy-MM-dd HH:mm:ss");
 
@@ -33,9 +45,12 @@ export class GetMessagesByThreadId {
   })
   async getMessagesByThreadId(
     @Arg("input", () => GetMessagesByThreadIdInput)
-    input: GetMessagesByThreadIdInput
+    input: GetMessagesByThreadIdInput,
+    @Ctx() ctx: MyContext
   ): Promise<MessageConnection> {
-    const qThreads = await Message.createQueryBuilder("message")
+    const qThreads = await ctx.dbConnection
+      .getRepository(Message)
+      .createQueryBuilder("message")
       .leftJoinAndSelect("message.user", "user")
       .leftJoinAndSelect("message.sentBy", "sentBy")
       .leftJoinAndSelect("message.images", "image")
@@ -62,7 +77,9 @@ export class GetMessagesByThreadId {
     const beforeMessages =
       newCursor === cursorNoRecordsErrorMessage
         ? false
-        : await Message.createQueryBuilder("message")
+        : await ctx.dbConnection
+            .getRepository(Message)
+            .createQueryBuilder("message")
             .leftJoinAndSelect("message.user", "user")
             .leftJoinAndSelect("message.sentBy", "sentBy")
             .leftJoinAndSelect("message.images", "image")
@@ -76,7 +93,9 @@ export class GetMessagesByThreadId {
             .take(input.take)
             .getMany();
 
-    const afterMessages = await Message.createQueryBuilder("message")
+    const afterMessages = await ctx.dbConnection
+      .getRepository(Message)
+      .createQueryBuilder("message")
       .leftJoinAndSelect("message.user", "user")
       .leftJoinAndSelect("message.sentBy", "sentBy")
       .leftJoinAndSelect("message.images", "image")

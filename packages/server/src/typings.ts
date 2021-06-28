@@ -1,6 +1,8 @@
-import { CloudFront } from "aws-sdk";
-import { NextFunction, Response } from "express";
-import { GraphQLResolveInfo, GraphQLArgs } from "graphql";
+import { ExpressContext } from "apollo-server-express";
+import type { CloudFront } from "aws-sdk";
+import type { NextFunction, Response } from "express";
+import type { GraphQLResolveInfo, GraphQLArgs } from "graphql";
+import type { Connection } from "typeorm";
 // import DataLoader = require("dataloader");
 
 // import { user } from "./zapatos/schema";
@@ -12,11 +14,13 @@ interface GraphQlInputs {
 
 export interface MyContext {
   cfCookie: CloudFront.Signer.CustomPolicy | any;
-  userId: string; // user.Selectable["id"];
+  connection: ExpressContext["connection"];
+  connectionName: string;
+  dbConnection: Connection;
   gqlOpts: GraphQlInputs;
   req: any; // Request;
   res: Response;
   next: NextFunction;
   usersLoader: any;
-  connectionName: string;
+  userId: string; // user.Selectable["id"];
 }

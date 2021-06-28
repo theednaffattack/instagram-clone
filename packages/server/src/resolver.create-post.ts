@@ -122,13 +122,13 @@ export class CreatePost {
     //   throw new Error("not authenticated");
     // }
 
-    let user = await User.findOne(context.userId, {
+    let user = await context.dbConnection.getRepository(User).findOne(context.userId, {
       relations: ["images", "posts", "followers"],
     });
 
     if (user) {
       const newImageData: Image[] = images.map((image) =>
-        Image.create({
+        context.dbConnection.getRepository(Image).create({
           uri: `${image}`,
           user: user,
         })
@@ -158,7 +158,7 @@ export class CreatePost {
           user,
           images: [...newImages],
         };
-        let newPost = await Post.create(postData).save();
+        let newPost = await context.dbConnection.getRepository(Post).create(postData).save();
 
         newImages.forEach(async (newSavedImage) => {
           newSavedImage.post = newPost;
