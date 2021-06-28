@@ -5,8 +5,7 @@ import { sendPostmarkEmail } from "./lib.send-postmark-email";
 export async function sendEmail(toEmail: string, uri: string) {
   let config;
   try {
-    const initialConfig = await configBuildAndValidate();
-    config = initialConfig.getProperties();
+    config = await configBuildAndValidate();
   } catch (configInitError) {
     console.error("SERVER CONFIG ERROR", configInitError);
     throw Error(`Config init error!\n${configInitError}`);

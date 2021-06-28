@@ -19,6 +19,7 @@ import { User } from "./entity.user";
 import { Image } from "./entity.image";
 import { AddMessageToThreadArgsInput, AddMessageToThreadInputType } from "./gql-type.message-input";
 import { MyContext } from "./typings";
+import { getRepository } from "typeorm";
 
 export interface IAddMessagePayload {
   success: boolean;
@@ -90,12 +91,12 @@ export class AddMessageToThread {
     @Args(() => AddMessageToThreadArgsInput) input: AddMessageToThreadInputType,
     @PubSub("THREADS") publish: Publisher<AddMessagePayload>
   ): Promise<IAddMessagePayload> {
-    const sentBy = await User.findOne(context.userId);
+    const sentBy = await getRepository(User).findOne(context.userId);
 
-    const receiver = await User.findOne(input.sentTo);
+    const receiver = await getRepository(User).findOne(input.sentTo);
 
     let existingThread;
-    let newMessage: any;
+    let newMessage: Message;
 
     if (sentBy && receiver && input.images && input.images[0]) {
       const newImageData: Image[] = input.images.map((image) =>
@@ -127,17 +128,20 @@ export class AddMessageToThread {
       };
 
       // CREATING rather than REPLYING to message...
-      newMessage = await Message.create(createMessage).save();
+      newMessage = await getRepository(Message).create(createMessage).save();
+      if (newImages.length) {
+        newImages.forEach(async (image) => {
+          image.messageId = newMessage.id;
+          await image.save();
+          return image;
+        });
+      }
 
-      newImages.forEach(async (image) => {
-        image.message = newMessage.id;
-        await image.save();
-        return image;
-      });
-
-      let existingThread = await Thread.findOne(input.threadId, {
-        relations: ["messages", "invitees", "messages.images"],
-      }).catch((error) => error);
+      let existingThread = await getRepository(Thread)
+        .findOne(input.threadId, {
+          relations: ["messages", "invitees", "messages.images"],
+        })
+        .catch((error) => error);
 
       const foundThread = existingThread && existingThread.id ? true : false;
 
@@ -153,7 +157,7 @@ export class AddMessageToThread {
 
       await Promise.all(
         input.invitees.map(async (person) => {
-          let tempPerson = await User.findOne(person);
+          let tempPerson = await getRepository(User).findOne(person);
           collectInvitees.push(tempPerson);
           return tempPerson;
         })
@@ -181,11 +185,13 @@ export class AddMessageToThread {
         sentBy,
       };
 
-      existingThread = await Thread.findOne(input.threadId, {
-        relations: ["messages", "invitees", "messages.images"],
-      }).catch((error) => error);
+      existingThread = await getRepository(Thread)
+        .findOne(input.threadId, {
+          relations: ["messages", "invitees", "messages.images"],
+        })
+        .catch((error) => error);
 
-      newMessage = await Message.create(createMessage).save();
+      newMessage = await getRepository(Message).create(createMessage).save();
 
       existingThread.last_message = input.message;
       await existingThread.save();
@@ -198,7 +204,7 @@ export class AddMessageToThread {
 
       await Promise.all(
         input.invitees.map(async (person) => {
-          let tempPerson = await User.findOne(person);
+          let tempPerson = await getRepository(User).findOne(person);
           if (tempPerson) {
             collectInvitees.push(tempPerson);
           }

@@ -47,7 +47,9 @@ export class GetGlobalPosts {
 
     let currentlyLiked;
 
-    const findPosts = await Post.createQueryBuilder("post")
+    const findPosts = await ctx.dbConnection
+      .getRepository(Post)
+      .createQueryBuilder("post")
       .leftJoinAndSelect("post.images", "images")
       .leftJoinAndSelect("post.comments", "comments")
       .leftJoinAndSelect("post.user", "user")

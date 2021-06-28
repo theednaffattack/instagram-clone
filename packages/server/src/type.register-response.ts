@@ -5,7 +5,7 @@ import { User } from "./entity.user";
 
 @ObjectType()
 export class RegisterResponse {
-  @Field(() => FieldError, { nullable: true })
+  @Field(() => [FieldError], { nullable: true })
   errors?: FieldError[];
 
   @Field(() => User, { nullable: true })

@@ -2,11 +2,12 @@ import { Resolver, Mutation, Arg, Ctx } from "type-graphql";
 import bcrypt from "bcryptjs";
 
 import { UserResponse } from "./gql-type.user-response";
-import { redis } from "./config.redis";
+// import { redis } from "./config.redis";
 import { forgotPasswordPrefix } from "./constants";
 import { User } from "./entity.user";
 import { ChangePasswordInput } from "./gql-type.change-password-input";
 import { MyContext } from "./typings";
+import { returnRedisInstance } from "./config.redis";
 
 @Resolver()
 export class ChangePassword {
@@ -16,7 +17,25 @@ export class ChangePassword {
     { token, password }: ChangePasswordInput,
     @Ctx() ctx: MyContext
   ): Promise<UserResponse> {
-    const userId = await redis.get(forgotPasswordPrefix + token);
+    let redis;
+    let userId;
+
+    try {
+      redis = await returnRedisInstance();
+    } catch (error) {
+      console.error("ERROR GETTING REDIS INSTANCE - CREATE CONFIRMATION EMAIL");
+      console.error(error);
+      throw Error(error);
+    }
+
+    try {
+      userId = await redis.get(forgotPasswordPrefix + token);
+    } catch (error) {
+      console.error("ERROR GETTING USER ID FROM REDIS INSTANCE");
+      console.error(error);
+      throw Error(error);
+    }
+
     // token expired in redis, possibly bad token
     if (!userId) {
       return {
@@ -29,7 +48,7 @@ export class ChangePassword {
       };
     }
 
-    const user = await User.findOne(userId);
+    const user = await ctx.dbConnection.getRepository(User).findOne(userId);
 
     // can't find a user in the db
     if (!user) {

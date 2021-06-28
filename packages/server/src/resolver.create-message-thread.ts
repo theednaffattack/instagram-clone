@@ -18,19 +18,19 @@ export class CreateMessageThread {
     @Args(() => AddMessageToThreadArgsInput)
     { images, invitees: inputInvittes, message, sentTo, threadId }: AddMessageToThreadArgsInput
   ) {
-    const sentBy = await User.findOne(context.userId);
+    const sentBy = await context.dbConnection.getRepository(User).findOne(context.userId);
 
     const collectInvitees: any[] = [];
 
     const invitees = await Promise.all(
       inputInvittes.map(async (person) => {
-        let tempPerson = await User.findOne(person);
+        let tempPerson = await context.dbConnection.getRepository(User).findOne(person);
         collectInvitees.push(tempPerson);
         return tempPerson;
       })
     );
 
-    const receiver = await User.findOne(sentTo);
+    const receiver = await context.dbConnection.getRepository(User).findOne(sentTo);
 
     let newThread;
 
@@ -58,11 +58,14 @@ export class CreateMessageThread {
       //     });
       // });
 
-      let newImage = await Image.create({
-        uri: publicImageUrl,
-        //@ts-ignore
-        user: sentBy,
-      }).save();
+      let newImage = await context.dbConnection
+        .getRepository(Image)
+        .create({
+          uri: publicImageUrl,
+          //@ts-ignore
+          user: sentBy,
+        })
+        .save();
 
       let createMessage = {
         message: message,
@@ -72,7 +75,7 @@ export class CreateMessageThread {
       };
 
       // CREATING rather than REPLYING to message...
-      const newMessage = await Message.create(createMessage).save();
+      const newMessage = await context.dbConnection.getRepository(Message).create(createMessage).save();
 
       newImage.message = newMessage;
 
@@ -83,7 +86,9 @@ export class CreateMessageThread {
         messages: [newMessage],
       };
 
-      newThread = await Thread.create(createThread)
+      newThread = await context.dbConnection
+        .getRepository(Thread)
+        .create(createThread)
         .save()
         .catch((error: any) => error);
 
@@ -98,7 +103,7 @@ export class CreateMessageThread {
         sentBy,
       };
 
-      const newMessage = await Message.create(createMessage).save();
+      const newMessage = await context.dbConnection.getRepository(Message).create(createMessage).save();
 
       let createThread = {
         user: sentBy,
@@ -108,7 +113,9 @@ export class CreateMessageThread {
       };
 
       // @ts-ignore
-      newThread = await Thread.create(createThread)
+      newThread = await context.dbConnection
+        .getRepository(Thread)
+        .create(createThread)
         .save()
         .catch((error: any) => error);
 

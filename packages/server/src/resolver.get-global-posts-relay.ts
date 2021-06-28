@@ -72,7 +72,9 @@ export class GetGlobalPostsRelay {
 
     // let currentlyLiked;
 
-    const getPosts = Post.createQueryBuilder("post")
+    const getPosts = ctx.dbConnection
+      .getRepository(Post)
+      .createQueryBuilder("post")
       .leftJoinAndSelect("post.images", "images")
       .leftJoinAndSelect("post.comments", "comments")
       .leftJoinAndSelect("post.user", "user")

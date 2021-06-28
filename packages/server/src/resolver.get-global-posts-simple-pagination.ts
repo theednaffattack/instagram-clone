@@ -77,7 +77,9 @@ export class GetGlobalPostsSimplePagination {
     const realLimit = Math.min(50, first || 50);
     const realLimitPlusOne = realLimit + 1;
 
-    const postsQb = Post.createQueryBuilder("post")
+    const postsQb = ctx.dbConnection
+      .getRepository(Post)
+      .createQueryBuilder("post")
       .leftJoinAndSelect("post.images", "images")
       .leftJoinAndSelect("post.comments", "comments")
       .leftJoinAndSelect("post.user", "user")
