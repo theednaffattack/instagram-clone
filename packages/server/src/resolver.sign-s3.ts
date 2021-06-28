@@ -100,8 +100,6 @@ export class SignS3 {
       return { url, signedRequest };
     });
 
-    console.log("VIEW SIGNED STUFF", signedStuff);
-
     return {
       signatures: [...signedStuff],
     };
