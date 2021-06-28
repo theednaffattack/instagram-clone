@@ -1,7 +1,7 @@
 import { GraphQLSchema } from "graphql";
 import { buildSchemaSync, ResolverData } from "type-graphql";
 
-import { pubsub } from "./config.redis";
+// import { pubsub } from "./config.redis";
 import { ResolveTime } from "./middleware.resolve-time";
 import { MyContext } from "./typings";
 
@@ -25,8 +25,11 @@ import { AddMessageToThread } from "./resolver.add-message-to-thread";
 import { CreateMessageThread } from "./resolver.create-message-thread";
 import { Logout } from "./resolver.logout";
 import { GetGlobalPostById } from "./resolver.get-global-posts-by-id";
+import { returnPubsubRedisInstance } from "./config.redis";
+import { HelloWithUserInput } from "./resolver.hello-with-user-input";
 
-export function createSchema(): GraphQLSchema {
+export async function createSchema(): Promise<GraphQLSchema> {
+  const pubsub = await returnPubsubRedisInstance();
   return buildSchemaSync({
     authChecker: AuthorizationChecker,
     dateScalarMode: "isoDate",
@@ -47,6 +50,7 @@ export function createSchema(): GraphQLSchema {
       GetListToCreateThread,
       GetMessagesByThreadId,
       GetOnlyThreads,
+      HelloWithUserInput,
       HelloWorldResolver,
       LoginResolver,
       Logout,
