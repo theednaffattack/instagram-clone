@@ -6,8 +6,6 @@ import { ArgumentValidationError } from "type-graphql";
 // https://github.com/19majkel94/type-graphql/issues/258
 
 export function formatGraphQLErrors(error: GraphQLError): GraphQLFormattedError {
-  console.log("FORMAT ERROR IS RUNNING", error);
-
   const { extensions = {}, locations, message, path } = error;
 
   if (message.includes("Not authenticated")) {
