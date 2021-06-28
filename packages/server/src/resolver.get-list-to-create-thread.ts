@@ -26,7 +26,7 @@ export class GetListToCreateThread {
     if (me) {
       const thoseICanMessage: any[] = [];
 
-      let meWithFollowers = await User.findOne(me, {
+      let meWithFollowers = await ctx.dbConnection.getRepository(User).findOne(me, {
         relations: ["followers", "following"],
       });
 

@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import { User } from "./entity.user";
 import { LoginResponse } from "./type.login-response";
 import { MyContext } from "./typings";
+import { getConnection, getRepository } from "typeorm";
 
 const expireAlso = Math.floor(new Date().getTime() / 1000) + 60 * 60 * 1; // Current Time in UTC + time in seconds, (60 * 60 * 1 = 1 hour)
 
@@ -33,7 +34,7 @@ export class LoginResolver {
     let user;
 
     try {
-      user = await User.findOne({ where: { username } });
+      user = await ctx.dbConnection.getRepository(User).findOne({ where: { username } });
     } catch (error) {
       console.error(error);
       throw Error(error);
@@ -42,7 +43,7 @@ export class LoginResolver {
     let shot;
 
     try {
-      shot = await User.find({ where: { username } });
+      shot = await ctx.dbConnection.getRepository(User).find({ where: { username } });
     } catch (error) {
       console.error(error);
       throw Error(error);

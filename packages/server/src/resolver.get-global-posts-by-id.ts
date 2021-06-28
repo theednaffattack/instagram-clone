@@ -17,7 +17,9 @@ export class GetGlobalPostById {
     { postId }: GetGlobalPostByIdInput,
     @Ctx() ctx: MyContext
   ): Promise<GlobalPostResponse | null> {
-    let singleGlobalPost = await Post.createQueryBuilder("post")
+    let singleGlobalPost = await ctx.dbConnection
+      .getRepository(Post)
+      .createQueryBuilder("post")
       .leftJoinAndSelect("post.images", "images")
       .leftJoinAndSelect("post.comments", "comments")
       .leftJoinAndSelect("post.user", "user")
