@@ -44,20 +44,21 @@ export class Image extends BaseEntity {
   @ManyToOne(() => Post, (post) => post.images)
   post: Post;
 
-  @Column()
-  postId: string;
+  // @Field(() => ID)
+  // @Column()
+  // postId: string;
 
   @Field(() => Message, { nullable: true })
   @ManyToOne(() => Message, (message) => message.images, { nullable: true })
   message?: Message;
 
-  @Column()
-  messageId: string;
+  // @Column()
+  // messageId: string;
 
   @Field(() => User)
   @ManyToOne(() => User, (user) => user.images)
   user: User;
 
-  @Column()
-  userId: string;
+  // @Column()
+  // userId: string;
 }
