@@ -131,7 +131,7 @@ export class AddMessageToThread {
       newMessage = await getRepository(Message).create(createMessage).save();
       if (newImages.length) {
         newImages.forEach(async (image) => {
-          image.messageId = newMessage.id;
+          image.message = newMessage;
           await image.save();
           return image;
         });

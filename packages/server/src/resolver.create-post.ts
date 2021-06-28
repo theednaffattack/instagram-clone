@@ -1,8 +1,11 @@
 import {
   Arg,
+  Ctx,
   Field,
+  ID,
   InputType,
   Mutation,
+  ObjectType,
   Publisher,
   PubSub,
   Resolver,
@@ -10,9 +13,6 @@ import {
   Root,
   Subscription,
   UseMiddleware,
-  Ctx,
-  ObjectType,
-  ID,
 } from "type-graphql";
 import { Image } from "./entity.image";
 import { Post } from "./entity.post";
@@ -117,26 +117,49 @@ export class CreatePost {
     @Arg("data", () => PostInput)
     { text, title, images }: PostInput
   ): Promise<PostSubType> {
-    // The commented code below should be useless...
-    // if (!context) {
-    //   throw new Error("not authenticated");
-    // }
+    const userRepo = context.dbConnection.getRepository(User);
+    let user: User | undefined;
 
-    let user = await context.dbConnection.getRepository(User).findOne(context.userId, {
-      relations: ["images", "posts", "followers"],
-    });
+    try {
+      user = await userRepo.findOne(context.userId, {
+        relations: ["images", "posts", "followers"],
+      });
+    } catch (error) {
+      console.error("ERROR SELECTING USER - CREATE POST");
+      console.error(error);
+      throw Error(error);
+    }
 
+    // If we can find a user...
     if (user) {
-      const newImageData: Image[] = images.map((image) =>
-        context.dbConnection.getRepository(Image).create({
+      const newImageRepo = context.dbConnection.getRepository(Image);
+      const newImageData: Image[] = images.map((image) => {
+        return newImageRepo.create({
           uri: `${image}`,
           user: user,
-        })
-      );
+        });
+      });
 
       // save that image to the database
-      let newImages = await Promise.all(newImageData.map(async (newImage) => await newImage.save()));
+      let newImages: Image[];
 
+      try {
+        newImages = await Promise.all(
+          newImageData.map(async (newImage) => {
+            try {
+              return await newImageRepo.save(newImage);
+            } catch (error) {
+              console.error("ERROR SAVING NEW IMAGE INSIDE PROMISE ALL MAP 'let newImages'");
+              console.error(error);
+              throw Error(error);
+            }
+          })
+        );
+      } catch (error) {
+        console.error("ERROR SAVING NEW IMAGE OUTSIDE PROMISE ALL MAP 'let newImages'");
+        console.error(error);
+        throw Error(error);
+      }
       // add the images to the user.images
       // field / column
       if (newImages !== null && newImages.length > 0) {
@@ -145,30 +168,60 @@ export class CreatePost {
 
       // save the user completing the many-to-one images-to-user
       // relation loop
-      let savedUser = await user.save().catch((error) => {
-        new Error(`Error updating user images\n${JSON.stringify(error, null, 2)}`);
-        return null;
-      });
+      let savedUser;
+
+      try {
+        savedUser = await userRepo.save(user);
+      } catch (error) {
+        console.error("ERROR SAVING USER AFTER SAVING IMAGES");
+        console.error(error);
+        throw Error(`Error saving user.`);
+      }
 
       // both must be true to create a post, always
-      if (newImages && savedUser) {
+      if (newImages.length && savedUser) {
         const postData = {
           text,
           title,
           user,
           images: [...newImages],
         };
-        let newPost = await context.dbConnection.getRepository(Post).create(postData).save();
 
-        newImages.forEach(async (newSavedImage) => {
+        let newPost: Post;
+        const postRepo = context.dbConnection.getRepository(Post);
+
+        try {
+          const newPostModel = postRepo.create(postData);
+          newPost = await postRepo.save(newPostModel);
+        } catch (error) {
+          console.error("ERROR SAVING NEW POST");
+          console.error(error);
+          throw Error(error);
+        }
+
+        newImages.forEach(async (newSavedImage, imageIndex) => {
           newSavedImage.post = newPost;
-          await newSavedImage.save();
+          try {
+            await newImageRepo.save(newSavedImage);
+          } catch (error) {
+            console.error("ERROR SAVING NEW IMAGE", { imageIndex, newSavedImage });
+            console.error(error);
+            throw Error(error);
+          }
         });
 
-        user && user.posts && user.posts.push(newPost);
         // user!.posts!.push(newPost);
-        await user.save();
+        if (user && user.posts && user.posts.length) {
+          user.posts.push(newPost);
+        }
 
+        try {
+          await userRepo.save(user);
+        } catch (error) {
+          console.error("ERROR SAVING USER AFTER SAVING POST");
+          console.error(error);
+          throw Error(error);
+        }
         // we use myPostPayload because of the subscription
         let myPostPayload: PostPayload = {
           ...newPost,
@@ -178,9 +231,22 @@ export class CreatePost {
           isCtxUserIdAFollowerOfPostUser: newPost.user.followers.map((follower) => follower.id).includes(user.id),
         };
 
-        await publish(myPostPayload);
-        await publishGlbl(myPostPayload);
-        // return true;
+        // I think this publishes to just our UI.
+        try {
+          await publish(myPostPayload);
+        } catch (error) {
+          console.error(error);
+          throw Error(error);
+        }
+
+        // Publish to global posts so everyone sees it.
+        try {
+          await publishGlbl(myPostPayload);
+        } catch (error) {
+          console.error(error);
+          throw Error(error);
+        }
+
         return newPost;
       }
     }
