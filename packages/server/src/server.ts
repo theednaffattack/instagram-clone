@@ -22,7 +22,6 @@ export async function server(config: ServerConfigProps) {
 
   try {
     dbConnection = await createConnection(connectOptions);
-    console.log("VIEW CONNECTION DETAILS", { name: dbConnection.name, connectionDetails: dbConnection });
   } catch (error) {
     console.warn("CONNECTION ERROR");
     console.error(error);
