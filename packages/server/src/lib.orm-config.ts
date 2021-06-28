@@ -39,7 +39,7 @@ export const getConnectionOptionsCustom = (config: ServerConfigProps): PostgresC
       };
     case "development":
       return {
-        name: "default",
+        name: config.env,
         type: "postgres",
         ssl: false,
         url: config.db.connectionString,

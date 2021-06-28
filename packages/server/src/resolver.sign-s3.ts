@@ -1,7 +1,6 @@
-import { Args, Resolver, Mutation, ObjectType, ArgsType, Field, InputType, Int, Float } from "type-graphql";
 import aws from "aws-sdk";
-import { configBuildAndValidate } from "./config.build-config";
-import { File } from "aws-sdk/lib/dynamodb/document_client";
+import { Args, ArgsType, Field, Float, InputType, Int, Mutation, ObjectType, Resolver } from "type-graphql";
+import { configBuildAndValidate, ServerConfigProps } from "./config.build-config";
 
 @InputType()
 class ImageSubInput {
@@ -53,20 +52,20 @@ export class SignS3 {
   async signS3(@Args(() => SignS3Input) input: SignS3Input): Promise<SignedS3Payload> {
     console.log("SIGN S3 CHECK");
 
-    const configBuilt = await configBuildAndValidate();
+    let config: ServerConfigProps;
+    try {
+      config = await configBuildAndValidate();
+    } catch (error) {
+      console.error("ERROR CREATING CONFIG OBJECT 'SignS3'");
+      console.error(error);
 
-    const config = configBuilt.getProperties();
+      throw Error(error);
+    }
 
     const credentials = {
       accessKeyId: config.awsConfig.awsAccessKeyId,
       secretAccessKey: config.awsConfig.awsSecretAccessKey,
     };
-
-    console.log("VIEW CREDENTIALS", credentials, {
-      bucket: process.env.S3_BUCKET,
-      accKey: process.env.AWS_ACCESS_KEY_ID,
-      secKey: process.env.AWS_SECRET_KEY,
-    });
 
     aws.config.update(credentials);
 

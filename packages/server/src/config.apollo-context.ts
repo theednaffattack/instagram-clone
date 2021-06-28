@@ -1,16 +1,24 @@
 import { ExpressContext } from "apollo-server-express";
+import type { Connection } from "typeorm";
 import { MyContext } from "./typings";
 
-export function configApolloContext({ req, res, connection }: ExpressContext) {
+interface ConfigApolloProps {
+  req: MyContext["req"];
+  res: MyContext["res"];
+  connection: MyContext["connection"];
+  dbConnection: MyContext["dbConnection"];
+}
+
+export function configApolloContext({ req, res, connection, dbConnection }: ConfigApolloProps) {
   if (connection) {
-    return getContextFromSubscription(connection);
+    return getContextFromSubscription(connection, dbConnection);
     // return {
     //   ...getContextFromSubscription(connection),
     //   usersLoader: createUsersLoader()
     // };
   }
 
-  return getContextFromHttpRequest(req, res);
+  return getContextFromHttpRequest(req, res, dbConnection);
 
   // return {
   //   ...getContextFromHttpRequest(req, res),
@@ -20,12 +28,16 @@ export function configApolloContext({ req, res, connection }: ExpressContext) {
   // return { req, res, connection }
 }
 
-const getContextFromHttpRequest = (req: MyContext["req"], res: MyContext["res"]) => {
+const getContextFromHttpRequest = (
+  req: MyContext["req"],
+  res: MyContext["res"],
+  dbConnection: MyContext["dbConnection"]
+) => {
   // Cookie implementation
   if (req && req.session) {
     const { teamId, userId } = req.session;
 
-    return { userId, req, res, teamId };
+    return { userId, req, res, teamId, dbConnection };
   }
 
   // JWT implementation
@@ -65,11 +77,11 @@ const getContextFromHttpRequest = (req: MyContext["req"], res: MyContext["res"])
   // }
 };
 
-const getContextFromSubscription = (connection: any) => {
+const getContextFromSubscription = (connection: any, dbConnection: MyContext["dbConnection"]) => {
   // old cookie implementation
   const { userId } = connection.context.req.session;
 
-  return { req: connection.context.req, res: connection.context.res, userId };
+  return { req: connection.context.req, res: connection.context.res, userId, dbConnection };
   // JSON Web token implementation
   // const authorization = connection.context.authorization;
   // if (authorization) {
