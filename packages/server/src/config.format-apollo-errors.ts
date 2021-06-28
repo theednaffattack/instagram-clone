@@ -6,6 +6,8 @@ import { ArgumentValidationError } from "type-graphql";
 // https://github.com/19majkel94/type-graphql/issues/258
 
 export function formatGraphQLErrors(error: GraphQLError): GraphQLFormattedError {
+  console.log("FORMAT ERROR IS RUNNING", error);
+
   const { extensions = {}, locations, message, path } = error;
 
   if (message.includes("Not authenticated")) {
@@ -24,13 +26,26 @@ export function formatGraphQLErrors(error: GraphQLError): GraphQLFormattedError 
     const { validationErrors } = extensions.exception;
     const valErrorsCache = [];
 
-    // Loop over the validation errors and
-    // create a custom error shape that's easier to
-    // digest later.
-    for (const error of validationErrors) {
+    // Make sure that validationErrors is iterable.
+    if (validationErrors.length) {
+      // Loop over the validation errors and
+      // create a custom error shape that's easier to
+      // digest later.
+      for (const error of validationErrors) {
+        valErrorsCache.push({
+          field: error.property,
+          message: Object.values(error.constraints)[0],
+        });
+      }
+    }
+
+    // If validationError is of an unexpected shape, panic.
+    if (validationErrors && !validationErrors.length) {
+      console.error("CHECK SHAPE OF VALIDATION ERRORS - IN FORMAT APOLLO ERRORS");
+      console.error(validationErrors);
       valErrorsCache.push({
-        field: error.property,
-        message: Object.values(error.constraints)[0],
+        field: "username",
+        message: validationErrors.message,
       });
     }
 
