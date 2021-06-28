@@ -1,47 +1,11 @@
 import { RedisPubSub } from "graphql-redis-subscriptions";
+import { RequestHeaderFieldsTooLarge } from "http-errors";
 import Redis from "ioredis";
+import { configBuildAndValidate, ServerConfigProps } from "./config.build-config";
 
-const nodeEnvIs_NOT_Prod = process.env.NODE_ENV !== "production";
-
-const developmentOptions: Redis.RedisOptions = {
-  host: process.env.REDIS_HOST,
-  name: "myredis",
-  port: parseInt(process.env.REDIS_PORT!, 10),
-  retryStrategy: (times: any) => Math.max(times * 100, 3000),
-  showFriendlyErrorStack: true,
-};
-
-const productionOptions: Redis.RedisOptions = {
-  host: process.env.REDIS_HOST,
-  name: "myredis",
-  password: process.env.REDIS_PASSWORD,
-  port: parseInt(process.env.REDIS_INTERIOR_PORT!, 10),
-  retryStrategy: (times: any) => Math.max(times * 100, 3000),
-  showFriendlyErrorStack: true,
-};
-
-const developmentPubsubOptions: Redis.RedisOptions = {
-  host: process.env.REDIS_HOST,
-  name: "pubsubredis",
-  port: parseInt(process.env.REDIS_PORT!, 10),
-  retryStrategy: (times: any) => Math.max(times * 100, 3000),
-  showFriendlyErrorStack: true,
-};
-
-const productionPubsubOptions: Redis.RedisOptions = {
-  host: process.env.REDIS_HOST,
-  name: "pubsubRedis",
-  password: process.env.NODE_ENV === "production" ? process.env.REDIS_PASSWORD : process.env.DEV_REDIS_PASSWORD,
-  port: parseInt(process.env.REDIS_INTERIOR_PORT!, 10),
-  retryStrategy: (times: any) => Math.max(times * 100, 3000),
-  showFriendlyErrorStack: true,
-};
-
-export function redisError(error: Error) {
+export function redisError(error: Error, config: any) {
   console.warn("redis error", {
     error,
-    developmentOptions,
-    productionOptions,
     env: process.env.NODE_ENV,
   });
 }
@@ -49,39 +13,63 @@ export function redisError(error: Error) {
 export function redisReady() {
   console.log("redis is ready");
 }
-export function pubsubError(error: Error) {
-  console.warn("redis pubsub error", {
+export function pubsubError(error: Error, type: string) {
+  console.error(`redis ${type} error`, {
     error,
-    productionPubsubOptions,
     env: process.env.NODE_ENV,
   });
+  throw error;
 }
 
-export function pubsubReady() {
-  console.log("redis pubsub is ready");
+export function pubsubReady(type: string): void {
+  console.log(`redis ${type} is ready`);
 }
 
-const whatRedis = new Redis(process.env.REDIS_URL);
+export async function returnRedisInstance(config?: ServerConfigProps): Promise<Redis.Redis> {
+  let realConfig: ServerConfigProps;
 
-export const redis =
-  process.env.NODE_ENV !== "production" ? new Redis(developmentOptions) : new Redis(productionOptions); // new Redis(productionOptions);
+  if (!config) {
+    realConfig = await configBuildAndValidate();
+  } else {
+    realConfig = config;
+  }
 
-redis.on("error", redisError);
+  const redis = new Redis(realConfig.redis.connectionString);
 
-redis.on("ready", redisReady);
+  redis.on("error", (error) => {
+    redisError(error, realConfig);
+  });
+  redis.on("ready", redisReady);
 
-const pubRedis = nodeEnvIs_NOT_Prod ? new Redis(developmentPubsubOptions) : new Redis(productionPubsubOptions);
+  return redis;
+}
 
-const subRedis = nodeEnvIs_NOT_Prod ? new Redis(developmentPubsubOptions) : new Redis(productionPubsubOptions);
+export async function returnPubsubRedisInstance(config?: ServerConfigProps): Promise<RedisPubSub> {
+  let realConfig: ServerConfigProps;
 
-pubRedis.on("error", pubsubError);
-pubRedis.on("ready", pubsubError);
+  if (!config) {
+    realConfig = await configBuildAndValidate();
+  } else {
+    realConfig = config;
+  }
 
-subRedis.on("error", pubsubError);
-subRedis.on("ready", pubsubError);
+  const publisher = new Redis(realConfig.redis.connectionString);
+  const subscriber = new Redis(realConfig.redis.connectionString);
 
-export const pubsub = new RedisPubSub({
-  // ...,
-  publisher: pubRedis,
-  subscriber: subRedis,
-});
+  publisher.on("error", (error) => pubsubError(error, "publisher"));
+  publisher.on("ready", () => pubsubReady("publisher"));
+
+  subscriber.on("error", (error) => {
+    console.log("IS THIS ANYTHING?", error);
+
+    pubsubError(error, "subscriber");
+  });
+  subscriber.on("ready", () => pubsubReady("subscriber"));
+
+  const newPubsub = new RedisPubSub({
+    publisher,
+    subscriber,
+  });
+
+  return newPubsub;
+}
