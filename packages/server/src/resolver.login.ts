@@ -40,15 +40,6 @@ export class LoginResolver {
       throw Error(error);
     }
 
-    let shot;
-
-    try {
-      shot = await ctx.dbConnection.getRepository(User).find({ where: { username } });
-    } catch (error) {
-      console.error(error);
-      throw Error(error);
-    }
-
     // if we can't find a user return an obscure result (null) to prevent fishing
     if (!user) {
       return {
@@ -154,8 +145,10 @@ export class LoginResolver {
     // });
 
     // all is well return the user we found
-    ctx.req.session!.userId = user.id;
+
+    ctx.req.session.userId = user.id;
     ctx.userId = user.id;
+    console.log("WHAT'S GOING ON IN LOGIN?", { ctxUserId: ctx.userId, user });
     return {
       user: user,
     };
