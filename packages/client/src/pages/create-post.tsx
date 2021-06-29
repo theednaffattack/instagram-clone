@@ -137,7 +137,9 @@ const CreatePost: NextPage<CreatePostProps> = ({ router }) => {
                 },
               });
             } catch (error) {
-              console.error("Error creating Post", error);
+              console.error("Error creating Post");
+              console.error(error);
+              throw Error(error);
             }
 
             // ======================================
