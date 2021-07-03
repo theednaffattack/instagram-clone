@@ -124,7 +124,12 @@ const CreatePost: NextPage<CreatePostProps> = ({ router }) => {
 
               // Pull out just the Image uris we need to create the new Post.
               for (const responseObj of initialArray.data.signS3.signatures) {
-                imageUris.push(responseObj.url);
+                imageUris.push(
+                  responseObj.url.replace(
+                    "eddie-faux-gram.s3.amazonaws.com",
+                    "d14jbys30omc9u.cloudfront.net"
+                  )
+                );
               }
 
               await createPost({
