@@ -1,5 +1,5 @@
 import { Box, Flex, Skeleton, Text } from "@chakra-ui/react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   GlobalPostResponse,
   Image as ImageType,
@@ -48,6 +48,17 @@ type CardProps = {
   loadingPosts: boolean;
 };
 
+function handleImageLoaded(
+  dispatch: React.Dispatch<
+    React.SetStateAction<"isLoaded" | "isLoading" | "init">
+  >
+) {
+  // eslint-disable-next-line no-console
+  console.log("HANDLE IMAGE LOADED", this);
+
+  dispatch("isLoaded");
+}
+
 export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
   const {
     created_at,
@@ -58,6 +69,14 @@ export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
     likes_count,
     text,
   } = cardProps;
+
+  const [imageLoadState, setImageLoadState] =
+    useState<"isLoaded" | "isLoading" | "isError" | "init">("init");
+
+  // Immediately start loading the image
+  useEffect(() => {
+    setImageLoadState("isLoading");
+  }, []);
 
   return (
     <Box key={id} border="1px solid rgb(219,219,219)">
@@ -71,13 +90,33 @@ export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
         src={images && images[0] ? images[0].uri : ""}
       /> */}
       <Box>
+        <p>Image State: {imageLoadState}</p>
+        <p>{(images && images[0].uri) || "nope"}</p>
         {images && images[0] ? (
-          <img
-            alt={images[0].__typename + "-" + images[0].id}
-            key={images[0].id}
-            src={images[0].uri}
-            object-fit="cover"
-          />
+          <>
+            <img
+              alt={images[0].__typename + "-" + images[0].id}
+              key={images[0].id}
+              src={images[0].uri}
+              object-fit="cover"
+              onLoad={(evt: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                evt.preventDefault();
+                handleImageLoaded(setImageLoadState);
+              }}
+              onError={() => {
+                setImageLoadState("isError");
+              }}
+              style={imageLoadState === "isLoaded" ? null : { display: "none" }}
+            />
+            {imageLoadState !== "isLoaded" ? (
+              <img
+                alt={`${images[0].id}-alt`}
+                key={`${images[0].id}-placeholder`}
+                object-fit="cover"
+                src="https://via.placeholder.com/800"
+              />
+            ) : null}
+          </>
         ) : (
           // <img
           //   className="card-img-top"

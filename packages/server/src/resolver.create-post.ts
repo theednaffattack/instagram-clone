@@ -134,8 +134,11 @@ export class CreatePost {
     if (user) {
       const newImageRepo = context.dbConnection.getRepository(Image);
       const newImageData: Image[] = images.map((image) => {
+        const replaceString = `d14jbys30omc9u.cloudfront.net`;
+        const findString = `eddie-faux-gram.s3.amazonaws.com`;
+
         return newImageRepo.create({
-          uri: `${image}`,
+          uri: `${image.replace(findString, replaceString)}`,
           user: user,
         });
       });
@@ -183,7 +186,7 @@ export class CreatePost {
         const postData = {
           text,
           title,
-          user,
+          user: savedUser,
           images: [...newImages],
         };
 
