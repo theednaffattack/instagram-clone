@@ -12,6 +12,10 @@ export interface ServerConfigProps {
   awsConfig: {
     awsAccessKeyId: string;
     awsSecretAccessKey: string;
+    cfDomain: string;
+    cfPublicKeyId: string;
+    cfPublicKey: string;
+    cfPrivateKey: string;
     s3Bucket: string;
   };
   client_uri: string;
@@ -49,7 +53,6 @@ export const configBuildAndValidate = async function () {
       env: "ALLOWED_ORIGINS",
       format: String,
     },
-
     apiEndpoint: {
       default: "/api",
       doc: "The slash address of our GraphQl uri",
