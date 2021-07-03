@@ -73,24 +73,30 @@ export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
       <Box>
         {images && images[0] ? (
           <img
-            className="card-img-top"
-            data-srcset={`${images?.[0].uri}?w=480 480w,
-          ${images?.[0].uri}?w=640 640w,
-          ${images?.[0].uri}?w=768 768w,
-          ${images?.[0].uri}?w=1024 1024w`}
-            srcSet={`https://loremflickr.com/640/640/cat 480w,
-            https://loremflickr.com/800/800/cat 640w,
-            https://loremflickr.com/900/900/cat 768w,
-            https://loremflickr.com/1200/1200/cat 1024w`}
-            sizes="(max-width: 600px) 480px,
-          (max-width: 800px) 640px,
-          (max-width: 900px) 768px,
-              1024px"
-            src={images?.[0].uri}
-            alt="Alt text of some kind"
+            alt={images[0].__typename + "-" + images[0].id}
+            key={images[0].id}
+            src={images[0].uri}
             object-fit="cover"
-          ></img>
+          />
         ) : (
+          // <img
+          //   className="card-img-top"
+          //   data-srcset={`${images?.[0].uri}?w=480 480w,
+          // ${images?.[0].uri}?w=640 640w,
+          // ${images?.[0].uri}?w=768 768w,
+          // ${images?.[0].uri}?w=1024 1024w`}
+          //   srcSet={`https://loremflickr.com/640/640/cat 480w,
+          //   https://loremflickr.com/800/800/cat 640w,
+          //   https://loremflickr.com/900/900/cat 768w,
+          //   https://loremflickr.com/1200/1200/cat 1024w`}
+          //   sizes="(max-width: 600px) 480px,
+          // (max-width: 800px) 640px,
+          // (max-width: 900px) 768px,
+          //     1024px"
+          //   src={images?.[0].uri}
+          //   alt="Alt text of some kind"
+          //   object-fit="cover"
+          // ></img>
           <img src="https://via.placeholder.com/800" />
         )}
       </Box>
