@@ -163,6 +163,14 @@ location /subscriptions {
 
 ```
 
+### Cookie problems
+
+https://serverfault.com/a/797137
+
+### Restart Nginx
+
+`systemctl daemon-reload && systemctl restart nginx`
+
 ### Restart Dokku
 
 dokku ps:restart <app>
@@ -183,6 +191,15 @@ dokku apps
 
 Example:
 `dokku config:set some-app ENV=test PORT=9090`
+
+See this[ Dokku Issue](https://github.com/dokku/dokku/issues/1262#issuecomment-529894982)
+`/home/dokku/YOUR_APP/ENV`
+
+```
+...
+PRIVATE_KEY="-----BEGIN PRIVATE KEY-----PRIVATE KEY HERE-----END PRIVATE KEY-----\n"
+...
+```
 
 ## AWS
 

@@ -1,7 +1,8 @@
 import { ExpressContext } from "apollo-server-express";
 import type { CloudFront } from "aws-sdk";
-import type { NextFunction, Response } from "express";
-import type { GraphQLResolveInfo, GraphQLArgs } from "graphql";
+import type { NextFunction, Request, Response } from "express";
+import type { Session, SessionData } from "express-session";
+import type { GraphQLArgs, GraphQLResolveInfo } from "graphql";
 import type { Connection } from "typeorm";
 // import DataLoader = require("dataloader");
 
@@ -12,15 +13,22 @@ interface GraphQlInputs {
   info: GraphQLResolveInfo;
 }
 
-export interface MyContext {
+// https://www.typescriptlang.org/docs/handbook/declaration-merging.html
+declare module "express-session" {
+  interface SessionData {
+    userId: string;
+  }
+}
+
+export type MyContext = {
   cfCookie: CloudFront.Signer.CustomPolicy | any;
   connection: ExpressContext["connection"];
   connectionName: string;
   dbConnection: Connection;
   gqlOpts: GraphQlInputs;
-  req: any; // Request;
+  req: Request;
   res: Response;
   next: NextFunction;
   usersLoader: any;
-  userId: string; // user.Selectable["id"];
-}
+  userId: string;
+};
