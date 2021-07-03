@@ -51,7 +51,6 @@ export class CreateMessageThread {
         .getRepository(Image)
         .create({
           uri: publicImageUrl,
-          //@ts-ignore
           user: sentBy,
         })
         .save();
