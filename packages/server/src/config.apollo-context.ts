@@ -35,9 +35,9 @@ const getContextFromHttpRequest = (
 ) => {
   // Cookie implementation
   if (req && req.session) {
-    const { teamId, userId } = req.session;
+    const { userId } = req.session;
 
-    return { userId, req, res, teamId, dbConnection };
+    return { userId, req, res, dbConnection };
   }
 
   // JWT implementation

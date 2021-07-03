@@ -34,6 +34,8 @@ FROM node:12.16.2-slim
 
 WORKDIR /app
 ENV NODE_ENV=production
+# Need below to ensure sessions are secure
+# ENV DEBUG=express-session
 
 # RUN npm ci --quiet --only=production
 

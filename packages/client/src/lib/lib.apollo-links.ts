@@ -13,7 +13,7 @@ const isProduction = process.env.NODE_ENV === "production";
 
 export const httpLink = new HttpLink({
   uri: isProduction
-    ? process.env.NEXT_PUBLIC_PRODUCTION_GQL_URI
+    ? process.env.NEXT_PUBLIC_APOLLO_LINK_URI_PATH
     : process.env.NEXT_PUBLIC_DEVELOPMENT_GQL_URI,
   credentials: "include",
 });
@@ -23,7 +23,7 @@ export const wsLink = !isServer()
   ? new WebSocketLink(
       new SubscriptionClient(
         isProduction
-          ? process.env.NEXT_PUBLIC_PRODUCTION_WEBSOCKET_URL
+          ? process.env.NEXT_PUBLIC_APOLLO_LINK_WEBSOCKET_URI_PATH
           : process.env.NEXT_PUBLIC_DEVELOPMENT_WEBSOCKET_URL,
         {
           lazy: true,

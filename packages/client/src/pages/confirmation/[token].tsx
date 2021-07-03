@@ -9,7 +9,6 @@ import {
   ConfirmUserMutation,
   ConfirmUserMutationVariables,
 } from "../../generated/graphql";
-// import { initializeApollo } from "../../lib/config.apollo-client";
 import { addApolloState, initializeApollo } from "../../lib/lib.apollo-client";
 import { MyContext } from "../../lib/types";
 

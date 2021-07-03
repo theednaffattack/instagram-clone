@@ -5,6 +5,6 @@ import { MyContext } from "./typings";
 export class HelloWorldResolver {
   @Query(() => String, { name: "helloWorld", nullable: false })
   async hello(@Ctx() ctx: MyContext): Promise<string> {
-    return "Hello World";
+    return `Hello World`;
   }
 }
