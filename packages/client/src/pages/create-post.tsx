@@ -1,7 +1,7 @@
 import type { FetchResult, MutationFunctionOptions } from "@apollo/client";
 import { Box, Button, IconButton, Text } from "@chakra-ui/react";
 import { css } from "@linaria/core";
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import format from "date-fns/format";
 import { FieldArray, Form, Formik } from "formik";
 import { NextPage } from "next";
@@ -118,18 +118,14 @@ const CreatePost: NextPage<CreatePostProps> = ({ router }) => {
             // ======================================
             // Create a new Post
             try {
-              const [initialArray] = signS3Response;
+              const [{ data }] = signS3Response;
 
               const imageUris = [];
 
               // Pull out just the Image uris we need to create the new Post.
-              for (const responseObj of initialArray.data.signS3.signatures) {
-                imageUris.push(
-                  responseObj.url.replace(
-                    "eddie-faux-gram.s3.amazonaws.com",
-                    "d14jbys30omc9u.cloudfront.net"
-                  )
-                );
+              for (const responseObj of data.signS3.signatures) {
+                const newUri = responseObj.url;
+                imageUris.push(newUri);
               }
 
               await createPost({
@@ -404,7 +400,8 @@ async function signAndUploadFiles(
 }
 
 async function uploadToS3(file: PreviewFile, signedRequest: string) {
-  const options = {
+  const options: AxiosRequestConfig = {
+    withCredentials: true,
     headers: {
       "Content-Type": file.type,
     },
