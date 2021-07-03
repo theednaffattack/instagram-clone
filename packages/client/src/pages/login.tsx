@@ -18,11 +18,9 @@ import { InputField } from "../components/forms.input-field";
 import { useLoginMutation } from "../generated/graphql";
 import { toErrorMap } from "../lib/utilities.toErrorMap";
 0;
-function Login({ router, Component, err }: AppProps): JSX.Element {
+function Login({ router }: AppProps): JSX.Element {
   const [flashMessage, setFlashMessage] =
     useState<"hidden" | "visible">("hidden");
-  // eslint-disable-next-line no-console
-  console.log("LOGIN VIEW PROPS", { router, Component, err });
   const { flash } = router.query;
   const [userConfirmedHelper, setUserConfirmedHelper] = useState(<></>);
   const [login] = useLoginMutation();
