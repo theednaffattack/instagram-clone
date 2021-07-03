@@ -1,36 +1,26 @@
 import { CloudFront } from "aws-sdk";
+import bcrypt from "bcryptjs";
 import { CookieOptions } from "express";
 import internalIp from "internal-ip";
 import { Arg, Ctx, Mutation, Resolver } from "type-graphql";
-import bcrypt from "bcryptjs";
 
+import { configBuildAndValidate } from "./config.build-config";
 import { User } from "./entity.user";
 import { LoginResponse } from "./type.login-response";
 import { MyContext } from "./typings";
-import { getConnection, getRepository } from "typeorm";
 
 const expireAlso = Math.floor(new Date().getTime() / 1000) + 60 * 60 * 1; // Current Time in UTC + time in seconds, (60 * 60 * 1 = 1 hour)
 
 @Resolver()
 export class LoginResolver {
   @Mutation(() => LoginResponse)
-  // @UseMiddleware(Logger)
   async login(
     @Arg("username", () => String) username: string,
     @Arg("password", () => String, { description: "Your user password" }) password: string,
     @Ctx() ctx: MyContext
   ): Promise<LoginResponse> {
-    // Setup a fake user until we hook up the database.
-    // const user = new User();
+    const config = await configBuildAndValidate();
 
-    // user.firstName = "test";
-    // user.lastName = "test";
-    // user.id = "testID";
-    // user.password = password;
-    // user.confirmed = true;
-    // user.id = "123456789";
-
-    // console.log("VIEW ARGS", { user, username });
     let user;
 
     try {
@@ -40,14 +30,21 @@ export class LoginResolver {
       throw Error(error);
     }
 
-    // if we can't find a user return an obscure result (null) to prevent fishing
+    // if we can't find a user return an obscure result to prevent fishing
     if (!user) {
       return {
         errors: [{ field: "username", message: "Error logging in. Please try again." }],
       };
     }
 
-    const valid = await bcrypt.compare(password, user.password);
+    let valid;
+    try {
+      valid = await bcrypt.compare(password, user.password);
+    } catch (error) {
+      console.error("ERROR COMPARING ENCRYPTED PASSWORD");
+      console.error(error);
+      throw Error(error);
+    }
     // const valid = user.password === password;
 
     // if the supplied password is invalid return early
@@ -62,30 +59,27 @@ export class LoginResolver {
       return {
         errors: [{ field: "username", message: "Please confirm your account." }],
       };
-      // return null;
     }
 
-    if (process.env.CF_PUBLIC_KEY && process.env.CF_PRIVATE_KEY) {
+    if (config.awsConfig.cfPublicKeyId && config.awsConfig.cfPrivateKey) {
       const homeIp = internalIp.v4.sync();
       const options: CookieOptions = {
-        domain: homeIp,
+        domain: config.env === "production" ? config.cookieDomain : homeIp,
         httpOnly: true,
+        secure: config.env === "production",
         // expires: expireAlso,
         maxAge: expireAlso,
         path: "/",
       };
 
-      const cloudFrontPublicKey = process.env.CF_PUBLIC_KEY;
-      const cloudFrontPrivateKey = process.env.CF_PRIVATE_KEY;
-
-      const cloudFront = new CloudFront.Signer(cloudFrontPublicKey, cloudFrontPrivateKey);
+      const cloudFront = new CloudFront.Signer(config.awsConfig.cfPublicKeyId, config.awsConfig.cfPrivateKey);
 
       // const expireTime = Math.round(new Date().getTime() / 1000) + 3600;
 
       const policy = JSON.stringify({
         Statement: [
           {
-            Resource: `http*://${process.env.CF_DOMAIN}/*`, // http* => http and https
+            Resource: `http*://${config.awsConfig.cfDomain}/*`, // http* => http and https
             Condition: {
               DateLessThan: {
                 "AWS:EpochTime": expireAlso,
@@ -103,52 +97,40 @@ export class LoginResolver {
       //     ctx.res.cookie(cookiePolicy, signedCookies[cookiePolicy], { domain: ".example.com" });
       // }
 
-      // Set Cookies after successful verification
-      cloudFront.getSignedCookie(
-        {
-          policy,
-        },
-        (err, cfPolicy) => {
-          console.log("CALLBACK", { err, cfPolicy });
-          if (err) {
-            console.error("ERROR GETTING THE COOKIE SIGNED", err);
-          } else {
-            console.log("WHY NO COOKIE???", ctx.res.cookie("test", "testValue", options));
-
-            // ctx.cfCookie = returnedCookie;
-            ctx.res.cookie("CloudFront-Policy", cfPolicy["CloudFront-Policy"], options);
-            ctx.res.cookie("CloudFront-Key-Pair-Id", cfPolicy["CloudFront-Key-Pair-Id"], options);
-            ctx.res.cookie("CloudFront-Signature", cfPolicy["CloudFront-Signature"], options);
+      try {
+        // Set Cookies after successful verification
+        cloudFront.getSignedCookie(
+          {
+            policy,
+          },
+          (err, cfPolicy) => {
+            if (err) {
+              console.error("ERROR GETTING THE CLOUDFRONT COOKIE SIGNED", err);
+              throw err;
+            } else {
+              ctx.res.cookie("CloudFront-Policy", cfPolicy["CloudFront-Policy"], options);
+              ctx.res.cookie("CloudFront-Key-Pair-Id", cfPolicy["CloudFront-Key-Pair-Id"], options);
+              ctx.res.cookie("CloudFront-Signature", cfPolicy["CloudFront-Signature"], options);
+            }
           }
-        }
-      );
+        );
+      } catch (error) {
+        console.error("ERROR GETTING SIGNED COOKIE");
+        console.error(error);
+        throw Error(error);
+      }
 
       // ctx.cfCookie = cfCookie;
+    } else {
+      // NOTE: This should probably throw an Error
+      console.error("CAN'T FIND CF SIGNING INFORMATION");
     }
-
-    // res.cookie("CloudFront-Key-Pair-Id", cookie["CloudFront-Key-Pair-Id"], {
-    //     domain: ".your-domain.com",
-    //     path: "/",
-    //     httpOnly: true,
-    // });
-
-    // res.cookie("CloudFront-Policy", cookie["CloudFront-Policy"], {
-    //     domain: ".your-domain.com",
-    //     path: "/",
-    //     httpOnly: true,
-    // });
-
-    // res.cookie("CloudFront-Signature", cookie["CloudFront-Signature"], {
-    //     domain: ".your-domain.com",
-    //     path: "/",
-    //     httpOnly: true,
-    // });
 
     // all is well return the user we found
 
     ctx.req.session.userId = user.id;
+    ctx.req.session.save();
     ctx.userId = user.id;
-    console.log("WHAT'S GOING ON IN LOGIN?", { ctxUserId: ctx.userId, user });
     return {
       user: user,
     };
