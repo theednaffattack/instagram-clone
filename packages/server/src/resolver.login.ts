@@ -21,6 +21,12 @@ export class LoginResolver {
   ): Promise<LoginResponse> {
     const config = await configBuildAndValidate();
 
+    function addDays(days: number) {
+      var result = new Date();
+      result.setDate(result.getDate() + days);
+      return result;
+    }
+
     let user;
 
     try {
@@ -67,7 +73,7 @@ export class LoginResolver {
         domain: config.env === "production" ? config.cookieDomain : homeIp,
         httpOnly: true,
         secure: config.env === "production",
-        // expires: expireAlso,
+        expires: addDays(1),
         maxAge: expireAlso,
         path: "/",
       };
