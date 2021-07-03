@@ -43,20 +43,9 @@ export class CreateMessageThread {
 
       let imageName = `${v4()}.png`;
 
-      // let localImageUrl = `/../../../public/tmp/images/${imageName}`;
+      const uriPrefix = `https://d14jbys30omc9u.cloudfront.net`;
 
-      let publicImageUrl = `https://eddie-faux-gram.s3.amazonaws.com/${imageName}`;
-
-      // await new Promise((resolve, reject) => {
-      //   createReadStream()
-      //     .pipe(createWriteStream(__dirname + localImageUrl))
-      //     .on("finish", () => {
-      //       resolve(true);
-      //     })
-      //     .on("error", () => {
-      //       reject(false);
-      //     });
-      // });
+      let publicImageUrl = `${uriPrefix}/${imageName}`;
 
       let newImage = await context.dbConnection
         .getRepository(Image)
