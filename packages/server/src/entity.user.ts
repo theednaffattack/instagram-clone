@@ -28,7 +28,6 @@ import { Post } from "./entity.post";
 @ObjectType()
 @Entity()
 export class User extends BaseEntity {
-  /**id field */
   @Field(() => ID, { nullable: true })
   @PrimaryGeneratedColumn("uuid")
   id: string;
