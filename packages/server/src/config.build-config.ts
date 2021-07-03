@@ -15,6 +15,7 @@ export interface ServerConfigProps {
     s3Bucket: string;
   };
   client_uri: string;
+  cookieDomain: string;
   cookieName: string;
   domain: string;
   env: string;
@@ -48,6 +49,13 @@ export const configBuildAndValidate = async function () {
       env: "ALLOWED_ORIGINS",
       format: String,
     },
+
+    apiEndpoint: {
+      default: "/api",
+      doc: "The slash address of our GraphQl uri",
+      env: "API_ENDPOINT",
+      format: String,
+    },
     awsConfig: {
       awsAccessKeyId: {
         default: "**********",
@@ -63,6 +71,34 @@ export const configBuildAndValidate = async function () {
         format: "*",
         sensitive: true,
       },
+      cfDomain: {
+        default: "**********",
+        doc: "Cloudfront domain used for file URIs",
+        env: "CF_DOMAIN",
+        format: "*",
+        sensitive: true,
+      },
+      cfPublicKey: {
+        default: "**********",
+        doc: "Cloudfront Public Key for key group name 'ic-server-too",
+        env: "CF_PUBLIC_KEY",
+        format: "*",
+        sensitive: true,
+      },
+      cfPublicKeyId: {
+        default: "**********",
+        doc: "Cloudfront Private Key for key group name 'ic-server-too'",
+        env: "CF_KEY_GROUP_PUBLIC_KEY_ID",
+        format: "*",
+        sensitive: true,
+      },
+      cfPrivateKey: {
+        default: "**********",
+        doc: "Cloudfront Private Key for key group name 'ic-server-too'",
+        env: "CF_PRIVATE_KEY",
+        format: "*",
+        sensitive: true,
+      },
       s3Bucket: {
         default: "**********",
         doc: "Info for connecting to S3",
@@ -75,6 +111,12 @@ export const configBuildAndValidate = async function () {
       default: "https://ic.eddienaff.dev",
       doc: "The URI of our client application.",
       format: "url",
+    },
+    cookieDomain: {
+      default: "eddienaff.dev",
+      doc: "The domain setting in our server cookie.",
+      env: "COOKIE_DOMAIN",
+      format: String,
     },
     cookieName: {
       default: "icg",
@@ -136,12 +178,6 @@ export const configBuildAndValidate = async function () {
       doc: "The application environment.",
       env: "NODE_ENV",
       format: ["production", "local_production", "development", "test"],
-    },
-    apiEndpoint: {
-      default: "/api",
-      doc: "The slash address of our GraphQl uri",
-      env: "API_ENDPOINT",
-      format: String,
     },
     ip: {
       default: "127.0.0.1",
