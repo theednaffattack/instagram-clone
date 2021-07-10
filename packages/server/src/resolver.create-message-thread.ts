@@ -43,7 +43,7 @@ export class CreateMessageThread {
 
       let imageName = `${v4()}.png`;
 
-      const uriPrefix = `https://d14jbys30omc9u.cloudfront.net/images`;
+      const uriPrefix = `https://iccdn.eddienaff.dev/images`;
 
       let publicImageUrl = `${uriPrefix}/${imageName}`;
 
