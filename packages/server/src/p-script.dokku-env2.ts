@@ -12,7 +12,6 @@ function createDokkuEnvConfig(appName: string): string {
     cache.push(`${key}=${value.replace(/(\s+)/g, "\\$1")}`);
   }
   const returnString = `dokku config:set ${appName} ${cache.join(" ")}`;
-  console.log(returnString);
 
   return returnString;
 }

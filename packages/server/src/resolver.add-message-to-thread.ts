@@ -77,10 +77,8 @@ export class AddMessageToThread {
     @Root() threadPayload: AddMessagePayload,
     // @ts-ignore
     @Arg("data", () => AddMessageToThreadInputType)
-    input: AddMessageToThreadInputType
+    _input: AddMessageToThreadInputType
   ): AddMessagePayload {
-    console.log("forced to use input".toUpperCase(), Object.keys(input));
-
     return threadPayload; // createdAt: new Date()
   }
 

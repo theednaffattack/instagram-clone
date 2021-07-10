@@ -6,8 +6,6 @@ export async function productionMigrations(dbConnection: any, connectOptions: Po
   // Loop to run migrations. Keep
   // trying until
   while (retries) {
-    // console.log("VIEW MIGRATIONS", { connectOptions, migrations: dbConnection?.migrations });
-
     try {
       const viewMigrations = await dbConnection?.runMigrations();
       if (viewMigrations) {

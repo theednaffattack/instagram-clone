@@ -30,8 +30,6 @@ export class DoesEmailAlreadyExistConstraint implements ValidatorConstraintInter
     try {
       const conn = getConnection(config.env);
 
-      console.log("VIEW CONNECTION NAME", conn.name);
-
       const userRepo = conn.getRepository(User);
       user = await userRepo.findOne({ where: { email } });
     } catch (error) {
@@ -39,9 +37,6 @@ export class DoesEmailAlreadyExistConstraint implements ValidatorConstraintInter
       console.error(error);
       throw Error(error);
     }
-    console.log("CHECK TRUTHY 'user === undefined'", user);
-
-    console.log(user === undefined);
 
     return user === undefined;
   }

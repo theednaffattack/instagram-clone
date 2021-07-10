@@ -23,7 +23,6 @@ export async function sendPostmarkEmail(
   mailSentResponse = await client
     .sendEmail(welcomeMessage)
     .then((data) => {
-      console.log("IS THERE ANY DATA?", { data });
       if (!data.Message || data.Message !== "OK") {
         throw Error("An error occurred sending confifmation message. Please delete record and try again.");
       }

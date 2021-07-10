@@ -55,10 +55,10 @@ export class ConfirmUser {
       throw Error(`User token deletion error:\n${error}`);
     }
 
-    // all is well return the user we found
+    // TODO: LOG THEM IN!!!
 
     // ctx.req.session!.userId = userId;
-    // console.log("VIEW CONFIRM USER RESPONSE", { userId, ctx: ctx.req.session });
+
     return true;
   }
 }
