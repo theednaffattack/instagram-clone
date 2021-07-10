@@ -118,4 +118,8 @@ const navLinks = [
     href: "/messages",
     name: "messages",
   },
+  {
+    href: "/logout",
+    name: "logout",
+  },
 ];

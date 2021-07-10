@@ -17,10 +17,6 @@ export async function configSessionMiddleware(config: ServerConfigProps): Promis
   const redis = await returnRedisInstance(config);
   let sessionMiddleware: SessionMiddle;
 
-  const myDomain = ".eddienaff.dev";
-
-  console.log("VIEW CONFIG", { config, myDomain });
-
   // old cookie implentation
   if (config.env === "production") {
     sessionMiddleware = session({

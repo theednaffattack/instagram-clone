@@ -4,6 +4,7 @@ import type { NextFunction, Request, Response } from "express";
 import type { Session, SessionData } from "express-session";
 import type { GraphQLArgs, GraphQLResolveInfo } from "graphql";
 import type { Connection } from "typeorm";
+import { ServerConfigProps } from "./config.build-config";
 // import DataLoader = require("dataloader");
 
 // import { user } from "./zapatos/schema";
@@ -22,6 +23,7 @@ declare module "express-session" {
 
 export type MyContext = {
   cfCookie: CloudFront.Signer.CustomPolicy | any;
+  config: ServerConfigProps;
   connection: ExpressContext["connection"];
   connectionName: string;
   dbConnection: Connection;

@@ -85,6 +85,11 @@ export function NavbarAuthenticated({ dataMe }: NavbarProps): JSX.Element {
           <ChLink mr={2}>create post</ChLink>
         </Link>
       </Box>
+      <Box mr={2}>
+        <Link href="/logout" passHref>
+          <ChLink mr={2}>logout</ChLink>
+        </Link>
+      </Box>
 
       <Box ml="auto">{body}</Box>
     </Flex>
