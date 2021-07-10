@@ -9,7 +9,7 @@ import { User } from "./entity.user";
 import { LoginResponse } from "./type.login-response";
 import { MyContext } from "./typings";
 
-const expireAlso = Math.floor(new Date().getTime() / 1000) + 60 * 60 * 1; // Current Time in UTC + time in seconds, (60 * 60 * 1 = 1 hour)
+const expireTime = Math.floor(new Date().getTime() / 1000) + 60 * 60 * 24 * 1; // Current Time in UTC + time in seconds, (60 * 60 * 24 * 1 = 1 day)
 
 @Resolver()
 export class LoginResolver {
@@ -22,8 +22,9 @@ export class LoginResolver {
     const config = await configBuildAndValidate();
 
     function addDays(days: number) {
-      var result = new Date();
-      result.setDate(result.getDate() + days);
+      const result = new Date();
+      const date = result.getTime() / 1000 + 60 * 60 * 24 * 1;
+      result.setDate(date + days);
       return result;
     }
 
@@ -69,45 +70,37 @@ export class LoginResolver {
 
     if (config.awsConfig.cfPublicKeyId && config.awsConfig.cfPrivateKey) {
       const homeIp = internalIp.v4.sync();
+
       const options: CookieOptions = {
         domain: config.env === "production" ? config.cookieDomain : homeIp,
         httpOnly: true,
         secure: config.env === "production",
-        expires: addDays(1),
-        maxAge: expireAlso,
+        expires: addDays(2),
         path: "/",
       };
 
       const cloudFront = new CloudFront.Signer(config.awsConfig.cfPublicKeyId, config.awsConfig.cfPrivateKey);
 
-      // const expireTime = Math.round(new Date().getTime() / 1000) + 3600;
-
-      const policy = JSON.stringify({
+      const policy = {
         Statement: [
           {
-            Resource: `http*://${config.awsConfig.cfDomain}/*`, // http* => http and https
+            Resource: `http*://${config.awsConfig.cfCdnDomain}/images/*`, // http* => http and https
             Condition: {
               DateLessThan: {
-                "AWS:EpochTime": expireAlso,
+                "AWS:EpochTime": expireTime,
               },
             },
           },
         ],
-      });
+      };
 
-      // adapted from: https://stackoverflow.com/a/48453457/9448010
-      // const signedCookies = cloudFront.getSignedCookie({ policy });
-      // type blah = keyof CloudFront.Signer.CustomPolicy;
-      // const cookieKeys: blah[] = Object.keys(signedCookies);
-      // for (const cookiePolicy of cookieKeys) {
-      //     ctx.res.cookie(cookiePolicy, signedCookies[cookiePolicy], { domain: ".example.com" });
-      // }
+      const stringifiedPolicy = JSON.stringify(policy);
 
       try {
         // Set Cookies after successful verification
         cloudFront.getSignedCookie(
           {
-            policy,
+            policy: stringifiedPolicy,
           },
           (err, cfPolicy) => {
             if (err) {
@@ -125,11 +118,12 @@ export class LoginResolver {
         console.error(error);
         throw Error(error);
       }
-
-      // ctx.cfCookie = cfCookie;
     } else {
       // NOTE: This should probably throw an Error
-      console.error("CAN'T FIND CF SIGNING INFORMATION");
+      console.error("ERROR OBTAINING CLOUDFRONT SIGNING INFORMATION");
+      return {
+        errors: [{ field: "password", message: "Error signing in." }],
+      };
     }
 
     // all is well return the user we found
