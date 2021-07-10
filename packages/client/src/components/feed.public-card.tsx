@@ -53,9 +53,6 @@ function handleImageLoaded(
     React.SetStateAction<"isLoaded" | "isLoading" | "init">
   >
 ) {
-  // eslint-disable-next-line no-console
-  console.log("HANDLE IMAGE LOADED", this);
-
   dispatch("isLoaded");
 }
 

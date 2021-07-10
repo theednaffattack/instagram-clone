@@ -61,7 +61,6 @@ export function NavbarAuthenticated({ dataMe }: NavbarProps): JSX.Element {
             try {
               await logout();
               // router.push("/");
-              console.log("SUCCESSFUL LOGOUT!");
             } catch (logoutError) {
               console.warn("LOGOUT ERROR", logoutError);
             }
