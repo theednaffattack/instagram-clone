@@ -16,8 +16,6 @@ export class RegisterResolver {
     { email, password, username, firstName, lastName }: RegisterInput,
     @Ctx() ctx: MyContext
   ): Promise<RegisterResponse> {
-    console.log("REGISTER ARGS", { email, password, username, firstName, lastName });
-
     let config;
 
     try {
@@ -50,8 +48,6 @@ export class RegisterResolver {
     const hashedPassword = await bcrypt.hash(password, 12);
     let user;
     try {
-      console.log("OH NO THIS ISN'T GOING TO WORK", { env: config.env, db: ctx.dbConnection.name });
-
       const userRepo = ctx.dbConnection.getRepository(User);
 
       user = userRepo.create({
@@ -64,8 +60,6 @@ export class RegisterResolver {
       });
 
       await userRepo.save(user);
-
-      console.log("IS THERE A USER?", user);
 
       // If a User is not returned but it does not trigger
       // a database error, return an error.

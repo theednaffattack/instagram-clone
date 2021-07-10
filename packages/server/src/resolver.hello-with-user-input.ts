@@ -10,7 +10,6 @@ export class HelloWithUserInput {
     { userInput }: HelloInput,
     @Ctx() ctx: MyContext
   ): Promise<string> {
-    console.log("VIEW USER INPUT", userInput);
     return userInput;
   }
 }

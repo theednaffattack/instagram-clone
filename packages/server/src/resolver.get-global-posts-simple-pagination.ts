@@ -72,7 +72,6 @@ export class GetGlobalPostsSimplePagination {
     }: ConnectionArgs
   ): Promise<PaginatedPosts> {
     // @PubSub("GLOBAL_POSTS") publish: Publisher<GlobalPostResponse>
-    console.log("'getGlobalPostsSimplePagination' RESOLVER FIRING");
 
     const realLimit = Math.min(50, first || 50);
     const realLimitPlusOne = realLimit + 1;
@@ -135,7 +134,6 @@ export class GetGlobalPostsSimplePagination {
     // await publish(addFollowerStatusToGlobalPosts).catch((error: Error) => {
     //   throw new Error(error.message);
     // });
-    console.log("LENGTH OF  POSTS", paginatedReturn);
 
     return paginatedReturn;
   }
