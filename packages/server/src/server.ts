@@ -66,7 +66,7 @@ export async function server(config: ServerConfigProps) {
       playground: { version: "1.7.25", endpoint: config.apiEndpoint },
       schema,
       context: ({ req, res, connection }: ExpressContext) =>
-        configApolloContext({ req, res, connection, dbConnection }),
+        configApolloContext({ req, res, connection, dbConnection, config }),
       subscriptions: configGraphQLSubscriptions(sessionMiddleware),
       formatError: formatGraphQLErrors,
       validationRules: [],
@@ -77,21 +77,10 @@ export async function server(config: ServerConfigProps) {
     const allowedListOfOrigins = [...config.allowedOrigins.split(",")];
 
     const corsOptions: CorsOptions = {
-      allowedHeaders: [
-        "Content-Type",
-        "Authorization",
-        "X-Requested-With",
-        "X-Forwarded-Proto",
-        "Cookie",
-        "Set-Cookie",
-        "*",
-      ],
       credentials: true,
       methods: "GET,HEAD,POST,OPTIONS",
       optionsSuccessStatus: 200,
       preflightContinue: false,
-
-      // allowedHeaders:,
       origin: function (origin: any, callback: any) {
         if (!origin || allowedListOfOrigins.indexOf(origin) !== -1) {
           callback(null, true);
@@ -124,7 +113,7 @@ export async function server(config: ServerConfigProps) {
 
     app.get("/", (_req, res) => res.send("hello"));
 
-    apolloServer.applyMiddleware({ app });
+    apolloServer.applyMiddleware({ app, cors: corsOptions });
 
     let httpServer = http.createServer(app);
     apolloServer.installSubscriptionHandlers(httpServer);
