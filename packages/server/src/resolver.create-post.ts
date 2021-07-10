@@ -134,8 +134,9 @@ export class CreatePost {
     if (user) {
       const newImageRepo = context.dbConnection.getRepository(Image);
       const newImageData: Image[] = images.map((image) => {
-        const replaceString = `d14jbys30omc9u.cloudfront.net`;
-        const findString = `eddie-faux-gram.s3.amazonaws.com`;
+        const s3Suffix = ".s3.amazonaws.com";
+        const findString = context.config.awsConfig.s3Bucket + s3Suffix;
+        const replaceString = context.config.awsConfig.cfCdnDomain;
 
         return newImageRepo.create({
           uri: `${image.replace(findString, replaceString)}`,
