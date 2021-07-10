@@ -97,6 +97,5 @@ export const errorLink = onError(({ graphQLErrors, networkError }) => {
       )
     );
   }
-  // eslint-disable-next-line no-console
-  if (networkError) console.log(`[Network error]: ${networkError}`);
+  if (networkError) console.error(`[Network error]: ${networkError}`);
 });

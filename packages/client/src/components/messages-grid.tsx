@@ -40,10 +40,6 @@ export function MessagesGrid({
     accept: "image/*",
     noClick: true,
     onDrop: (acceptedFiles) => {
-      // eslint-disable-next-line no-console
-      console.log("ACCEPTED DROP FILES", acceptedFiles);
-
-      // setImageFiles(acceptedFiles);
       setFieldValue("images", acceptedFiles);
     },
   });
@@ -102,7 +98,6 @@ export function MessagesGrid({
                 p={0}
                 colorScheme="transparent"
                 type="button"
-                // onClick={()=>console.log("NO DRAFT FEAR THIS YEAR")}
                 // onClick={handleSubmit}
                 // colorScheme="blue"
                 aria-label="Add File"

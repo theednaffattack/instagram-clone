@@ -109,10 +109,8 @@ const FauxCamera: React.FunctionComponent<FauxCameraProps> = ({
   //   let get2dContext = canvasRef.current && canvasRef.current.getContext("2d");
   //   /** Canvas element context */
   //   let context: CanvasContextProp;
-  //   console.log("HANDLE CAPTURE", { canvasRef, videoRef, get2dContext });
 
   //   if (canvasRef && canvasRef.current && get2dContext && videoRef.current) {
-  //     console.log("IF STATEMENT");
   //     context = get2dContext;
 
   //     context.drawImage(
