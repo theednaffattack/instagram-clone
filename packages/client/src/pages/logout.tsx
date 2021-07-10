@@ -1,8 +1,19 @@
 import { useEffect } from "react";
 import { ErrorMessage } from "../components/error-message";
-import { useLogoutMutation } from "../generated/graphql";
+import { LogoutDocument, useLogoutMutation } from "../generated/graphql";
+import { initializeApollo } from "../lib/lib.apollo-client";
+import { MyContext } from "../lib/types";
+import { redirect } from "../lib/utilities.redirect";
 
-const Logout = (): any => {
+type LogoutServerSideProps = Promise<{
+  props: {
+    initialApolloState: Record<string, unknown>;
+    revalidate: number;
+    response: any;
+  };
+}>;
+
+const Logout = ({ router }): any => {
   const [logoutFunc, { data, error, loading }] = useLogoutMutation();
   useEffect(() => {
     logoutFunc();
@@ -11,61 +22,50 @@ const Logout = (): any => {
   if (error) {
     return <ErrorMessage message={error.message} />;
   }
+
   if (loading) {
     return <div>loading...</div>;
   }
+
   if (data) {
-    // eslint-disable-next-line no-console
-    console.log("LOGOUT DATA", data);
+    if (router) {
+      router.push("/login");
+    }
     return null;
   }
+
   return null;
 };
 
-// Logout.getInitialProps = async (ctx: MyContext) => {
-//   if (!ctx.apolloClient) ctx.apolloClient = initializeApollo();
+export async function getServerSideProps(
+  ctx: MyContext
+): Promise<LogoutServerSideProps> {
+  if (!ctx.apolloClient) ctx.apolloClient = initializeApollo();
 
-//   console.log("VIEW APOLLO CLIENT", ctx.apolloClient);
+  try {
+    // await ctx.apolloClient.resetStore();
+    await ctx.apolloClient.cache.reset();
+  } catch (error) {
+    console.error("APOLLO RESET STORE", error);
+    throw Error("Error resetting Apollo cache.");
+  }
+  let response;
+  try {
+    response = await ctx.apolloClient.mutate({ mutation: LogoutDocument });
+  } catch (error) {
+    console.error("APOLLO MUTATE ERROR", error);
+    throw Error("Error logging out.");
+  }
 
-//   try {
-//     // await ctx.apolloClient.resetStore();
-//     await ctx.apolloClient.cache.reset();
-//   } catch (error) {
-//     console.warn("APOLLO RESET STORE", error);
-//   }
-//   try {
-//     await ctx.apolloClient.mutate({ mutation: LogoutDocument });
-//   } catch (error) {
-//     console.warn("APOLLO MUTATE ERROR", error);
-//   }
+  redirect(ctx, "/login");
 
-//   redirect(ctx, "/login");
-
-//   // return {};
-
-//   return {
-//     props: {
-//       initialApolloState: {} //apolloClient.cache.extract()
-//     },
-//     revalidate: 1
-//   };
-// };
+  return {
+    props: {
+      initialApolloState: {}, //apolloClient.cache.extract()
+      revalidate: 1,
+      response,
+    },
+  };
+}
 
 export default Logout;
-
-// from: https://github.com/vercel/next.js/blob/canary/examples/with-apollo/pages/index.js
-// export async function getStaticProps() {
-//   const apolloClient = initializeApollo()
-
-//   await apolloClient.query({
-//     query: ALL_POSTS_QUERY,
-//     variables: allPostsQueryVars,
-//   })
-
-//   return {
-//     props: {
-//       initialApolloState: apolloClient.cache.extract(),
-//     },
-//     revalidate: 1,
-//   }
-// }
