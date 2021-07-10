@@ -207,6 +207,10 @@ PRIVATE_KEY="-----BEGIN PRIVATE KEY-----PRIVATE KEY HERE-----END PRIVATE KEY----
 
 [AWS CloudFront Signed Cookies](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-setting-signed-cookie-custom-policy.html)
 
+### Configuring "Resource" for Signed Cookies
+
+https://stackoverflow.com/a/55536083/9448010
+
 ### Test User Permissions for S3 Uploads
 
 #### Test Put Object
