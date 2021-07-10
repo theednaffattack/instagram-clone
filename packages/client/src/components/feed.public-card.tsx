@@ -1,5 +1,13 @@
-import { Box, Flex, Skeleton, Text } from "@chakra-ui/react";
+import {
+  Avatar,
+  Box,
+  Flex,
+  IconButton,
+  Skeleton,
+  Text,
+} from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
+import { BiDotsHorizontalRounded } from "react-icons/bi";
 import {
   GlobalPostResponse,
   Image as ImageType,
@@ -86,9 +94,21 @@ export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
         htmlWidth="100%"
         src={images && images[0] ? images[0].uri : ""}
       /> */}
+      <Flex alignItems="center" pl={4} pr={2} py={3}>
+        <Avatar name="Oshigaki Kisame" />
+        <Flex flexDirection="column" pl={2}>
+          <p>Oshigaki Kisame</p>
+          <p>LOCATION TEXT</p>
+        </Flex>
+
+        <IconButton
+          aria-label="more"
+          icon={<BiDotsHorizontalRounded fill="grey" size={28} />}
+          ml="auto"
+          colorScheme="whiteAlpha"
+        ></IconButton>
+      </Flex>
       <Box>
-        <p>Image State: {imageLoadState}</p>
-        <p>{(images && images[0].uri) || "nope"}</p>
         {images && images[0] ? (
           <>
             <img
