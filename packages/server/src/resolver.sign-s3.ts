@@ -50,8 +50,6 @@ class SignedS3Payload {
 export class SignS3 {
   @Mutation(() => SignedS3Payload)
   async signS3(@Args(() => SignS3Input) input: SignS3Input): Promise<SignedS3Payload> {
-    console.log("SIGN S3 CHECK");
-
     let config: ServerConfigProps;
     try {
       config = await configBuildAndValidate();
