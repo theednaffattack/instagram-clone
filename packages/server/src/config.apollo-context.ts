@@ -1,24 +1,26 @@
 import { ExpressContext } from "apollo-server-express";
 import type { Connection } from "typeorm";
+import { ServerConfigProps } from "./config.build-config";
 import { MyContext } from "./typings";
 
 interface ConfigApolloProps {
   req: MyContext["req"];
   res: MyContext["res"];
-  connection: MyContext["connection"];
+  connection?: MyContext["connection"];
   dbConnection: MyContext["dbConnection"];
+  config: ServerConfigProps;
 }
 
-export function configApolloContext({ req, res, connection, dbConnection }: ConfigApolloProps) {
+export function configApolloContext({ req, res, connection, config, dbConnection }: ConfigApolloProps) {
   if (connection) {
-    return getContextFromSubscription(connection, dbConnection);
+    return getContextFromSubscription({ req, res, dbConnection, config, connection });
     // return {
     //   ...getContextFromSubscription(connection),
     //   usersLoader: createUsersLoader()
     // };
   }
 
-  return getContextFromHttpRequest(req, res, dbConnection);
+  return getContextFromHttpRequest({ req, res, dbConnection, config });
 
   // return {
   //   ...getContextFromHttpRequest(req, res),
@@ -28,16 +30,12 @@ export function configApolloContext({ req, res, connection, dbConnection }: Conf
   // return { req, res, connection }
 }
 
-const getContextFromHttpRequest = (
-  req: MyContext["req"],
-  res: MyContext["res"],
-  dbConnection: MyContext["dbConnection"]
-) => {
+const getContextFromHttpRequest = ({ req, res, dbConnection, config }: ConfigApolloProps) => {
   // Cookie implementation
   if (req && req.session) {
     const { userId } = req.session;
 
-    return { userId, req, res, dbConnection };
+    return { userId, req, res, dbConnection, config };
   }
 
   // JWT implementation
@@ -77,11 +75,13 @@ const getContextFromHttpRequest = (
   // }
 };
 
-const getContextFromSubscription = (connection: any, dbConnection: MyContext["dbConnection"]) => {
+const getContextFromSubscription = ({ connection, dbConnection }: ConfigApolloProps) => {
   // old cookie implementation
-  const { userId } = connection.context.req.session;
+  if (connection) {
+    const { userId } = connection.context.req.session;
 
-  return { req: connection.context.req, res: connection.context.res, userId, dbConnection };
+    return { req: connection.context.req, res: connection.context.res, userId, dbConnection };
+  }
   // JSON Web token implementation
   // const authorization = connection.context.authorization;
   // if (authorization) {

@@ -1,5 +1,4 @@
 import { RedisPubSub } from "graphql-redis-subscriptions";
-import { RequestHeaderFieldsTooLarge } from "http-errors";
 import Redis from "ioredis";
 import { configBuildAndValidate, ServerConfigProps } from "./config.build-config";
 

@@ -134,8 +134,12 @@ export class CreatePost {
     if (user) {
       const newImageRepo = context.dbConnection.getRepository(Image);
       const newImageData: Image[] = images.map((image) => {
+        const s3Suffix = ".s3.amazonaws.com";
+        const findString = context.config.awsConfig.s3Bucket + s3Suffix;
+        const replaceString = context.config.awsConfig.cfCdnDomain;
+
         return newImageRepo.create({
-          uri: `${image}`,
+          uri: `${image.replace(findString, replaceString)}`,
           user: user,
         });
       });
@@ -183,7 +187,7 @@ export class CreatePost {
         const postData = {
           text,
           title,
-          user,
+          user: savedUser,
           images: [...newImages],
         };
 
