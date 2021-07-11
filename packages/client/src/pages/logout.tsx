@@ -1,3 +1,4 @@
+import { Router } from "next/router";
 import { useEffect } from "react";
 import { ErrorMessage } from "../components/error-message";
 import { LogoutDocument, useLogoutMutation } from "../generated/graphql";
@@ -13,7 +14,11 @@ type LogoutServerSideProps = Promise<{
   };
 }>;
 
-const Logout = ({ router }): any => {
+interface LogoutProps {
+  router: Router;
+}
+
+const Logout = ({ router }: LogoutProps): any => {
   const [logoutFunc, { data, error, loading }] = useLogoutMutation();
   useEffect(() => {
     logoutFunc();
