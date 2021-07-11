@@ -8,6 +8,7 @@ import {
   User,
 } from "../generated/graphql";
 import { FeedBoxedImage } from "./feed.boxed-image";
+import { CardShareMenu } from "./feed.card-share-menu";
 import { FeedTopBar } from "./feed.card-top-bar";
 import { CollectionsButton } from "./feed.collections-button";
 import { LikesAndCommentsSummary } from "./home.global-feed.likes";
@@ -82,7 +83,9 @@ export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
         htmlWidth="100%"
         src={images && images[0] ? images[0].uri : ""}
       /> */}
-      <FeedTopBar />
+      <FeedTopBar>
+        <CardShareMenu postTitle={text} />
+      </FeedTopBar>
 
       <FeedBoxedImage
         images={images}

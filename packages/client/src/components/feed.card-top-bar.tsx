@@ -1,16 +1,11 @@
-import {
-  Avatar,
-  Flex,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Text,
-} from "@chakra-ui/react";
-import { BiDotsHorizontalRounded } from "react-icons/bi";
+import { Avatar, Flex, Text } from "@chakra-ui/react";
+import React from "react";
 
-export function FeedTopBar(): JSX.Element {
+interface FeedTopBarProps {
+  children: React.ReactNode;
+}
+
+export function FeedTopBar({ children }: FeedTopBarProps): JSX.Element {
   return (
     <Flex alignItems="center" pl={4} pr={2} py={3}>
       <Avatar name="Hoshigaki Kisame" tabIndex={0} />
@@ -21,7 +16,8 @@ export function FeedTopBar(): JSX.Element {
       {/**
        * TODO: MAKE THIS MENU A MODAL OR... PORTAL, I GUESS??
        */}
-      <Menu isLazy>
+      {children}
+      {/* <Menu isLazy>
         <MenuButton
           aria-label="more"
           as={IconButton}
@@ -38,7 +34,16 @@ export function FeedTopBar(): JSX.Element {
           <MenuItem onClick={() => alert("Copy Link pressed")}>
             Copy Link
           </MenuItem>
-          <MenuItem onClick={() => alert("Share to... pressed")}>
+          <MenuItem
+            onClick={(event) => {
+              event.preventDefault();
+              navigator.share({
+                title: "web.dev",
+                text: "Check out web.dev.",
+                url: "https://web.dev/",
+              });
+            }}
+          >
             Share to...
           </MenuItem>
           <MenuItem onClick={() => alert("Notifications pressed")}>
@@ -49,7 +54,7 @@ export function FeedTopBar(): JSX.Element {
             Unfollow
           </MenuItem>
         </MenuList>
-      </Menu>
+      </Menu> */}
     </Flex>
   );
 }
