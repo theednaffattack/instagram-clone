@@ -10,6 +10,7 @@ import {
 import { FeedBoxedImage } from "./feed.boxed-image";
 import { CardShareMenu } from "./feed.card-share-menu";
 import { FeedTopBar } from "./feed.card-top-bar";
+import { ErrorFlash } from "./feed.card.error-flash";
 import { CollectionsButton } from "./feed.collections-button";
 import { LikesAndCommentsSummary } from "./home.global-feed.likes";
 
@@ -64,6 +65,9 @@ export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
     text,
   } = cardProps;
 
+  const [errorFlashes, setErrorFlashes] =
+    useState<"hidden" | "visible">("hidden");
+
   const [imageLoadState, setImageLoadState] =
     useState<"isLoaded" | "isLoading" | "isError" | "init">("init");
 
@@ -93,7 +97,7 @@ export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
         setImageLoadState={setImageLoadState}
       />
 
-      <Box px={4} pb={4}>
+      <Box px={4} pb={4} position="relative">
         <Flex alignItems="center">
           <Box>
             <LikesAndCommentsSummary
@@ -102,9 +106,27 @@ export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
               currently_liked={currently_liked}
               likes_count={likes_count}
               postId={id ? id : ""}
+              setErrorFlashes={setErrorFlashes}
             />
           </Box>
           <CollectionsButton />
+        </Flex>
+
+        <Flex
+          position="absolute"
+          top={0}
+          left={0}
+          w="100%"
+          justifyContent="center"
+        >
+          {errorFlashes === "visible" ? (
+            <ErrorFlash
+              errorMessage="Login to vote."
+              setErrorFlashes={setErrorFlashes}
+            />
+          ) : (
+            ""
+          )}
         </Flex>
 
         <Skeleton isLoaded={!!text}>
