@@ -1,4 +1,4 @@
-import { format, parseISO } from "date-fns";
+import { format, formatDistance, parseISO } from "date-fns";
 import {
   Args,
   Ctx,
@@ -125,6 +125,7 @@ export class GetGlobalPostsSimplePagination {
           currently_liked: currentlyLiked,
           success: true,
           action: "CREATE",
+          date_formatted: formatDistance(post.created_at, new Date()),
         };
 
         return returnThing;

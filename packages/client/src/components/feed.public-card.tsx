@@ -23,6 +23,7 @@ type PostNode = {
   | "comments_count"
   | "currently_liked"
   | "created_at"
+  | "date_formatted"
 > & {
     user?: Maybe<
       { __typename?: "User" } & Pick<
@@ -53,9 +54,9 @@ type CardProps = {
 
 export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
   const {
-    created_at,
     comments_count,
     currently_liked,
+    date_formatted,
     id,
     images,
     likes_count,
@@ -106,8 +107,7 @@ export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
         <Skeleton isLoaded={!!text}>
           <Text>{text}</Text>
         </Skeleton>
-
-        <Text>{created_at}</Text>
+        <Text>{date_formatted} ago</Text>
       </Box>
     </Box>
   );

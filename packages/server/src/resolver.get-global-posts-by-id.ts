@@ -1,3 +1,4 @@
+import { formatDistance } from "date-fns";
 import { Resolver, Query, UseMiddleware, Arg, Ctx } from "type-graphql";
 import { Post } from "./entity.post";
 import { GetGlobalPostByIdInput } from "./gql-type.get-global-post-by-id-input";
@@ -49,6 +50,7 @@ export class GetGlobalPostById {
         likes_count: singleGlobalPost.likes.length,
         comments_count: singleGlobalPost.comments.length,
         currently_liked: currentlyLiked,
+        date_formatted: formatDistance(singleGlobalPost.created_at, new Date()),
       };
     }
 

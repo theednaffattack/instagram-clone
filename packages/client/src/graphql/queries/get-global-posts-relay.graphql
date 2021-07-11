@@ -1,3 +1,4 @@
+# Write your query or mutation here
 query GetGlobalPostsRelay(
   $before: String
   $after: String
@@ -38,6 +39,7 @@ query GetGlobalPostsRelay(
           id
         }
         created_at
+        date_formatted
       }
     }
   }
