@@ -9,6 +9,7 @@ import {
 import React, { useState } from "react";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { FaRegComment } from "react-icons/fa";
+import { FiSend } from "react-icons/fi";
 import {
   GetGlobalPostsRelayDocument,
   GetGlobalPostsRelayQuery,
@@ -223,6 +224,15 @@ export function LikesAndCommentsSummary({
             disabled
             icon={<FaRegComment fill="#888" size="1.8em" />}
             type="button"
+          />
+        </Flex>
+        <Flex>
+          <IconButton
+            aria-label="Send a message"
+            bg="transparent"
+            icon={<FiSend color="#888" size="1.8em" />}
+            type="button"
+            onClick={() => alert("Send a message clicked")}
           />
         </Flex>
       </Flex>
