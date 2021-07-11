@@ -6,6 +6,7 @@ import { Post } from "./entity.post";
 import { GetGlobalPostsInput } from "./gql-type.get-global-posts-input";
 import { GlobalPostResponse } from "./gql-type.global-posts-response";
 import { MyContext } from "./typings";
+import { formatDistance } from "date-fns";
 
 @Resolver()
 export class GetGlobalPosts {
@@ -82,6 +83,7 @@ export class GetGlobalPosts {
         currently_liked: currentlyLiked,
         success: true,
         action: "CREATE",
+        date_formatted: formatDistance(post.created_at, new Date()),
       };
 
       return returnThing;

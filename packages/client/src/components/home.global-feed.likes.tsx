@@ -95,6 +95,7 @@ export function LikesAndCommentsSummary({
                                     text: edge.node.text,
                                     title: edge.node.title,
                                     id: edge.node.id,
+                                    date_formatted: edge.node.date_formatted,
                                   },
                                 };
                               } else {
@@ -174,6 +175,7 @@ export function LikesAndCommentsSummary({
                                     text: edge.node.text,
                                     title: edge.node.title,
                                     id: edge.node.id,
+                                    date_formatted: edge.node.date_formatted,
                                   },
                                 };
                               } else {
