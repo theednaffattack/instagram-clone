@@ -2,10 +2,9 @@ import {
   Alert,
   AlertIcon,
   AlertTitle,
-  IconButton,
   CloseButton,
   Flex,
-  Text,
+  IconButton,
 } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
@@ -29,7 +28,6 @@ export function LikesAndCommentsSummary({
   comments_count,
   currently_liked,
   disabled,
-  likes_count,
   postId,
 }: LikesAndCommentsSummaryProps): JSX.Element {
   const [errorFlashes, setErrorFlashes] =
@@ -214,8 +212,6 @@ export function LikesAndCommentsSummary({
               }}
             />
           )}
-
-          <Text fontSize="1.3em">{likes_count}</Text>
         </Flex>
 
         <Flex alignItems="center">
@@ -226,8 +222,6 @@ export function LikesAndCommentsSummary({
             icon={<FaRegComment fill="#888" size="1.8em" />}
             type="button"
           />
-
-          <Text fontSize="1.3em">{comments_count ? comments_count : "0"}</Text>
         </Flex>
       </Flex>
     </>
