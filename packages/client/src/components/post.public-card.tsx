@@ -1,12 +1,17 @@
 import { Box, Flex, Skeleton, Text } from "@chakra-ui/react";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import { GetGlobalPostByIdQuery } from "../generated/graphql";
 import { FeedBoxedImage } from "./feed.boxed-image";
 import { CardShareMenu } from "./feed.card-share-menu";
 import { FeedTopBar } from "./feed.card-top-bar";
 import { ErrorFlash } from "./feed.card.error-flash";
 import { CollectionsButton } from "./feed.collections-button";
+import {
+  errFlashReducer,
+  initErrorFlashState,
+  initialErrorFlashState,
+} from "./feed.public-card";
 import { LikesAndCommentsSummary } from "./home.global-feed.likes";
 
 type CardProps = {
@@ -24,8 +29,11 @@ export function PostPublicCard({ cardProps }: CardProps): JSX.Element {
     text,
   } = cardProps;
 
-  const [errorFlashes, setErrorFlashes] =
-    useState<"hidden" | "visible">("hidden");
+  const [errorFlash, dispatchErrorFlash] = useReducer(
+    errFlashReducer,
+    initialErrorFlashState,
+    initErrorFlashState
+  );
 
   const [imageLoadState, setImageLoadState] =
     useState<"isLoaded" | "isLoading" | "isError" | "init">("init");
@@ -36,20 +44,7 @@ export function PostPublicCard({ cardProps }: CardProps): JSX.Element {
   }, []);
 
   return (
-    <Box
-      key={id}
-      border="1px solid rgb(219,219,219)"
-      // border="2px solid limegreen"
-    >
-      {/* <ChImage
-        // maxHeight={{ sm: "50px", md: "50px", lg: "50px", xl: "70px" }}
-        maxHeight={["400px", "200px", "200px", "700px"]}
-        objectFit="cover"
-        align="center"
-        // fallbackSrc="https://via.placeholder.com/800"
-        htmlWidth="100%"
-        src={images && images[0] ? images[0].uri : ""}
-      /> */}
+    <Box key={id} border="1px solid rgb(219,219,219)">
       <FeedTopBar>
         <CardShareMenu postTitle={text} />
       </FeedTopBar>
@@ -75,7 +70,8 @@ export function PostPublicCard({ cardProps }: CardProps): JSX.Element {
               currently_liked={currently_liked}
               likes_count={likes_count}
               postId={id ? id : ""}
-              setErrorFlashes={setErrorFlashes}
+              dispatchErrorFlash={dispatchErrorFlash}
+              errorFlash={errorFlash}
             />
           </Box>
           <CollectionsButton />
@@ -88,10 +84,10 @@ export function PostPublicCard({ cardProps }: CardProps): JSX.Element {
           w="100%"
           justifyContent="center"
         >
-          {errorFlashes === "visible" ? (
+          {errorFlash.visibility === "visible" ? (
             <ErrorFlash
               errorMessage="Login to vote."
-              setErrorFlashes={setErrorFlashes}
+              dispatchErrorFlash={dispatchErrorFlash}
             />
           ) : (
             ""
