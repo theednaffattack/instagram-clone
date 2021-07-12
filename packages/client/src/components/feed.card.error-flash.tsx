@@ -5,7 +5,7 @@ import {
   CloseButton,
   Flex,
 } from "@chakra-ui/react";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 type ErrorFlashProps = {
   errorMessage: string;
@@ -16,6 +16,11 @@ export function ErrorFlash({
   errorMessage,
   setErrorFlashes,
 }: ErrorFlashProps): JSX.Element {
+  const closeButtonFocusRef = useRef<HTMLButtonElement>();
+
+  useEffect(() => {
+    closeButtonFocusRef.current.focus();
+  }, []);
   return (
     <Alert
       flexDirection="column"
@@ -34,8 +39,13 @@ export function ErrorFlash({
         right="8px"
         top="8px"
         disabled={!errorMessage}
-        onClick={() => setErrorFlashes("hidden")}
+        onClick={(event) => {
+          event.preventDefault();
+          setErrorFlashes("hidden");
+        }}
         tabIndex={0}
+        type="button"
+        ref={closeButtonFocusRef}
       />
     </Alert>
   );
