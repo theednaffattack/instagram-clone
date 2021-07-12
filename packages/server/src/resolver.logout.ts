@@ -20,7 +20,7 @@ export class Logout {
 
         const clearOptions = {
           httpOnly: true,
-          secure: true,
+          secure: config.env === "production",
           // maxAge: ctx.req.session.cookie.maxAge,
           domain: config.cookieDomain,
           path: "/",
