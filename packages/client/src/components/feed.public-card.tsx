@@ -1,4 +1,5 @@
 import { Box, Flex, Skeleton, Text } from "@chakra-ui/react";
+import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import {
   GlobalPostResponse,
@@ -54,7 +55,7 @@ type CardProps = {
   loadingPosts: boolean;
 };
 
-export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
+export function PublicFeedCard({ cardProps }: CardProps): JSX.Element {
   const {
     comments_count,
     currently_liked,
@@ -97,9 +98,9 @@ export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
         setImageLoadState={setImageLoadState}
       />
 
-      <Box px={4} pb={4} position="relative">
+      <Box position="relative">
         <Flex alignItems="center">
-          <Box>
+          <Box pl={2}>
             <LikesAndCommentsSummary
               disabled={true}
               comments_count={comments_count}
@@ -128,11 +129,21 @@ export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
             ""
           )}
         </Flex>
+        <Box px={4} pb={4}>
+          <Skeleton isLoaded={!!text}>
+            <Text>{text}</Text>
 
-        <Skeleton isLoaded={!!text}>
-          <Text>{text}</Text>
-        </Skeleton>
-        <Text>{date_formatted} ago</Text>
+            <Link
+              href={`/?postId=${id}`}
+              as={`/post/${id}`}
+              passHref
+              scroll={false}
+            >
+              <a>see all</a>
+            </Link>
+          </Skeleton>
+          <Text>{date_formatted} ago</Text>
+        </Box>
       </Box>
     </Box>
   );
