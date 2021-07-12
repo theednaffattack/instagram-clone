@@ -646,7 +646,13 @@ export type GetGlobalPostByIdQuery = { __typename?: "Query" } & {
   getGlobalPostById?: Maybe<
     { __typename?: "GlobalPostResponse" } & Pick<
       GlobalPostResponse,
-      "id" | "title" | "text"
+      | "id"
+      | "title"
+      | "text"
+      | "comments_count"
+      | "currently_liked"
+      | "date_formatted"
+      | "likes_count"
     > & {
         images?: Maybe<
           Array<{ __typename?: "Image" } & Pick<Image, "id" | "uri">>
@@ -1433,6 +1439,10 @@ export const GetGlobalPostByIdDocument = gql`
         id
         uri
       }
+      comments_count
+      currently_liked
+      date_formatted
+      likes_count
     }
   }
 `;
