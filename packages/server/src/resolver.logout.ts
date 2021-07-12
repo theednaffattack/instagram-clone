@@ -19,12 +19,12 @@ export class Logout {
         }
 
         const clearOptions = {
+          domain: config.cookieDomain,
           httpOnly: true,
+          path: "/",
           secure: config.env === "production",
           // maxAge: ctx.req.session.cookie.maxAge,
-          domain: config.cookieDomain,
-          path: "/",
-          sameSite: "lax",
+          // sameSite: "lax",
         };
 
         ctx.res.clearCookie(config.cookieName, clearOptions);
