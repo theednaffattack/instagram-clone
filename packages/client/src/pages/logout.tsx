@@ -1,11 +1,4 @@
-import { Router } from "next/router";
-import { useEffect } from "react";
-import { ErrorMessage } from "../components/error-message";
-import {
-  LogoutDocument,
-  LogoutMutation,
-  useLogoutMutation,
-} from "../generated/graphql";
+import { LogoutDocument, LogoutMutation } from "../generated/graphql";
 import { initializeApollo } from "../lib/lib.apollo-client";
 import { MyContext } from "../lib/types";
 import { redirect } from "../lib/utilities.redirect";
@@ -18,29 +11,23 @@ type LogoutServerSideProps = Promise<{
   };
 }>;
 
-interface LogoutProps {
-  router: Router;
-}
-
-const Logout = ({ router }: LogoutProps): JSX.Element | void => {
-  const [logoutFunc, { data, error, loading }] = useLogoutMutation();
-  useEffect(() => {
-    logoutFunc();
-  }, []);
-
-  if (error) {
-    return <ErrorMessage message={error.message} />;
-  }
-
-  if (loading) {
-    return <div>loading...</div>;
-  }
-
-  if (data) {
-    if (router) {
-      router.push("/login");
-    }
-  }
+const Logout = (): JSX.Element | void => {
+  return null;
+  // const [logoutFunc, { data, error, loading }] = useLogoutMutation();
+  // useEffect(() => {
+  //   logoutFunc();
+  // }, []);
+  // if (error) {
+  //   return <ErrorMessage message={error.message} />;
+  // }
+  // if (loading) {
+  //   return <div>loading...</div>;
+  // }
+  // if (data) {
+  //   if (router) {
+  //     router.push("/login");
+  //   }
+  // }
 };
 
 export async function getServerSideProps(
