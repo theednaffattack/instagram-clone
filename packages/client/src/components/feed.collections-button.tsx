@@ -10,15 +10,17 @@ export function CollectionsButton(): JSX.Element {
       aria-label="Save to Collections"
       bg="transparent"
       ml="auto"
+      mr={2}
+      mt={2}
       onClick={(event) => {
         event.preventDefault();
         handleClick({ setSavedToCollections });
       }}
       icon={
         savedToCollections === "is_not_saved" ? (
-          <FaRegBookmark fill="grey" size={30} />
+          <FaRegBookmark fill="grey" size={25} />
         ) : (
-          <FaBookmark fill="grey" size={30} />
+          <FaBookmark fill="grey" size={25} />
         )
       }
     />
