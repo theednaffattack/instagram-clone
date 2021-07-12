@@ -49,7 +49,6 @@ type PostNode = {
 
 interface CardProps {
   cardProps: PostNode;
-  // setErrorFlashes: React.Dispatch<React.SetStateAction<"hidden" | "visible">>;
 }
 
 export function PostCard({ cardProps }: CardProps): JSX.Element {
@@ -87,7 +86,9 @@ export function PostCard({ cardProps }: CardProps): JSX.Element {
         currently_liked={currently_liked}
         likes_count={likes_count}
         postId={id ? id : ""}
-        setErrorFlashes={() => alert("Error Flashes - FAKE!!!")}
+        dispatchErrorFlash={() => alert("blaaaaaah")}
+        errorFlash={{ message: "wait what", visibility: "visible" }}
+        // setErrorFlashes={() => alert("Error Flashes - FAKE!!!")}
       />
     </Box>
   );

@@ -13,6 +13,10 @@ import {
   UpdateLikesInput,
   useCreateOrUpdateLikesMutation,
 } from "../generated/graphql";
+import type {
+  ErrorFlashReducerAction,
+  ErrorFlashState,
+} from "./feed.public-card";
 
 type LikesAndCommentsSummaryProps = {
   comments_count: number;
@@ -20,7 +24,9 @@ type LikesAndCommentsSummaryProps = {
   disabled?: boolean;
   likes_count: number;
   postId: string;
-  setErrorFlashes: React.Dispatch<React.SetStateAction<"hidden" | "visible">>;
+  // setErrorFlashes: React.Dispatch<React.SetStateAction<"hidden" | "visible">>;
+  dispatchErrorFlash: React.Dispatch<ErrorFlashReducerAction>;
+  errorFlash: ErrorFlashState;
 };
 
 export function LikesAndCommentsSummary({
@@ -28,7 +34,8 @@ export function LikesAndCommentsSummary({
   currently_liked,
   disabled,
   postId,
-  setErrorFlashes,
+  // setErrorFlashes,
+  dispatchErrorFlash,
 }: LikesAndCommentsSummaryProps): JSX.Element {
   const [createOrUpdateLikes] = useCreateOrUpdateLikesMutation({
     variables: { input: { postId } },
@@ -42,16 +49,17 @@ export function LikesAndCommentsSummary({
             <IconButton
               icon={<AiFillHeart fill="crimson" size="2em" />}
               type="button"
-              aria-label="Like button"
+              aria-label="Favorite button"
               bg="transparent"
               // disabled={disabled}
               onClick={() => {
                 if (disabled) {
-                  setErrorFlashes("visible");
+                  dispatchErrorFlash({ type: "clicked-disabled-favorite" });
+                  // setErrorFlashes("visible");
                 } else {
                   handleClick({
                     createOrUpdateLikes,
-                    setErrorFlashes,
+                    dispatchErrorFlash,
                     comments_count,
                     postId,
                   });
@@ -68,11 +76,11 @@ export function LikesAndCommentsSummary({
               bg="transparent"
               onClick={() => {
                 if (disabled) {
-                  setErrorFlashes("visible");
+                  dispatchErrorFlash({ type: "clicked-disabled-favorite" });
                 } else {
                   handleClick({
                     createOrUpdateLikes,
-                    setErrorFlashes,
+                    dispatchErrorFlash,
                     comments_count,
                     postId,
                   });
@@ -93,7 +101,7 @@ export function LikesAndCommentsSummary({
             tabIndex={0}
             onClick={() => {
               if (disabled) {
-                setErrorFlashes("visible");
+                dispatchErrorFlash({ type: "clicked-disabled-comment" });
               } else {
                 alert("Comment clicked");
               }
@@ -109,7 +117,9 @@ export function LikesAndCommentsSummary({
             type="button"
             onClick={() => {
               if (disabled) {
-                setErrorFlashes("visible");
+                dispatchErrorFlash({
+                  type: "clicked-disabled-message",
+                });
               } else {
                 alert("Send a message clicked");
               }
@@ -130,17 +140,17 @@ interface HandleClickProps {
       }>
     >
   ) => Promise<any>;
-  setErrorFlashes: any;
   postId: string;
   comments_count: number;
+  dispatchErrorFlash: React.Dispatch<ErrorFlashReducerAction>;
 }
 
 async function handleClick({
   createOrUpdateLikes,
-  setErrorFlashes,
   comments_count,
   postId,
-}: HandleClickProps) {
+  dispatchErrorFlash,
+}: HandleClickProps): Promise<void> {
   try {
     await createOrUpdateLikes({
       update(cache) {
@@ -206,7 +216,7 @@ async function handleClick({
   } catch (error) {
     console.error("UPDATE LIKES ERROR - NOT CURRENTLY LIKED", error.message);
     if (error.message === "Not authenticated") {
-      setErrorFlashes("visible");
+      dispatchErrorFlash({ type: "clicked-disabled-favorite" });
     }
   }
 }

@@ -1,6 +1,6 @@
 import { Box, Flex, Skeleton, Text } from "@chakra-ui/react";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import {
   GlobalPostResponse,
   Image as ImageType,
@@ -50,9 +50,110 @@ type PostNode = {
     >;
   };
 
-type CardProps = {
+interface CardProps {
   cardProps: PostNode;
   loadingPosts: boolean;
+}
+
+export interface ErrorFlashState {
+  visibility: "hidden" | "visible";
+  message: string | null | React.ReactElement;
+}
+
+export function initErrorFlashState({
+  visibility = "hidden",
+  message = null,
+}: ErrorFlashState): ErrorFlashState {
+  return { visibility, message };
+}
+
+export type ErrorFlashReducerAction =
+  | {
+      type: "clicked-disabled-favorite";
+    }
+  | {
+      type: "clicked-disabled-comment";
+    }
+  | {
+      type: "clicked-disabled-message";
+    }
+  | { type: "dismissed-comment" };
+
+export function errFlashReducer(
+  _state: ErrorFlashState,
+  action: ErrorFlashReducerAction
+): ErrorFlashState {
+  const messages = {
+    ["clicked-disabled-message"]: (
+      <Text>
+        Please{" "}
+        <Link href="/login" passHref>
+          <a tabIndex={0} style={{ color: "rebeccapurple" }}>
+            login
+          </a>
+        </Link>{" "}
+        to send a message.
+      </Text>
+    ),
+    ["clicked-disabled-comment"]: (
+      <Text>
+        Please{" "}
+        <Link href="/login" passHref>
+          <a tabIndex={0} style={{ color: "rebeccapurple" }}>
+            login
+          </a>
+        </Link>{" "}
+        to add comment.
+      </Text>
+    ),
+    ["clicked-disabled-favorite"]: (
+      <Text>
+        Please{" "}
+        <Link href="/login" passHref>
+          <a tabIndex={0} style={{ color: "rebeccapurple" }}>
+            login
+          </a>
+        </Link>{" "}
+        to &lsquo;favorite&lsquo; a post.
+      </Text>
+    ),
+  };
+
+  switch (action.type) {
+    case "clicked-disabled-comment":
+      return {
+        message: messages[action.type],
+        visibility: "visible",
+      };
+    case "clicked-disabled-favorite":
+      return {
+        message: messages[action.type],
+        visibility: "visible",
+      };
+
+    case "clicked-disabled-message":
+      return {
+        message: messages[action.type],
+        visibility: "visible",
+      };
+
+    case "dismissed-comment":
+      return {
+        message: null,
+        visibility: "hidden",
+      };
+
+    default:
+      return {
+        message: null,
+        visibility: "hidden",
+      };
+  }
+}
+
+export const initialErrorFlashState: ErrorFlashState = {
+  visibility: "hidden",
+  message: null,
 };
 
 export function PublicFeedCard({ cardProps }: CardProps): JSX.Element {
@@ -66,8 +167,14 @@ export function PublicFeedCard({ cardProps }: CardProps): JSX.Element {
     text,
   } = cardProps;
 
-  const [errorFlashes, setErrorFlashes] =
-    useState<"hidden" | "visible">("hidden");
+  // const [errorFlashes, setErrorFlashes] =
+  //   useState<"hidden" | "visible">("hidden");
+
+  const [errorFlash, dispatchErrorFlash] = useReducer(
+    errFlashReducer,
+    initialErrorFlashState,
+    initErrorFlashState
+  );
 
   const [imageLoadState, setImageLoadState] =
     useState<"isLoaded" | "isLoading" | "isError" | "init">("init");
@@ -107,7 +214,9 @@ export function PublicFeedCard({ cardProps }: CardProps): JSX.Element {
               currently_liked={currently_liked}
               likes_count={likes_count}
               postId={id ? id : ""}
-              setErrorFlashes={setErrorFlashes}
+              dispatchErrorFlash={dispatchErrorFlash}
+              errorFlash={errorFlash}
+              // setErrorFlashes={setErrorFlashes}
             />
           </Box>
           <CollectionsButton />
@@ -120,10 +229,10 @@ export function PublicFeedCard({ cardProps }: CardProps): JSX.Element {
           w="100%"
           justifyContent="center"
         >
-          {errorFlashes === "visible" ? (
+          {errorFlash.visibility === "visible" ? (
             <ErrorFlash
-              errorMessage="Login to vote."
-              setErrorFlashes={setErrorFlashes}
+              errorMessage={errorFlash.message}
+              dispatchErrorFlash={dispatchErrorFlash}
             />
           ) : (
             ""
@@ -139,7 +248,9 @@ export function PublicFeedCard({ cardProps }: CardProps): JSX.Element {
               passHref
               scroll={false}
             >
-              <a>see all</a>
+              <a tabIndex={0} style={{ color: "rebeccapurple" }}>
+                see more
+              </a>
             </Link>
           </Skeleton>
           <Text>{date_formatted} ago</Text>

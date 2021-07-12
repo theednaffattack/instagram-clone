@@ -6,15 +6,16 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import React, { useEffect, useRef } from "react";
+import { ErrorFlashReducerAction } from "./feed.public-card";
 
-type ErrorFlashProps = {
-  errorMessage: string;
-  setErrorFlashes: React.Dispatch<React.SetStateAction<"hidden" | "visible">>;
-};
+interface ErrorFlashProps {
+  dispatchErrorFlash: React.Dispatch<ErrorFlashReducerAction>;
+  errorMessage: string | React.ReactElement;
+}
 
 export function ErrorFlash({
   errorMessage,
-  setErrorFlashes,
+  dispatchErrorFlash,
 }: ErrorFlashProps): JSX.Element {
   const closeButtonFocusRef = useRef<HTMLButtonElement>();
 
@@ -27,7 +28,7 @@ export function ErrorFlash({
       justifyContent="center"
       textAlign="center"
       status="error"
-      maxWidth="300px"
+      // maxWidth="300px"
     >
       <Flex>
         <AlertIcon />
@@ -41,7 +42,7 @@ export function ErrorFlash({
         disabled={!errorMessage}
         onClick={(event) => {
           event.preventDefault();
-          setErrorFlashes("hidden");
+          dispatchErrorFlash({ type: "dismissed-comment" });
         }}
         tabIndex={0}
         type="button"
