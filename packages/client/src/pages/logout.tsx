@@ -1,6 +1,11 @@
+import { Router } from "next/router";
 import { useEffect } from "react";
 import { ErrorMessage } from "../components/error-message";
-import { LogoutDocument, useLogoutMutation } from "../generated/graphql";
+import {
+  LogoutDocument,
+  LogoutMutation,
+  useLogoutMutation,
+} from "../generated/graphql";
 import { initializeApollo } from "../lib/lib.apollo-client";
 import { MyContext } from "../lib/types";
 import { redirect } from "../lib/utilities.redirect";
@@ -13,7 +18,11 @@ type LogoutServerSideProps = Promise<{
   };
 }>;
 
-const Logout = ({ router }): any => {
+interface LogoutProps {
+  router: Router;
+}
+
+const Logout = ({ router }: LogoutProps): JSX.Element | void => {
   const [logoutFunc, { data, error, loading }] = useLogoutMutation();
   useEffect(() => {
     logoutFunc();
@@ -31,10 +40,7 @@ const Logout = ({ router }): any => {
     if (router) {
       router.push("/login");
     }
-    return null;
   }
-
-  return null;
 };
 
 export async function getServerSideProps(
@@ -51,7 +57,9 @@ export async function getServerSideProps(
   }
   let response;
   try {
-    response = await ctx.apolloClient.mutate({ mutation: LogoutDocument });
+    response = await ctx.apolloClient.mutate<LogoutMutation>({
+      mutation: LogoutDocument,
+    });
   } catch (error) {
     console.error("APOLLO MUTATE ERROR", error);
     throw Error("Error logging out.");

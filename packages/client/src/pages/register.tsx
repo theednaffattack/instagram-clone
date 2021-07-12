@@ -39,7 +39,7 @@ function Register(): JSX.Element {
 
           // if we have FieldError(s) we'll handle them here
           if (response.data?.register.errors) {
-            setErrors(toErrorMap([response.data.register.errors]));
+            setErrors(toErrorMap(response.data.register.errors));
           }
           // SUCCESS
           if (response.data?.register.user) {

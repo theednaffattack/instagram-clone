@@ -7,5 +7,9 @@ query GetGlobalPostById($getpostinput: GetGlobalPostByIdInput!) {
       id
       uri
     }
+    comments_count
+    currently_liked
+    date_formatted
+    likes_count
   }
 }

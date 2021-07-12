@@ -1,8 +1,8 @@
-import { CloseButton, Stack } from "@chakra-ui/react";
+import { Stack } from "@chakra-ui/react";
+import dynamic from "next/dynamic";
 import { Router } from "next/router";
 import React from "react";
 import Modal from "react-modal";
-import { PostCard } from "../components/feed.home.card";
 import { LayoutAuthenticated } from "../components/layout-authenticated";
 import {
   GlobalPostResponse,
@@ -14,7 +14,9 @@ import {
   User,
 } from "../generated/graphql";
 import { useInfiniteScroll, useLazyLoading } from "../lib/custom-hooks";
-import { PublicPostCard } from "./feed.public-card";
+import { PublicFeedCard } from "./feed.public-card";
+
+const ModalDynamic = dynamic(() => import("./public-feed.home-modal"));
 
 Modal.setAppElement("#__next");
 
@@ -96,7 +98,7 @@ export function PublicFeed({ router }: IndexProps): JSX.Element {
           {dataPosts
             ? dataPosts.getGlobalPostsRelay?.edges?.map(({ node }) => {
                 return (
-                  <PublicPostCard
+                  <PublicFeedCard
                     key={node.id}
                     cardProps={node}
                     loadingPosts={loadingPosts}
@@ -107,29 +109,12 @@ export function PublicFeed({ router }: IndexProps): JSX.Element {
 
           <div id="page-bottom-boundary" ref={scrollRef}></div>
         </Stack>
-        <Modal
-          isOpen={!!router.query.postId}
-          onRequestClose={() => router.push("/")}
-          style={{
-            overlay: {
-              backgroundColor: "rgba(0,0,0,0.25)",
-              position: "fixed",
-              top: 0,
-              bottom: 0,
-            },
 
-            // content: {
-            //   color: "lightsteelblue"
-            // }
-          }}
-        >
-          <CloseButton size="sm" onClick={() => router.push("/")} />
-          {dataPosts?.getGlobalPostsRelay?.edges
-            .filter(({ node: { id } }) => router.query.postId === id)
-            .map(({ node }) => (
-              <PostCard key={node.id} cardProps={node} />
-            ))}
-        </Modal>
+        <ModalDynamic
+          dataPosts={dataPosts}
+          loadingPosts={loadingPosts}
+          router={router}
+        />
       </>
     </LayoutAuthenticated>
   );

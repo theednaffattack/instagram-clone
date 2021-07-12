@@ -1,7 +1,7 @@
-import { Box, Flex, Heading, Image, Text } from "@chakra-ui/react";
 import { NextPage } from "next";
 import { Router } from "next/router";
 import React from "react";
+import { PostPublicCard } from "../../components/post.public-card";
 import { MeQuery, useGetGlobalPostByIdQuery } from "../../generated/graphql";
 
 type PostByIdProps = {
@@ -10,25 +10,16 @@ type PostByIdProps = {
 };
 
 const PostById: NextPage<PostByIdProps> = ({ router }) => {
-  const { data } = useGetGlobalPostByIdQuery({
+  const { data, error, loading } = useGetGlobalPostByIdQuery({
     variables: {
       getpostinput: {
         postId: router?.query.postId as string,
       },
     },
   });
-  return (
-    <Flex flexDirection="column">
-      <Heading as="h1" size="4xl" isTruncated>
-        {" "}
-        {data?.getGlobalPostById?.title}
-      </Heading>
-      <Text> {data?.getGlobalPostById?.text}</Text>
-      <Box w={{ sm: "100%", md: "100%", lg: "33%", xl: "33%" }}>
-        <Image src={data?.getGlobalPostById?.images?.[0].uri} />
-      </Box>
-    </Flex>
-  );
+  if (error) return <div>{JSON.stringify(error)}</div>;
+  if (loading) return <div>loading...</div>;
+  return <PostPublicCard cardProps={data.getGlobalPostById} />;
 };
 
 // PostById.getInitialProps = async (ctx: MyContext) => {

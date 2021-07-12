@@ -114,6 +114,11 @@ export type GlobalPostResponse = {
   currently_liked: Scalars["Boolean"];
   success?: Maybe<Scalars["Boolean"]>;
   action?: Maybe<Scalars["String"]>;
+  date_formatted?: Maybe<Scalars["String"]>;
+};
+
+export type HelloInput = {
+  userInput: Scalars["String"];
 };
 
 export type Image = {
@@ -202,6 +207,7 @@ export type Mutation = {
   changePassword?: Maybe<UserResponse>;
   createMessageThread: Thread;
   logout: Scalars["Boolean"];
+  helloWithUserInput?: Maybe<Scalars["String"]>;
 };
 
 export type MutationAddMessageToThreadArgs = {
@@ -251,6 +257,10 @@ export type MutationCreateMessageThreadArgs = {
   invitees: Array<Scalars["ID"]>;
   message: Scalars["String"];
   images?: Maybe<Array<Maybe<Scalars["String"]>>>;
+};
+
+export type MutationHelloWithUserInputArgs = {
+  data: HelloInput;
 };
 
 export type PageInfo = {
@@ -382,7 +392,7 @@ export type RegisterInput = {
 
 export type RegisterResponse = {
   __typename?: "RegisterResponse";
-  errors?: Maybe<FieldError>;
+  errors?: Maybe<Array<FieldError>>;
   user?: Maybe<User>;
 };
 
@@ -606,7 +616,9 @@ export type RegisterMutation = { __typename?: "Mutation" } & {
   register: { __typename?: "RegisterResponse" } & {
     user?: Maybe<{ __typename?: "User" } & Pick<User, "id" | "username">>;
     errors?: Maybe<
-      { __typename?: "FieldError" } & Pick<FieldError, "field" | "message">
+      Array<
+        { __typename?: "FieldError" } & Pick<FieldError, "field" | "message">
+      >
     >;
   };
 };
@@ -634,7 +646,13 @@ export type GetGlobalPostByIdQuery = { __typename?: "Query" } & {
   getGlobalPostById?: Maybe<
     { __typename?: "GlobalPostResponse" } & Pick<
       GlobalPostResponse,
-      "id" | "title" | "text"
+      | "id"
+      | "title"
+      | "text"
+      | "comments_count"
+      | "currently_liked"
+      | "date_formatted"
+      | "likes_count"
     > & {
         images?: Maybe<
           Array<{ __typename?: "Image" } & Pick<Image, "id" | "uri">>
@@ -668,6 +686,7 @@ export type GetGlobalPostsRelayQuery = { __typename?: "Query" } & {
               | "comments_count"
               | "currently_liked"
               | "created_at"
+              | "date_formatted"
             > & {
                 user?: Maybe<
                   { __typename?: "User" } & Pick<
@@ -1420,6 +1439,10 @@ export const GetGlobalPostByIdDocument = gql`
         id
         uri
       }
+      comments_count
+      currently_liked
+      date_formatted
+      likes_count
     }
   }
 `;
@@ -1515,6 +1538,7 @@ export const GetGlobalPostsRelayDocument = gql`
             id
           }
           created_at
+          date_formatted
         }
       }
     }
