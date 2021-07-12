@@ -1,5 +1,6 @@
 import { Box, Flex, Skeleton, Text } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import React, { useEffect, useReducer, useState } from "react";
 import {
   GlobalPostResponse,
   Image as ImageType,
@@ -7,6 +8,11 @@ import {
   Maybe,
   User,
 } from "../generated/graphql";
+import { FeedBoxedImage } from "./feed.boxed-image";
+import { CardShareMenu } from "./feed.card-share-menu";
+import { FeedTopBar } from "./feed.card-top-bar";
+import { ErrorFlash } from "./feed.card.error-flash";
+import { CollectionsButton } from "./feed.collections-button";
 import { LikesAndCommentsSummary } from "./home.global-feed.likes";
 
 type PostNode = {
@@ -20,6 +26,7 @@ type PostNode = {
   | "comments_count"
   | "currently_liked"
   | "created_at"
+  | "date_formatted"
 > & {
     user?: Maybe<
       { __typename?: "User" } & Pick<
@@ -43,29 +50,131 @@ type PostNode = {
     >;
   };
 
-type CardProps = {
+interface CardProps {
   cardProps: PostNode;
   loadingPosts: boolean;
-};
-
-function handleImageLoaded(
-  dispatch: React.Dispatch<
-    React.SetStateAction<"isLoaded" | "isLoading" | "init">
-  >
-) {
-  dispatch("isLoaded");
 }
 
-export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
+export interface ErrorFlashState {
+  visibility: "hidden" | "visible";
+  message: string | null | React.ReactElement;
+}
+
+export function initErrorFlashState({
+  visibility = "hidden",
+  message = null,
+}: ErrorFlashState): ErrorFlashState {
+  return { visibility, message };
+}
+
+export type ErrorFlashReducerAction =
+  | {
+      type: "clicked-disabled-favorite";
+    }
+  | {
+      type: "clicked-disabled-comment";
+    }
+  | {
+      type: "clicked-disabled-message";
+    }
+  | { type: "dismissed-comment" };
+
+export function errFlashReducer(
+  _state: ErrorFlashState,
+  action: ErrorFlashReducerAction
+): ErrorFlashState {
+  const messages = {
+    ["clicked-disabled-message"]: (
+      <Text>
+        Please{" "}
+        <Link href="/login" passHref>
+          <a tabIndex={0} style={{ color: "rebeccapurple" }}>
+            login
+          </a>
+        </Link>{" "}
+        to send a message.
+      </Text>
+    ),
+    ["clicked-disabled-comment"]: (
+      <Text>
+        Please{" "}
+        <Link href="/login" passHref>
+          <a tabIndex={0} style={{ color: "rebeccapurple" }}>
+            login
+          </a>
+        </Link>{" "}
+        to add comment.
+      </Text>
+    ),
+    ["clicked-disabled-favorite"]: (
+      <Text>
+        Please{" "}
+        <Link href="/login" passHref>
+          <a tabIndex={0} style={{ color: "rebeccapurple" }}>
+            login
+          </a>
+        </Link>{" "}
+        to &lsquo;favorite&lsquo; a post.
+      </Text>
+    ),
+  };
+
+  switch (action.type) {
+    case "clicked-disabled-comment":
+      return {
+        message: messages[action.type],
+        visibility: "visible",
+      };
+    case "clicked-disabled-favorite":
+      return {
+        message: messages[action.type],
+        visibility: "visible",
+      };
+
+    case "clicked-disabled-message":
+      return {
+        message: messages[action.type],
+        visibility: "visible",
+      };
+
+    case "dismissed-comment":
+      return {
+        message: null,
+        visibility: "hidden",
+      };
+
+    default:
+      return {
+        message: null,
+        visibility: "hidden",
+      };
+  }
+}
+
+export const initialErrorFlashState: ErrorFlashState = {
+  visibility: "hidden",
+  message: null,
+};
+
+export function PublicFeedCard({ cardProps }: CardProps): JSX.Element {
   const {
-    created_at,
     comments_count,
     currently_liked,
+    date_formatted,
     id,
     images,
     likes_count,
     text,
   } = cardProps;
+
+  // const [errorFlashes, setErrorFlashes] =
+  //   useState<"hidden" | "visible">("hidden");
+
+  const [errorFlash, dispatchErrorFlash] = useReducer(
+    errFlashReducer,
+    initialErrorFlashState,
+    initErrorFlashState
+  );
 
   const [imageLoadState, setImageLoadState] =
     useState<"isLoaded" | "isLoading" | "isError" | "init">("init");
@@ -86,70 +195,66 @@ export function PublicPostCard({ cardProps }: CardProps): JSX.Element {
         htmlWidth="100%"
         src={images && images[0] ? images[0].uri : ""}
       /> */}
-      <Box>
-        <p>Image State: {imageLoadState}</p>
-        <p>{(images && images[0].uri) || "nope"}</p>
-        {images && images[0] ? (
-          <>
-            <img
-              alt={images[0].__typename + "-" + images[0].id}
-              key={images[0].id}
-              src={images[0].uri}
-              object-fit="cover"
-              onLoad={(evt: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                evt.preventDefault();
-                handleImageLoaded(setImageLoadState);
-              }}
-              onError={() => {
-                setImageLoadState("isError");
-              }}
-              style={imageLoadState === "isLoaded" ? null : { display: "none" }}
-            />
-            {imageLoadState !== "isLoaded" ? (
-              <img
-                alt={`${images[0].id}-alt`}
-                key={`${images[0].id}-placeholder`}
-                object-fit="cover"
-                src="https://via.placeholder.com/800"
-              />
-            ) : null}
-          </>
-        ) : (
-          // <img
-          //   className="card-img-top"
-          //   data-srcset={`${images?.[0].uri}?w=480 480w,
-          // ${images?.[0].uri}?w=640 640w,
-          // ${images?.[0].uri}?w=768 768w,
-          // ${images?.[0].uri}?w=1024 1024w`}
-          //   srcSet={`https://loremflickr.com/640/640/cat 480w,
-          //   https://loremflickr.com/800/800/cat 640w,
-          //   https://loremflickr.com/900/900/cat 768w,
-          //   https://loremflickr.com/1200/1200/cat 1024w`}
-          //   sizes="(max-width: 600px) 480px,
-          // (max-width: 800px) 640px,
-          // (max-width: 900px) 768px,
-          //     1024px"
-          //   src={images?.[0].uri}
-          //   alt="Alt text of some kind"
-          //   object-fit="cover"
-          // ></img>
-          <img src="https://via.placeholder.com/800" />
-        )}
-      </Box>
-      <Box px={4} pb={4}>
+      <FeedTopBar>
+        <CardShareMenu postTitle={text} />
+      </FeedTopBar>
+
+      <FeedBoxedImage
+        images={images}
+        imageLoadState={imageLoadState}
+        setImageLoadState={setImageLoadState}
+      />
+
+      <Box position="relative">
         <Flex alignItems="center">
-          <Text mr="auto">{created_at}</Text>
-          <LikesAndCommentsSummary
-            disabled={true}
-            comments_count={comments_count}
-            currently_liked={currently_liked}
-            likes_count={likes_count}
-            postId={id ? id : ""}
-          />
+          <Box pl={2}>
+            <LikesAndCommentsSummary
+              disabled={true}
+              comments_count={comments_count}
+              currently_liked={currently_liked}
+              likes_count={likes_count}
+              postId={id ? id : ""}
+              dispatchErrorFlash={dispatchErrorFlash}
+              errorFlash={errorFlash}
+              // setErrorFlashes={setErrorFlashes}
+            />
+          </Box>
+          <CollectionsButton />
         </Flex>
-        <Skeleton isLoaded={!!text}>
-          <Text>{text}</Text>
-        </Skeleton>
+
+        <Flex
+          position="absolute"
+          top={0}
+          left={0}
+          w="100%"
+          justifyContent="center"
+        >
+          {errorFlash.visibility === "visible" ? (
+            <ErrorFlash
+              errorMessage={errorFlash.message}
+              dispatchErrorFlash={dispatchErrorFlash}
+            />
+          ) : (
+            ""
+          )}
+        </Flex>
+        <Box px={4} pb={4}>
+          <Skeleton isLoaded={!!text}>
+            <Text>{text}</Text>
+
+            <Link
+              href={`/?postId=${id}`}
+              as={`/post/${id}`}
+              passHref
+              scroll={false}
+            >
+              <a tabIndex={0} style={{ color: "rebeccapurple" }}>
+                see more
+              </a>
+            </Link>
+          </Skeleton>
+          <Text>{date_formatted} ago</Text>
+        </Box>
       </Box>
     </Box>
   );

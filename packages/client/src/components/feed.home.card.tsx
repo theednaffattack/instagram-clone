@@ -11,6 +11,8 @@ import {
 
 import { LikesAndCommentsSummary } from "./home.global-feed.likes";
 
+// TODO: Ditch this whole component and just use one.
+
 type PostNode = {
   __typename?: "GlobalPostResponse";
 } & Pick<
@@ -45,9 +47,9 @@ type PostNode = {
     >;
   };
 
-type CardProps = {
+interface CardProps {
   cardProps: PostNode;
-};
+}
 
 export function PostCard({ cardProps }: CardProps): JSX.Element {
   const {
@@ -84,6 +86,9 @@ export function PostCard({ cardProps }: CardProps): JSX.Element {
         currently_liked={currently_liked}
         likes_count={likes_count}
         postId={id ? id : ""}
+        dispatchErrorFlash={() => alert("blaaaaaah")}
+        errorFlash={{ message: "wait what", visibility: "visible" }}
+        // setErrorFlashes={() => alert("Error Flashes - FAKE!!!")}
       />
     </Box>
   );

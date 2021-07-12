@@ -50,6 +50,9 @@ export class GlobalPostResponse {
 
   @Field(() => String, { nullable: true })
   action?: string;
+
+  @Field(() => String, { nullable: true })
+  date_formatted: string;
 }
 
 @ObjectType()

@@ -19,7 +19,7 @@ export function LayoutAuthenticated({
         borderBottom="1px solid rgba(219,219,219,1)"
         position="fixed"
         top={0}
-        zIndex={20}
+        zIndex={9}
         bg="rgba(255,255,255,1)"
         placeItems="center center"
       >

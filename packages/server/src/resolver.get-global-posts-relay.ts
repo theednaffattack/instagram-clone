@@ -1,4 +1,4 @@
-import { format, parseISO } from "date-fns";
+import { format, formatDistance, parseISO } from "date-fns";
 import {
   Args,
   Ctx,
@@ -122,6 +122,7 @@ export class GetGlobalPostsRelay {
             likes_count: post.likes.length,
             comments_count: post.comments.length,
             currently_liked: myCurrentlyLiked,
+            date_formatted: formatDistance(post.created_at, new Date()),
             success: true,
             action: "CREATE",
           },
