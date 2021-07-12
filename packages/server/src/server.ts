@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors, { CorsOptions } from "cors";
 import * as Express from "express";
 import http from "http";
+import pino from "pino";
 import "reflect-metadata";
 import { Connection, createConnection } from "typeorm";
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
@@ -16,6 +17,10 @@ import { configSessionMiddleware } from "./config.session-middleware";
 import { createSchema } from "./lib.apollo.create-schema";
 import { getConnectionOptionsCustom } from "./lib.orm-config";
 import { productionMigrations } from "./lib.production-migrations";
+
+const loggerTransport = pino({
+  prettyPrint: true,
+});
 
 export async function server(config: ServerConfigProps) {
   let dbConnection: Connection;
@@ -111,9 +116,30 @@ export async function server(config: ServerConfigProps) {
     app.use(cookieParser());
     app.use(sessionMiddleware);
 
-    app.get("/", (_req, res) => res.send("hello"));
+    // timing middleware
+    // adapted from: https://www.youtube.com/watch?v=ejWS2g0Td08&ab_channel=BenAwad
+    app.use("/graphql", (req, res, next) => {
+      const startHrTime = process.hrtime();
+
+      res.on("finish", () => {
+        if (req.body && req.body.operationName) {
+          const elapsedTime = process.hrtime(startHrTime);
+          const elapsedTimeInMs = elapsedTime[0] * 1000 + elapsedTime[1] / 1e6;
+
+          loggerTransport.info({
+            type: "timing",
+            name: req.body.operationName,
+            ms: `${elapsedTimeInMs} ms`,
+          });
+        }
+      });
+
+      next();
+    });
 
     apolloServer.applyMiddleware({ app, cors: corsOptions });
+
+    app.get("/", (_req, res) => res.send("hello"));
 
     let httpServer = http.createServer(app);
     apolloServer.installSubscriptionHandlers(httpServer);

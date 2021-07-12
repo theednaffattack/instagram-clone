@@ -58,7 +58,7 @@ export async function createSchema(): Promise<GraphQLSchema> {
       RegisterResolver,
       SignS3,
     ],
-    globalMiddlewares: [ResolveTime],
+    // globalMiddlewares: [ResolveTime],
   });
 }
 
