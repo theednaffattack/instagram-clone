@@ -26,7 +26,7 @@ export async function configSessionMiddleware(config: ServerConfigProps): Promis
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days,
         domain: config.cookieDomain,
         path: "/",
-        sameSite: "lax",
+        // sameSite: "lax",
       },
       name: config.cookieName,
       resave: false,
