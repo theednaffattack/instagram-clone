@@ -3,7 +3,7 @@ import { MyContext } from "./types";
 import { isServer } from "./utilities.is-server";
 
 export function redirect(context: MyContext, target: string): void {
-  if (context.req) {
+  if (context.req && context.res) {
     // server
     // 303: "See other"
     context.res.writeHead(303, { Location: target });
