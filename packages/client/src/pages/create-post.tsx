@@ -87,7 +87,7 @@ const CreatePost: NextPage<CreatePostProps> = ({ router }) => {
   const [previewFiles, setPreviewFiles] = useState<PreviewFile[]>(null);
 
   return (
-    <LayoutAuthenticated>
+    <LayoutAuthenticated router={router}>
       <Box>
         <Text fontSize="3xl">Create Post</Text>
         <Formik
@@ -323,12 +323,12 @@ function fileListToArray(list: FileList) {
 
 function makeObjectUrls(someArray: File[]): PreviewFile[] {
   return someArray.map((file) => {
-    const { lastModified, size, type } = file;
+    const { lastModified, name, size, type } = file;
 
     return {
       blobUrl: URL.createObjectURL(file),
       lastModified,
-      name: formatFilename(file.name),
+      name,
       size,
       type,
     };

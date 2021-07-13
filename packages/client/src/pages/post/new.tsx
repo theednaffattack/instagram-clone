@@ -130,7 +130,7 @@ const New: NextPage<NewProps> = ({ router }) => {
   });
 
   return (
-    <LayoutAuthenticated>
+    <LayoutAuthenticated router={router}>
       <Box>
         <Text fontSize="3xl">Create Post</Text>
 

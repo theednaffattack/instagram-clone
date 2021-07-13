@@ -92,7 +92,7 @@ export function PublicFeed({ router }: IndexProps): JSX.Element {
   useInfiniteScroll(scrollRef, setInfState);
 
   return (
-    <LayoutAuthenticated>
+    <LayoutAuthenticated router={router}>
       <>
         <Stack my={50} spacing="3em">
           {dataPosts
