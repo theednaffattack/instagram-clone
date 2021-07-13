@@ -1,6 +1,7 @@
 import { Avatar, Button, Flex, Grid, Stack, Text } from "@chakra-ui/react";
 import { Formik } from "formik";
 import { NextPage } from "next";
+import type { Router } from "next/router";
 import React, { useState } from "react";
 import { LayoutAuthenticated } from "../../components/layout-authenticated";
 import { MessagesGrid } from "../../components/messages-grid";
@@ -14,9 +15,10 @@ import {
 
 type MessagesProps = {
   isNOTLgScreen: boolean;
+  router: Router;
 };
 
-const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
+const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen, router }) => {
   // const [imageFiles, setImageFiles] = useState<File[]>();
 
   const [invitees, setInvitees] =
@@ -130,7 +132,7 @@ const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen }) => {
     >
       {({ handleSubmit, isSubmitting, setFieldValue, values }) => {
         return (
-          <LayoutAuthenticated isNOTLgScreen={isNOTLgScreen}>
+          <LayoutAuthenticated isNOTLgScreen={isNOTLgScreen} router={router}>
             <MessagesGrid
               // dataMessages={dataMessages}
               handleSubmit={handleSubmit}
