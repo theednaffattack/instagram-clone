@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { CookieOptions } from "express";
 import internalIp from "internal-ip";
 import { Arg, Ctx, Mutation, Resolver } from "type-graphql";
+import { sign } from "jsonwebtoken";
 
 import { configBuildAndValidate } from "./config.build-config";
 import { User } from "./entity.user";
@@ -132,7 +133,9 @@ export class LoginResolver {
     ctx.req.session.save();
     ctx.userId = user.id;
     return {
-      user: user,
+      accessToken: sign({ user }, ctx.config.secret, {
+        expiresIn: "15m",
+      }),
     };
   }
 }
