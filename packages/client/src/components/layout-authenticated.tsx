@@ -1,13 +1,20 @@
 import { Box, Flex, Grid, Heading, Link, Text } from "@chakra-ui/react";
 import NavLink from "next/link";
+import { Router } from "next/router";
 import * as React from "react";
+import { useLogoutMutation } from "../generated/graphql";
+
+interface LayoutAuthenticatedProps {
+  children: React.ReactChild | React.ReactChildren;
+  isNOTLgScreen?: boolean;
+  router: Router;
+}
 
 export function LayoutAuthenticated({
   children,
-}: {
-  children: React.ReactChild | React.ReactChildren;
-  isNOTLgScreen?: boolean;
-}): JSX.Element {
+  router,
+}: LayoutAuthenticatedProps): JSX.Element {
+  const [logoutFunc] = useLogoutMutation();
   // const [isNOTLgScreen, isBrowser] = useMediaQuery("(max-width: 62em)");
   const maxie = 1000;
   return (
@@ -29,7 +36,7 @@ export function LayoutAuthenticated({
           maxWidth={`${maxie}px`}
           width="100%"
         >
-          <Heading>Branding</Heading>
+          <Heading>Instagram (clone)</Heading>
           <Flex ml="auto">
             {navLinks.map(({ href, name }) => {
               return (
@@ -42,6 +49,25 @@ export function LayoutAuthenticated({
                 </Box>
               );
             })}
+            <Box>
+              <Link
+                onClick={async (evt) => {
+                  evt.preventDefault();
+
+                  // to support logging out from all windows
+                  window.localStorage.setItem("logout", Date.now().toString());
+
+                  try {
+                    await logoutFunc();
+                  } catch (error) {
+                    console.error(error);
+                  }
+                  router.push("/");
+                }}
+              >
+                <Text>logout</Text>
+              </Link>
+            </Box>
           </Flex>
         </Flex>
       </Grid>
@@ -85,6 +111,28 @@ export function LayoutAuthenticated({
                   </Box>
                 );
               })}
+              <Box>
+                <Link
+                  onClick={async (evt) => {
+                    evt.preventDefault();
+
+                    // to support logging out from all windows
+                    window.localStorage.setItem(
+                      "logout",
+                      Date.now().toString()
+                    );
+
+                    try {
+                      await logoutFunc();
+                    } catch (error) {
+                      console.error(error);
+                    }
+                    router.push("/");
+                  }}
+                >
+                  <Text>logout</Text>
+                </Link>
+              </Box>
             </Flex>
           </div>
         </Grid>
@@ -117,9 +165,5 @@ const navLinks = [
   {
     href: "/messages",
     name: "messages",
-  },
-  {
-    href: "/logout",
-    name: "logout",
   },
 ];

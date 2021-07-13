@@ -2,7 +2,7 @@ import { Avatar, Box, Flex, Link as ChLink } from "@chakra-ui/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
-import { MeQuery } from "../generated/graphql";
+import { MeQuery, useLogoutMutation } from "../generated/graphql";
 
 type NavbarProps = {
   dataMe?: MeQuery;
@@ -11,6 +11,7 @@ type NavbarProps = {
 
 export function NavbarAuthenticated({ dataMe }: NavbarProps): JSX.Element {
   const router = useRouter();
+  const [logoutFunc] = useLogoutMutation();
 
   // user is not logged in
   let body = (
@@ -38,10 +39,10 @@ export function NavbarAuthenticated({ dataMe }: NavbarProps): JSX.Element {
         <Link href="/logout" passHref>
           <ChLink
             mr={2}
-            onClick={() => {
+            onClick={async () => {
               // to support logging out from all windows
               window.localStorage.setItem("logout", Date.now().toString());
-
+              await logoutFunc();
               router.push("/logout");
             }}
           >
