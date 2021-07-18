@@ -1,7 +1,7 @@
 import { NextSeo } from "next-seo";
 import { Router } from "next/router";
 import { AppLayout } from "../components/layout.app";
-import { PublicFeed } from "../components/public-feed";
+import { Login } from "../components/login-page";
 
 interface HomeProps {
   router: Router;
@@ -43,7 +43,7 @@ export function Home({ router }: HomeProps): JSX.Element {
         }}
       />
 
-      <PublicFeed router={router} />
+      <Login router={router} />
     </>
   );
 }
