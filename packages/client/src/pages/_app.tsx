@@ -2,6 +2,7 @@ import { ApolloProvider } from "@apollo/client";
 import type Router from "next/dist/next-server/lib/router/router";
 import * as React from "react";
 import { ChakraProvider, Grid } from "@chakra-ui/react";
+import { Provider as AuthProvider } from "next-auth/client";
 
 import chakraTheme from "../styles/styles";
 import { useApollo } from "../lib/lib.apollo-client";
@@ -28,15 +29,27 @@ function MyApp({ Component, pageProps, router }: MyAppProps): JSX.Element {
 
   // const Layout = Component.layout || ((children) => <>{children}</>);
   const Layout = Component.layout || TemporaryFakeLayout;
+  let content;
+  if (Component.layout) {
+    content = (
+      <Layout>
+        <Component router={router} {...pageProps} toggleTheme={toggleTheme} />
+      </Layout>
+    );
+  } else {
+    content = (
+      <Component router={router} {...pageProps} toggleTheme={toggleTheme} />
+    );
+  }
 
   return (
-    <ApolloProvider client={apolloClient}>
-      <ChakraProvider resetCSS theme={chakraTheme}>
-        <Layout>
-          <Component router={router} {...pageProps} toggleTheme={toggleTheme} />
-        </Layout>
-      </ChakraProvider>
-    </ApolloProvider>
+    <AuthProvider session={pageProps.session}>
+      <ApolloProvider client={apolloClient}>
+        <ChakraProvider resetCSS theme={chakraTheme}>
+          {content}
+        </ChakraProvider>
+      </ApolloProvider>
+    </AuthProvider>
   );
 }
 
