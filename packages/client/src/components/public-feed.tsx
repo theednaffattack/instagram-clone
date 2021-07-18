@@ -1,7 +1,6 @@
 import { Stack } from "@chakra-ui/react";
-import dynamic from "next/dynamic";
 import { Router } from "next/router";
-import React from "react";
+import React, { PropsWithChildren } from "react";
 import Modal from "react-modal";
 import { LayoutAuthenticated } from "../components/layout-authenticated";
 import {
@@ -15,8 +14,7 @@ import {
 } from "../generated/graphql";
 import { useInfiniteScroll, useLazyLoading } from "../lib/custom-hooks";
 import { PublicFeedCard } from "./feed.public-card";
-
-const ModalDynamic = dynamic(() => import("./public-feed.home-modal"));
+import ModalDynamic from "./public-feed.home-modal";
 
 Modal.setAppElement("#__next");
 
@@ -48,13 +46,15 @@ export type GlobalPostsRelayEdges = Array<
     }
 >;
 
-export function PublicFeed({ router }: IndexProps): JSX.Element {
+export function PublicFeed({
+  router,
+}: PropsWithChildren<IndexProps>): JSX.Element {
   const [infState, setInfState] = React.useState<"idle" | "fetch-more">("idle");
 
   const initialGlobalPostsVariables = {
     after: null,
     before: null,
-    first: 10,
+    first: 20,
     last: null,
   };
 

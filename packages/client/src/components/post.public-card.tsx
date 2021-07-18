@@ -18,7 +18,7 @@ type CardProps = {
   cardProps: GetGlobalPostByIdQuery["getGlobalPostById"];
 };
 
-export function PostPublicCard({ cardProps }: CardProps): JSX.Element {
+export default function PostPublicCard({ cardProps }: CardProps): JSX.Element {
   const {
     comments_count,
     currently_liked,
@@ -106,3 +106,5 @@ export function PostPublicCard({ cardProps }: CardProps): JSX.Element {
     </Box>
   );
 }
+
+export { PostPublicCard };
