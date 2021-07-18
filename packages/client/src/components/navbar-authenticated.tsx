@@ -1,8 +1,8 @@
 import { Avatar, Box, Flex, Link as ChLink } from "@chakra-ui/react";
+import axios from "axios";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import React from "react";
-import { MeQuery, useLogoutMutation } from "../generated/graphql";
+import { MeQuery } from "../generated/graphql";
 
 type NavbarProps = {
   dataMe?: MeQuery;
@@ -10,8 +10,22 @@ type NavbarProps = {
 };
 
 export function NavbarAuthenticated({ dataMe }: NavbarProps): JSX.Element {
-  const router = useRouter();
-  const [logoutFunc] = useLogoutMutation();
+  // const router = useRouter();
+  // const [logoutFunc] = useLogoutMutation();
+
+  // const [data, setData] = useState(null);
+
+  const fetchData = async () => {
+    await axios.post("/api/sign-out");
+    // const newData = await req.json();
+
+    // return setData(newData.results);
+  };
+
+  const handleClick = (event) => {
+    event.preventDefault();
+    fetchData();
+  };
 
   // user is not logged in
   let body = (
@@ -39,11 +53,12 @@ export function NavbarAuthenticated({ dataMe }: NavbarProps): JSX.Element {
         <Link href="/logout" passHref>
           <ChLink
             mr={2}
-            onClick={async () => {
+            onClick={async (evt) => {
+              handleClick(evt);
               // to support logging out from all windows
               window.localStorage.setItem("logout", Date.now().toString());
-              await logoutFunc();
-              router.push("/logout");
+              // await logoutFunc();
+              // router.push("/logout");
             }}
           >
             logout
@@ -86,9 +101,17 @@ export function NavbarAuthenticated({ dataMe }: NavbarProps): JSX.Element {
         </Link>
       </Box>
       <Box mr={2}>
-        <Link href="/logout" passHref>
-          <ChLink mr={2}>logout</ChLink>
-        </Link>
+        {/* <Link href="/logout" passHref> */}
+        <ChLink
+          mr={2}
+          onClick={(evt) => {
+            evt.preventDefault();
+            handleClick(evt);
+          }}
+        >
+          logout
+        </ChLink>
+        {/* </Link> */}
       </Box>
 
       <Box ml="auto">{body}</Box>
