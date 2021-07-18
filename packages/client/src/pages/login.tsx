@@ -10,79 +10,37 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
+import { signIn } from "next-auth/client";
 import { AppProps } from "next/dist/next-server/lib/router/router";
 import NextLink from "next/link";
 import React, { useEffect, useState } from "react";
 import { Wrapper } from "../components/flex-wrapper";
 import { InputField } from "../components/forms.input-field";
-import { useLoginMutation } from "../generated/graphql";
-import { toErrorMap } from "../lib/utilities.toErrorMap";
+
 0;
-function Login({ router }: AppProps): JSX.Element {
+function Login({ csrfToken, router }: AppProps): JSX.Element {
   const [flashMessage, setFlashMessage] =
     useState<"hidden" | "visible">("hidden");
   const { flash } = router.query;
-  const [userConfirmedHelper, setUserConfirmedHelper] = useState(<></>);
-  const [login] = useLoginMutation();
+
   useEffect(() => {
     setFlashMessage(flash ? "visible" : "hidden");
   }, []);
   return (
     <Formik
       initialValues={{ username: "", password: "", user_confirmed: <></> }}
-      onSubmit={async (values, { setErrors }) => {
+      onSubmit={async (values, { setErrors: _setErrors }) => {
         try {
-          const response = await login({
-            variables: {
-              password: values.password,
-              username: values.username,
-            },
+          await signIn("login", {
+            // redirect: false,
+            username: values.username,
+            password: values.password,
+            callbackUrl: "http://192.168.1.10:3030/feed",
           });
-          // Look for FieldError(s) on response
-          // data.
-          if (response.data?.login?.errors) {
-            const errorMap = toErrorMap(
-              response.data.login.errors
-              // loginFnError?.graphQLErrors[0].extensions!.valErrors
-            );
-            // Trap any user confirmation errors
-            // and set a helper in the UI.
-            if ("user_confirmed" in errorMap) {
-              setUserConfirmedHelper(
-                <Box>
-                  <Text color="crimson">{errorMap.user_confirmed}</Text>
-                  <Box>
-                    <NextLink href="/re-confirmation" passHref>
-                      <Link>send another confirmation email</Link>
-                    </NextLink>
-                  </Box>
-                </Box>
-              );
-
-              // Delete the user_confirmed error
-              // and set any other FieldError(s)
-              delete errorMap.user_confirmed;
-              setErrors(errorMap);
-            } else {
-              setErrors(errorMap);
-            }
-          }
-
-          // SUCCESS
-          if (response.data?.login?.user) {
-            // console.log("SUCCESS!!!");w
-
-            // if we've set a redirect after login,
-            // follow it. Otherwise go to home page.
-            if (typeof router.query.next === "string") {
-              router.push(router.query.next);
-            } else {
-              router.push("/");
-            }
-          }
-        } catch (loginFnError) {
-          // This will catch Network and unkown errors?
-          console.error("LOGIN ERROR\n", loginFnError);
+        } catch (error) {
+          console.error("SIGN IN ERROR");
+          console.error(error);
+          throw new Error("Sign in error.");
         }
       }}
     >
@@ -114,7 +72,6 @@ function Login({ router }: AppProps): JSX.Element {
                 ""
               )}
               <Form onSubmit={handleSubmit}>
-                {userConfirmedHelper}
                 <InputField
                   isRequired={true}
                   type="hidden"
@@ -126,6 +83,13 @@ function Login({ router }: AppProps): JSX.Element {
                   name="username"
                   placeholder="Idi Ogunye"
                   autoComplete="username"
+                />
+                <InputField
+                  isRequired={true}
+                  label="CSRF Token"
+                  name="csrfToken"
+                  type="hidden"
+                  defaultValue={csrfToken}
                 />
                 <Box my={4}>
                   <InputField
