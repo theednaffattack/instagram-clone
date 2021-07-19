@@ -9,6 +9,9 @@ import { configBuildAndValidate } from "./config.build-config";
 import { User } from "./entity.user";
 import { LoginResponse } from "./type.login-response";
 import { MyContext } from "./typings";
+import { addMinutes, addDays } from "./lib.utilities.manipulate-time";
+import { createAccessToken, createRefreshToken } from "./lib.authentication";
+import { sendRefreshToken } from "./lib.utilities.send-refresh-token";
 
 const expireTime = Math.floor(new Date().getTime() / 1000) + 60 * 60 * 24 * 1; // Current Time in UTC + time in seconds, (60 * 60 * 24 * 1 = 1 day)
 
@@ -21,13 +24,6 @@ export class LoginResolver {
     @Ctx() ctx: MyContext
   ): Promise<LoginResponse> {
     const config = await configBuildAndValidate();
-
-    function addDays(days: number) {
-      const result = new Date();
-      const date = result.getTime() / 1000 + 60 * 60 * 24 * 1;
-      result.setDate(date + days);
-      return result;
-    }
 
     let user;
 
@@ -129,13 +125,21 @@ export class LoginResolver {
 
     // all is well return the user we found
 
-    ctx.req.session.userId = user.id;
-    ctx.req.session.save();
     ctx.userId = user.id;
-    return {
-      accessToken: sign({ user }, ctx.config.secret, {
-        expiresIn: "15m",
-      }),
+    const fifteenMinutes = addMinutes(new Date(), 15);
+    const sevenDays = addDays(7);
+
+    const tokenObj: LoginResponse = {
+      // Note: Sigining the token with "ACCESS TOKEN secret"
+      accessToken: createAccessToken({ config: ctx.config, user, expiresIn: "15m" }),
+      expiresIn: fifteenMinutes,
+      userId: user.id,
+      version: user.tokenVersion,
     };
+
+    sendRefreshToken({ res: ctx.res, user, config });
+
+    // Remember the ACCESS TOKEN is in the response.
+    return tokenObj;
   }
 }
