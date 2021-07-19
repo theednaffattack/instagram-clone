@@ -8,7 +8,6 @@ import NextAuth from "next-auth";
 import Providers from "next-auth/providers";
 import { LoginMutation } from "../../../generated/graphql";
 import { cloudFrontCookies } from "../../../lib/lib.cloudfront-cookies";
-import { setAccessToken } from "../../../lib/lib.hacks.access-token";
 
 // Loosely adapted from: https://dev.to/szymkab/next-js-authentication-with-existing-backend-200h
 const refreshAccessToken = async (prevToken) => {
@@ -185,7 +184,6 @@ const getOptions = (req: NextApiRequest, res: Response) => ({
           },
         } = loginResponse;
 
-        setAccessToken(login.accessToken);
         const sevenDays = addDays(7);
 
         const refreshToken = sign(
