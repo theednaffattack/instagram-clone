@@ -3,11 +3,9 @@ import cookieParser from "cookie-parser";
 import cors, { CorsOptions } from "cors";
 import * as Express from "express";
 import http from "http";
-import pino from "pino";
 import "reflect-metadata";
 import { Connection, createConnection } from "typeorm";
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
-
 import { configApolloContext } from "./config.apollo-context";
 import { configGraphQLSubscriptions } from "./config.apollo-subscriptions";
 import { ServerConfigProps } from "./config.build-config";
@@ -15,12 +13,10 @@ import { formatGraphQLErrors } from "./config.format-apollo-errors";
 import { serverOnListen } from "./config.server.on-listen";
 import { configSessionMiddleware } from "./config.session-middleware";
 import { createSchema } from "./lib.apollo.create-schema";
+import { loggingMiddleware } from "./lib.middleware.gql-logging";
 import { getConnectionOptionsCustom } from "./lib.orm-config";
 import { productionMigrations } from "./lib.production-migrations";
-
-const loggerTransport = pino({
-  prettyPrint: true,
-});
+import { refreshTokenController } from "./lib.refresh-token-controller";
 
 export async function server(config: ServerConfigProps) {
   let dbConnection: Connection;
@@ -114,32 +110,16 @@ export async function server(config: ServerConfigProps) {
     );
 
     app.use(cookieParser());
-    app.use(sessionMiddleware);
+    // app.use(sessionMiddleware);
 
     // timing middleware
     // adapted from: https://www.youtube.com/watch?v=ejWS2g0Td08&ab_channel=BenAwad
-    app.use("/graphql", (req, res, next) => {
-      const startHrTime = process.hrtime();
-
-      res.on("finish", () => {
-        if (req.body && req.body.operationName) {
-          const elapsedTime = process.hrtime(startHrTime);
-          const elapsedTimeInMs = elapsedTime[0] * 1000 + elapsedTime[1] / 1e6;
-
-          loggerTransport.info({
-            type: "timing",
-            name: req.body.operationName,
-            ms: `${elapsedTimeInMs} ms`,
-          });
-        }
-      });
-
-      next();
-    });
+    app.use("/graphql", loggingMiddleware);
 
     apolloServer.applyMiddleware({ app, cors: corsOptions });
 
     app.get("/", (_req, res) => res.send("hello"));
+    app.post("/refresh_token", (req, res) => refreshTokenController(dbConnection, req, res));
 
     let httpServer = http.createServer(app);
     apolloServer.installSubscriptionHandlers(httpServer);
