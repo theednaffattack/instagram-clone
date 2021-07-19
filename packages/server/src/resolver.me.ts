@@ -6,6 +6,12 @@ import { MyContext } from "./typings";
 @Resolver()
 export class MeResolver {
   @UseMiddleware(isAuth)
+  @Query(() => String)
+  async bye(@Ctx() { payload }: MyContext): Promise<string> {
+    return `bye ${payload.user.id}`;
+  }
+
+  @UseMiddleware(isAuth)
   @Query(() => User, { nullable: true })
   async me(@Ctx() ctx: MyContext): Promise<User | null> {
     // The below if statement SHOULD be impossible due to the 'isAuth'
