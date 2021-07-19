@@ -220,3 +220,7 @@ https://stackoverflow.com/a/55536083/9448010
 #### List Items in Bucket
 
 `aws s3 ls s3://<bucket_name> --profile <profile_name_in_config>`
+
+## JWT
+
+### Good notes on revoking tokens: [here](https://youtu.be/25GS0MLT8JU?t=4594)

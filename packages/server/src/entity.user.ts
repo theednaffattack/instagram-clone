@@ -143,4 +143,7 @@ export class User extends BaseEntity {
   @ManyToMany(() => Thread, (thread) => thread.invitees, { nullable: true })
   @JoinTable()
   thread_invitations: Thread[];
+
+  @Column("int", { default: 0 })
+  tokenVersion: number;
 }
