@@ -7,6 +7,7 @@ convict.addFormat(ipaddress);
 convict.addFormat(url);
 
 export interface ServerConfigProps {
+  accessTokenSecret: string;
   apiEndpoint: string;
   allowedOrigins: string;
   awsConfig: {
@@ -43,10 +44,17 @@ export interface ServerConfigProps {
     interiorPort: string;
     exteriorPort: string;
   };
+  refreshTokenSecret: string;
   secret: string;
 }
 
 const configBuilder = convict({
+  accessTokenSecret: {
+    doc: "Secret used to decode JWT",
+    default: "*********",
+    env: "ACCESS_TOKEN_SECRET",
+    format: String,
+  },
   allowedOrigins: {
     doc: "Allowed list of CORS origins",
     default: "ic.eddienaff.dev",
@@ -241,6 +249,13 @@ const configBuilder = convict({
       env: "REDIS_EXTERIOR_PORT",
       format: Number,
     },
+  },
+  refreshTokenSecret: {
+    default: "",
+    doc: "Secret used for JWT CSRF tokens",
+    env: "REFRESH_TOKEN_SECRET",
+    format: "*",
+    sensitive: true,
   },
   secret: {
     default: "",
