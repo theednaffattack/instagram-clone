@@ -166,7 +166,10 @@ export enum LikeStatus {
 export type LoginResponse = {
   __typename?: "LoginResponse";
   errors?: Maybe<Array<FieldError>>;
-  user?: Maybe<User>;
+  accessToken?: Maybe<Scalars["String"]>;
+  expiresIn?: Maybe<Scalars["DateTime"]>;
+  userId?: Maybe<Scalars["ID"]>;
+  version?: Maybe<Scalars["Int"]>;
 };
 
 export type Message = {
@@ -342,6 +345,7 @@ export type Query = {
   getMessagesByThreadId?: Maybe<MessageConnection>;
   getOnlyThreads?: Maybe<ThreadConnection>;
   helloWorld: Scalars["String"];
+  bye: Scalars["String"];
   me?: Maybe<User>;
   getListToCreateThread?: Maybe<TransUserReturn>;
   getGlobalPosts?: Maybe<Array<GlobalPostResponse>>;
@@ -832,19 +836,21 @@ export type GetOnlyThreadsQuery = { __typename?: "Query" } & {
 };
 
 export type LoginMutationVariables = Exact<{
-  username: Scalars["String"];
   password: Scalars["String"];
+  username: Scalars["String"];
 }>;
 
 export type LoginMutation = { __typename?: "Mutation" } & {
-  login: { __typename?: "LoginResponse" } & {
-    errors?: Maybe<
-      Array<
-        { __typename?: "FieldError" } & Pick<FieldError, "field" | "message">
-      >
-    >;
-    user?: Maybe<{ __typename?: "User" } & Pick<User, "id" | "username">>;
-  };
+  login: { __typename?: "LoginResponse" } & Pick<
+    LoginResponse,
+    "accessToken" | "userId" | "version" | "expiresIn"
+  > & {
+      errors?: Maybe<
+        Array<
+          { __typename?: "FieldError" } & Pick<FieldError, "field" | "message">
+        >
+      >;
+    };
 };
 
 export type MeQueryVariables = Exact<{ [key: string]: never }>;
@@ -1954,16 +1960,16 @@ export type GetOnlyThreadsQueryResult = Apollo.QueryResult<
   GetOnlyThreadsQueryVariables
 >;
 export const LoginDocument = gql`
-  mutation Login($username: String!, $password: String!) {
-    login(username: $username, password: $password) {
+  mutation Login($password: String!, $username: String!) {
+    login(password: $password, username: $username) {
       errors {
         field
         message
       }
-      user {
-        id
-        username
-      }
+      accessToken
+      userId
+      version
+      expiresIn
     }
   }
 `;
@@ -1985,8 +1991,8 @@ export type LoginMutationFn = Apollo.MutationFunction<
  * @example
  * const [loginMutation, { data, loading, error }] = useLoginMutation({
  *   variables: {
- *      username: // value for 'username'
  *      password: // value for 'password'
+ *      username: // value for 'username'
  *   },
  * });
  */

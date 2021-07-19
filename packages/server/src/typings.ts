@@ -31,6 +31,7 @@ export type MyContext = {
   req: Request;
   res: Response;
   next: NextFunction;
+  payload?: any;
   usersLoader: any;
   userId: string;
 };

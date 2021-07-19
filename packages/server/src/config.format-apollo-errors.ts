@@ -12,6 +12,12 @@ export function formatGraphQLErrors(error: GraphQLError): GraphQLFormattedError 
     return error;
   }
 
+  if (message.includes("session has expired")) {
+    console.error(error);
+
+    return error;
+  }
+
   if (error.originalError instanceof ApolloError) {
     return error;
   }
