@@ -1,5 +1,5 @@
-import { ExpressContext } from "apollo-server-express";
-import type { Connection } from "typeorm";
+import { verify } from "jsonwebtoken";
+import { JwtExpirationError } from "./config.apollo-errors";
 import { ServerConfigProps } from "./config.build-config";
 import { MyContext } from "./typings";
 
@@ -32,55 +32,86 @@ export function configApolloContext({ req, res, connection, config, dbConnection
 
 const getContextFromHttpRequest = ({ req, res, dbConnection, config }: ConfigApolloProps) => {
   // Cookie implementation
-  if (req && req.session) {
-    const { userId } = req.session;
+  // if (req && req.session) {
+  //   const { userId } = req.session;
 
-    return { userId, req, res, dbConnection, config };
-  }
+  //   return { userId, req, res, dbConnection, config };
+  // }
 
   // JWT implementation
-  // const authorization = req.headers["authorization"];
-  // if (authorization) {
-  //   try {
-  //     const token = authorization.split(" ")[1];
-  //     const payload = verify(token, process.env.ACCESS_TOKEN_SECRET!);
-  //     return {
-  //       req,
-  //       res,
-  //       payload: { token: payload },
-  //       token: req.headers.authorization || "",
-  //     };
-  //   } catch (err) {
-  //     console.log("IS AUTH ERROR", err);
-  //     if (err.name === "TokenExpiredError") {
-  //       throw createAuthorizationError({
-  //         message: "Your session has expired, please log in.",
-  //       });
-  //     }
-  //     throw createAuthorizationError({ message: "Not Authorized." });
+  const authorization = req.headers["authorization"];
+  if (authorization) {
+    let token;
+    try {
+      token = authorization.split(" ")[1];
+      const payload = verify(token, config.accessTokenSecret);
 
-  //     // throw new Error("Not authenticated");
-  //     // return {
-  //     //   req,
-  //     //   res,
-  //     //   payload: {
-  //     //     token: undefined,
-  //     //     errors: [err],
-  //     //   },
-  //     //   token: req.headers.authorization || "",
-  //     // };
-  //   }
-  // } else {
-  //   return { req, res };
-  // }
+      return {
+        req,
+        res,
+        payload,
+        token: req.headers.authorization || "",
+        dbConnection,
+        config,
+      };
+    } catch (err) {
+      console.error("ERROR VERIFYING TOKEN - HTTP REQUESTS");
+      console.error({ err });
+
+      if (err.message.includes("jwt expired")) {
+        console.error("JWT EXPIRED");
+        console.error(err);
+
+        // throw createAuthenticationError({
+        //   message: "Your session has expired, please log in.",
+        // });
+        throw JwtExpirationError;
+        // throw new Error("Your session has expired, please log in.");
+      }
+
+      // throw new Error("Not authenticated");
+      // return {
+      //   req,
+      //   res,
+      //   payload: {
+      //     token: undefined,
+      //     errors: [err],
+      //   },
+      //   token: req.headers.authorization || "",
+      // };
+    }
+  } else {
+    return { req, res, config, dbConnection };
+  }
 };
 
-const getContextFromSubscription = ({ connection, dbConnection }: ConfigApolloProps) => {
+const getContextFromSubscription = ({ config, connection, dbConnection }: ConfigApolloProps) => {
   // old cookie implementation
   if (connection) {
-    const { userId } = connection.context.req.session;
+    const authorization = connection.context.req.headers["authorization"];
 
-    return { req: connection.context.req, res: connection.context.res, userId, dbConnection };
+    let token;
+    let payload;
+
+    try {
+      token = authorization.split(" ")[1];
+      payload = verify(token, config.accessTokenSecret);
+      return { req: connection.context.req, res: connection.context.res, payload, dbConnection, config };
+    } catch (error) {
+      console.error("ERROR VERIFYING JWT - SUBSCRIPTIONS");
+      console.error(error);
+      if (error.message.includes("jwt expired")) {
+        console.error("JWT EXPIRED");
+        console.error(error);
+
+        // throw createAuthenticationError({
+        //   message: "Your session has expired, please log in.",
+        // });
+        throw JwtExpirationError;
+        // throw new Error("Your session has expired, please log in.");
+      }
+    }
+    return { req: connection.context.req, res: connection.context.res, dbConnection, config };
   }
   // JSON Web token implementation
   // const authorization = connection.context.authorization;
