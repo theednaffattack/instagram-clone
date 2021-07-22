@@ -6,8 +6,10 @@ import type { NextApiRequest } from "next";
 import type { NextAuthOptions, Session } from "next-auth";
 import NextAuth from "next-auth";
 import Providers from "next-auth/providers";
-import { LoginMutation } from "../../../generated/graphql";
+import { LoginResponse } from "../../../generated/graphql";
 import { cloudFrontCookies } from "../../../lib/lib.cloudfront-cookies";
+import { logger } from "../../../lib/lib.logger";
+import { serialize } from "../../../lib/lib.serialize-object-to-url-param";
 
 // Loosely adapted from: https://dev.to/szymkab/next-js-authentication-with-existing-backend-200h
 const refreshAccessToken = async (prevToken) => {
@@ -15,7 +17,7 @@ const refreshAccessToken = async (prevToken) => {
 
   try {
     token = await axios({
-      url: "http://192.168.1.10:8080/refresh_token",
+      url: `${process.env.NEXT_PUBLIC_PRODUCTION_BASE_URL}/refresh_token`,
       method: "post",
       data: {
         token: prevToken.accessToken,
@@ -120,8 +122,13 @@ const loginMutation = `mutation Login($password: String!, $username:String!){
       field
       message
     }
-    accessToken
-    expiresIn
+tokenData{
+  accessToken
+  expiresIn
+  userId
+  version
+}
+    
   }
 }`;
 
@@ -154,10 +161,14 @@ const getOptions = (req: NextApiRequest, res: Response) => ({
         // const token = await loginEndpoint(credentials);
 
         // BEG = EXAMPLE
-        let loginResponse: { data: { data: LoginMutation } };
+        let loginResponse: { data: { data: { login: LoginResponse } } };
         try {
           loginResponse = await axios({
-            url: "http://192.168.1.10:8080/graphql",
+            url: `${
+              process.env.NODE_ENV !== "production"
+                ? process.env.NEXTAUTH_URL
+                : process.env.NEXT_PUBLIC_PRODUCTION_BASE_URL
+            }/graphql`,
             method: "post",
             data: {
               query: loginMutation,
@@ -172,28 +183,57 @@ const getOptions = (req: NextApiRequest, res: Response) => ({
             },
             withCredentials: true,
           });
+
+          logger.info(loginResponse, "WHAT IS LOGIN RESPONSE");
         } catch (error) {
-          console.error("ERROR REQUESTING BACKEND USER - LOGIN");
-          console.error(error.response);
+          logger.error(error, "ERROR REQUESTING BACKEND USER - LOGIN");
           throw new Error(error);
         }
 
-        const {
-          data: {
-            data: { login },
-          },
-        } = loginResponse;
+        logger.info(
+          loginResponse.data.data.login.tokenData.userId,
+          "WHAT IS LOGIN RESPONSE... USER ID?"
+        );
+
+        // It's a hybrid return so if there's an errors array
+        // grab it and throw it.
+        if (loginResponse.data.data.login.tokenData === null) {
+          // The errors array is sure to have just one
+          // item, due to how the resolver is written.
+          const [theError] = loginResponse.data.data.login.errors;
+          //Translate the custom error object into URL
+          // params so that we can see them on the page.
+          const finalError = serialize(theError);
+          logger.info(
+            { finalError, theError },
+            "VIEW CUSTOM LOGIN ERROR MESSAGE"
+          );
+          throw new Error(finalError);
+        }
+
+        // const {
+        //   data: { tokenData },
+        // } = loginResponse;
 
         const sevenDays = addDays(7);
 
-        const refreshToken = sign(
-          { userId: login.userId, tokenVersion: login.version },
-          process.env.REFRESH_TOKEN_SECRET,
-          {
-            expiresIn: "7d",
-          }
-        );
-
+        let refreshToken;
+        try {
+          refreshToken = sign(
+            {
+              userId: loginResponse.data.data.login.tokenData.userId,
+              tokenVersion: loginResponse.data.data.login.tokenData.version,
+            },
+            process.env.REFRESH_TOKEN_SECRET,
+            {
+              expiresIn: "7d",
+            }
+          );
+        } catch (error) {
+          logger.error(error, "ERROR SIGNING REFRESH TOKEN");
+          throw new Error(error);
+        }
+        logger.info(refreshToken, "CAN WE SEE REFRESH TOKEN?");
         // Set cookies
         // First is our internal app refresh token set in a secure cookie
         const cookies = new Cookies(req, res);
@@ -211,9 +251,9 @@ const getOptions = (req: NextApiRequest, res: Response) => ({
           throw new Error("Error setting cookies needed for media assets.");
         }
         // END = EXAMPLE
-        if (login) {
+        if (loginResponse.data.data.login.tokenData) {
           // Any object returned will be saved in `user` property of the JWT
-          return login;
+          return loginResponse.data.data.login.tokenData;
           // return user.data.data.login.accessToken;
         } else {
           // If you return null or false then the credentials will be rejected
@@ -227,6 +267,7 @@ const getOptions = (req: NextApiRequest, res: Response) => ({
   ],
   pages: {
     signIn: "/login",
+    error: "/auth/error",
   },
   secret: process.env.SESSION_SECRET,
   session: { jwt: true },

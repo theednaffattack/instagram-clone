@@ -161,7 +161,7 @@ export function LayoutAuthenticated({
                         callbackUrl: `${
                           process.env.NODE_ENV !== "production"
                             ? process.env.NEXTAUTH_URL
-                            : process.env.PRODUCTION_AUTH_URL
+                            : process.env.NEXT_PUBLIC_PRODUCTION_BASE_URL
                         }/login`,
                       });
                     } catch (error) {

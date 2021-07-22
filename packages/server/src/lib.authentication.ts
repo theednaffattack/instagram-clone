@@ -9,9 +9,17 @@ interface CreateTokenProps {
 }
 
 export function createAccessToken({ config, user, expiresIn = "15m" }: CreateTokenProps) {
-  return sign({ userId: user.id }, config.accessTokenSecret, {
-    expiresIn,
-  });
+  let token;
+  try {
+    token = sign({ userId: user.id }, config.accessTokenSecret, {
+      expiresIn,
+    });
+  } catch (error) {
+    console.error("ERROR CREATING ACCESS TOKEN");
+    console.error(error);
+    throw new Error(error);
+  }
+  return token;
 }
 
 export function createRefreshToken({ config, user, expiresIn = "7d" }: CreateTokenProps) {

@@ -1,7 +1,7 @@
-import express from "express";
-import next from "next";
 import { json, urlencoded } from "body-parser";
+import express from "express";
 import { v4 } from "internal-ip";
+import next from "next";
 
 const port = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== "production";

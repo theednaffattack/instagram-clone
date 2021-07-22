@@ -1,22 +1,12 @@
-import { ObjectType, Field, ID, Int } from "type-graphql";
-
+import { Field, ObjectType } from "type-graphql";
 import { FieldError } from "./type.field-error";
-import { User } from "./entity.user";
+import { TokenData } from "./type.token-data";
 
 @ObjectType()
 export class LoginResponse {
   @Field(() => [FieldError], { nullable: true })
   errors?: FieldError[];
 
-  @Field(() => String, { nullable: true })
-  accessToken?: string;
-
-  @Field(() => Date, { nullable: true })
-  expiresIn?: Date;
-
-  @Field(() => ID, { nullable: true })
-  userId?: string;
-
-  @Field(() => Int, { nullable: true })
-  version?: number;
+  @Field(() => TokenData, { nullable: true })
+  tokenData?: TokenData;
 }

@@ -31,11 +31,11 @@ export async function server(config: ServerConfigProps) {
     throw Error(error);
   }
 
-  if (config.env === "production") {
+  if (config.env === "production" || config.migration === true) {
     try {
       await productionMigrations(dbConnection, connectOptions);
     } catch (error) {
-      console.error("ERROR CONFIGURING SESSION MIDDLEWARE");
+      console.error("ERROR RUNNING MIGRATIONS");
       console.error(error);
       throw Error(error);
     }
@@ -51,15 +51,15 @@ export async function server(config: ServerConfigProps) {
     throw Error(error);
   }
 
-  let sessionMiddleware;
+  // let sessionMiddleware;
 
-  try {
-    sessionMiddleware = await configSessionMiddleware(config);
-  } catch (error) {
-    console.error("ERROR CONFIGURING SESSION MIDDLEWARE");
-    console.error(error);
-    throw Error(error);
-  }
+  // try {
+  //   sessionMiddleware = await configSessionMiddleware(config);
+  // } catch (error) {
+  //   console.error("ERROR CONFIGURING SESSION MIDDLEWARE");
+  //   console.error(error);
+  //   throw Error(error);
+  // }
 
   if (dbConnection !== undefined) {
     const apolloServer = new ApolloServer({
@@ -68,7 +68,7 @@ export async function server(config: ServerConfigProps) {
       schema,
       context: ({ req, res, connection }: ExpressContext) =>
         configApolloContext({ req, res, connection, dbConnection, config }),
-      subscriptions: configGraphQLSubscriptions(sessionMiddleware),
+      subscriptions: configGraphQLSubscriptions(),
       formatError: formatGraphQLErrors,
       validationRules: [],
     });

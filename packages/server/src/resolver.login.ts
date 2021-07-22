@@ -3,15 +3,14 @@ import bcrypt from "bcryptjs";
 import { CookieOptions } from "express";
 import internalIp from "internal-ip";
 import { Arg, Ctx, Mutation, Resolver } from "type-graphql";
-import { sign } from "jsonwebtoken";
-
-import { configBuildAndValidate } from "./config.build-config";
+import { configBuildAndValidate, ServerConfigProps } from "./config.build-config";
 import { User } from "./entity.user";
+import { createAccessToken } from "./lib.authentication";
+import { logger } from "./lib.logger";
+import { addDays, addMinutes } from "./lib.utilities.manipulate-time";
+import { sendRefreshToken } from "./lib.utilities.send-refresh-token";
 import { LoginResponse } from "./type.login-response";
 import { MyContext } from "./typings";
-import { addMinutes, addDays } from "./lib.utilities.manipulate-time";
-import { createAccessToken, createRefreshToken } from "./lib.authentication";
-import { sendRefreshToken } from "./lib.utilities.send-refresh-token";
 
 const expireTime = Math.floor(new Date().getTime() / 1000) + 60 * 60 * 24 * 1; // Current Time in UTC + time in seconds, (60 * 60 * 24 * 1 = 1 day)
 
@@ -23,12 +22,26 @@ export class LoginResolver {
     @Arg("password", () => String, { description: "Your user password" }) password: string,
     @Ctx() ctx: MyContext
   ): Promise<LoginResponse> {
-    const config = await configBuildAndValidate();
+    logger.info("LOGIN FIRING");
+
+    let config: ServerConfigProps;
+
+    try {
+      config = await configBuildAndValidate();
+    } catch (error) {
+      console.error(error);
+      throw new Error("Error creating 'config' object.");
+    }
 
     let user;
 
     try {
       user = await ctx.dbConnection.getRepository(User).findOne({ where: { username } });
+      logger.info("Found a user!!!");
+
+      if (user) {
+        logger.info(user, "FOUND A USER!!!");
+      }
     } catch (error) {
       console.error(error);
       throw Error(error);
@@ -49,6 +62,9 @@ export class LoginResolver {
       console.error(error);
       throw Error(error);
     }
+
+    logger.info({ valid }, "AFTER CF COOKIES ARE SET");
+
     // const valid = user.password === password;
 
     // if the supplied password is invalid return early
@@ -64,6 +80,8 @@ export class LoginResolver {
         errors: [{ field: "username", message: "Please confirm your account." }],
       };
     }
+
+    logger.info({}, "BEFORE CF COOKIES ARE SET");
 
     if (config.awsConfig.cfPublicKeyId && config.awsConfig.cfPrivateKey) {
       const homeIp = internalIp.v4.sync();
@@ -123,21 +141,27 @@ export class LoginResolver {
       };
     }
 
+    logger.info({}, "AFTER CF COOKIES ARE SET");
+
     // all is well return the user we found
 
     ctx.userId = user.id;
     const fifteenMinutes = addMinutes(new Date(), 15);
-    const sevenDays = addDays(7);
+    // const sevenDays = addDays(7);
 
     const tokenObj: LoginResponse = {
       // Note: Sigining the token with "ACCESS TOKEN secret"
-      accessToken: createAccessToken({ config: ctx.config, user, expiresIn: "15m" }),
-      expiresIn: fifteenMinutes,
-      userId: user.id,
-      version: user.tokenVersion,
+      tokenData: {
+        accessToken: createAccessToken({ config: ctx.config, user, expiresIn: "15m" }),
+        expiresIn: fifteenMinutes,
+        userId: user.id,
+        version: user.tokenVersion,
+      },
     };
 
     sendRefreshToken({ res: ctx.res, user, config });
+    logger.info("VIEW LOGIN DETAILS");
+    logger.info({ tokenObj, cookie: ctx.res.cookie }, "THE DETAILS");
 
     // Remember the ACCESS TOKEN is in the response.
     return tokenObj;

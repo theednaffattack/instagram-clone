@@ -1,6 +1,7 @@
 import colors from "colors/safe";
 
 import { ServerConfigProps } from "./config.build-config";
+import { logger } from "./lib.logger";
 
 interface ServerDetails {
   graphqlPath: string;
@@ -19,8 +20,8 @@ GraphQL Playground available at:
         ${colors.green("LAN")}: http://${config.domain}:${config.port}${deets.graphqlPath}
 
 WebSocket subscriptions available at:
-${colors.green("slack_clone server")}: ws://${deets.homeIp}:${deets.port}${deets.subscriptionsPath}
-
-
+${colors.green("websockets")}: ws://${deets.homeIp}:${deets.port}${deets.subscriptionsPath}
 `);
+
+  logger.info("TESTING CHANGE");
 }
