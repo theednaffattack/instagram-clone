@@ -16,8 +16,10 @@
     "echo": "echo testing server with: $npm_package_version",
     "push-image": "./push-to-dockerhub.sh",
     "postbuild": "cpy --cwd=src --parents '**/*.json' ../dist/",
-    "spinup": "yarn rm-build && yarn build && docker-compose -f docker-compose.dev.yml up -d --build ic-api-server",
-    "spindown": "docker-compose -f docker-compose.dev.yml down",
+    "spinup": "yarn rm-build && yarn build && docker-compose -f docker-compose.dev-not-server.yml up -d",
+    "spindown": "docker-compose -f docker-compose.dev-not-server.yml down",
+    "spinup-all": "yarn rm-build && yarn build && docker-compose -f docker-compose.dev.yml up -d --build ic-api-server",
+    "spindown-all": "docker-compose -f docker-compose.dev.yml down",
     "c-dev": "yarn rm-build && yarn build && docker-compose -f docker-compose.dev-not-server.yml up -d && yarn dev"
   },
   "dependencies": {
@@ -45,6 +47,7 @@
     "http": "^0.0.1-security",
     "http-errors": "~1.6.3",
     "internal-ip": "^6.2.0",
+    "jsonwebtoken": "^8.5.1",
     "nodemailer": "^6.6.2",
     "pg": "^8.6.0",
     "pino": "^6.11.3",
@@ -65,6 +68,7 @@
     "@types/express-session": "^1.17.3",
     "@types/graphql-relay": "0.6.0",
     "@types/jest": "^26.0.23",
+    "@types/jsonwebtoken": "^8.5.4",
     "@types/node": "^15.6.1",
     "@types/nodemailer": "^6.4.2",
     "@types/pino": "^6.3.8",
