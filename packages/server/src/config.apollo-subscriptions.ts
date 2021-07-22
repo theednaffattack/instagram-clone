@@ -1,7 +1,7 @@
 import { SubscriptionServerOptions } from "apollo-server-core";
 import { SessionMiddle } from "./config.session-middleware";
 
-export function configGraphQLSubscriptions(sessionMiddleware: SessionMiddle): Partial<SubscriptionServerOptions> {
+export function configGraphQLSubscriptions(): Partial<SubscriptionServerOptions> {
   return {
     path: "/subscriptions",
     onConnect: (_, ws: any) => {

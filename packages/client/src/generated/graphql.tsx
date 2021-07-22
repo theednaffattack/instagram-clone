@@ -166,10 +166,7 @@ export enum LikeStatus {
 export type LoginResponse = {
   __typename?: "LoginResponse";
   errors?: Maybe<Array<FieldError>>;
-  accessToken?: Maybe<Scalars["String"]>;
-  expiresIn?: Maybe<Scalars["DateTime"]>;
-  userId?: Maybe<Scalars["ID"]>;
-  version?: Maybe<Scalars["Int"]>;
+  tokenData?: Maybe<TokenData>;
 };
 
 export type Message = {
@@ -454,6 +451,14 @@ export type ThreadConnection = {
 export type ThreadEdge = {
   __typename?: "ThreadEdge";
   node: Thread;
+};
+
+export type TokenData = {
+  __typename?: "TokenData";
+  accessToken?: Maybe<Scalars["String"]>;
+  expiresIn?: Maybe<Scalars["DateTime"]>;
+  userId?: Maybe<Scalars["ID"]>;
+  version?: Maybe<Scalars["Int"]>;
 };
 
 export type TransUserReturn = {
@@ -841,16 +846,19 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 export type LoginMutation = { __typename?: "Mutation" } & {
-  login: { __typename?: "LoginResponse" } & Pick<
-    LoginResponse,
-    "accessToken" | "userId" | "version" | "expiresIn"
-  > & {
-      errors?: Maybe<
-        Array<
-          { __typename?: "FieldError" } & Pick<FieldError, "field" | "message">
-        >
-      >;
-    };
+  login: { __typename?: "LoginResponse" } & {
+    errors?: Maybe<
+      Array<
+        { __typename?: "FieldError" } & Pick<FieldError, "field" | "message">
+      >
+    >;
+    tokenData?: Maybe<
+      { __typename?: "TokenData" } & Pick<
+        TokenData,
+        "accessToken" | "expiresIn" | "userId" | "version"
+      >
+    >;
+  };
 };
 
 export type MeQueryVariables = Exact<{ [key: string]: never }>;
@@ -1966,10 +1974,12 @@ export const LoginDocument = gql`
         field
         message
       }
-      accessToken
-      userId
-      version
-      expiresIn
+      tokenData {
+        accessToken
+        expiresIn
+        userId
+        version
+      }
     }
   }
 `;

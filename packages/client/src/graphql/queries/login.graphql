@@ -4,9 +4,11 @@ mutation Login($password: String!, $username: String!) {
       field
       message
     }
-    accessToken
-    userId
-    version
-    expiresIn
+    tokenData {
+      accessToken
+      expiresIn
+      userId
+      version
+    }
   }
 }

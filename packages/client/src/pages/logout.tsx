@@ -16,8 +16,6 @@ const Logout = (): JSX.Element | void => {
   useEffect(() => {
     logoutFunc();
   }, []);
-  // eslint-disable-next-line no-console
-  console.log("VIEW APOLLO LOGOUT VALUES", { data, error, loading });
 
   if (error) {
     return <ErrorMessage message={error.message} />;

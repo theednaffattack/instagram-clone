@@ -36,6 +36,7 @@ export interface ServerConfigProps {
     port: string;
   };
   ip: string;
+  migration: boolean;
   port: number;
   postmarkToken: string;
   redis: {
@@ -216,6 +217,11 @@ const configBuilder = convict({
     doc: "The port to bind.",
     env: "PORT",
     format: "port",
+  },
+  migration: {
+    default: false,
+    doc: "A dev setting to easily run migrations.",
+    format: Boolean,
   },
   postmarkToken: {
     default: "",

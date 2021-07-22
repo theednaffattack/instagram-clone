@@ -35,7 +35,11 @@ function Login({ csrfToken, router }: AppProps): JSX.Element {
             // redirect: false,
             username: values.username,
             password: values.password,
-            callbackUrl: "http://192.168.1.10:3030/feed",
+            callbackUrl: `${
+              process.env.NODE_ENV !== "production"
+                ? process.env.NEXTAUTH_URL
+                : process.env.NEXT_PUBLIC_PRODUCTION_BASE_URL
+            }/feed`,
           });
         } catch (error) {
           console.error("SIGN IN ERROR");
@@ -71,6 +75,11 @@ function Login({ csrfToken, router }: AppProps): JSX.Element {
               ) : (
                 ""
               )}
+              {`${
+                process.env.NODE_ENV !== "production"
+                  ? process.env.NEXTAUTH_URL
+                  : process.env.NEXT_PUBLIC_PRODUCTION_BASE_URL
+              }/feed`}
               <Form onSubmit={handleSubmit}>
                 <InputField
                   isRequired={true}

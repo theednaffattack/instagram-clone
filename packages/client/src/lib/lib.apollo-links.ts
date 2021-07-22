@@ -50,8 +50,6 @@ export const splitLink = !isServer()
 
 export const authLink = setContext(async (_, { headers = {} }) => {
   let session;
-  // eslint-disable-next-line no-console
-  console.log("AUTH LINK VIEW REQ");
 
   try {
     session = await getSession();

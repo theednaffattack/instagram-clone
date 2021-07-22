@@ -5,11 +5,6 @@ export async function loggingMiddleware(req: Request, res: Response, next: NextF
   const startHrTime = process.hrtime();
 
   res.on("finish", () => {
-    if (req.body && !req.body.operationName) {
-      console.log("REQ BODY KEYS", Object.keys(req.body));
-      console.log(req.body.query);
-    }
-
     if (req.body && req.body.operationName) {
       const elapsedTime = process.hrtime(startHrTime);
       const elapsedTimeInMs = elapsedTime[0] * 1000 + elapsedTime[1] / 1e6;

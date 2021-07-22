@@ -1,6 +1,7 @@
 import { ApolloError } from "apollo-server-express";
 import { GraphQLError, GraphQLFormattedError } from "graphql";
 import { ArgumentValidationError } from "type-graphql";
+import { logger } from "./lib.logger";
 
 // custom error handling from:
 // https://github.com/19majkel94/type-graphql/issues/258
@@ -65,10 +66,9 @@ export function formatGraphQLErrors(error: GraphQLError): GraphQLFormattedError 
   }
 
   //   error.message = "Internal Server Error";
+  logger.info({ extensions, locations, message, path }, "FORMAT APOLLO ERRORS - SERVER SIDE");
 
-  let getStacktrace = extensions.exception
-    ? extensions.exception.stacktrace[0].replace("Error: ", "")
-    : "Undetermined error";
+  let getStacktrace = extensions.exception ? extensions.exception.stacktrace[0].replace("Error: ", "") : message;
 
   return {
     message: getStacktrace,
