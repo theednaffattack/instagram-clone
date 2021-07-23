@@ -122,12 +122,12 @@ const loginMutation = `mutation Login($password: String!, $username:String!){
       field
       message
     }
-tokenData{
-  accessToken
-  expiresIn
-  userId
-  version
-}
+    tokenData{
+      accessToken
+      expiresIn
+      userId
+      version
+    }
     
   }
 }`;
@@ -164,11 +164,10 @@ const getOptions = (req: NextApiRequest, res: Response) => ({
         let loginResponse: { data: { data: { login: LoginResponse } } };
         try {
           loginResponse = await axios({
-            url: `${
+            url:
               process.env.NODE_ENV !== "production"
-                ? process.env.NEXTAUTH_URL
-                : process.env.NEXT_PUBLIC_PRODUCTION_BASE_URL
-            }/graphql`,
+                ? process.env.SCHEMA_PATH
+                : process.env.PRODUCTION_SCHEMA_PATH,
             method: "post",
             data: {
               query: loginMutation,
@@ -181,12 +180,14 @@ const getOptions = (req: NextApiRequest, res: Response) => ({
             headers: {
               "Content-Type": "application/json",
             },
-            withCredentials: true,
+            withCredentials: process.env.NODE_ENV === "production",
           });
 
           logger.info(loginResponse, "WHAT IS LOGIN RESPONSE");
         } catch (error) {
           logger.error(error, "ERROR REQUESTING BACKEND USER - LOGIN");
+          logger.trace(error);
+
           throw new Error(error);
         }
 
@@ -266,8 +267,8 @@ const getOptions = (req: NextApiRequest, res: Response) => ({
     }),
   ],
   pages: {
-    signIn: "/login",
-    error: "/auth/error",
+    signIn: "/",
+    error: "/",
   },
   secret: process.env.SESSION_SECRET,
   session: { jwt: true },
