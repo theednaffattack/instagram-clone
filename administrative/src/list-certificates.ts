@@ -12,10 +12,7 @@ import { logger } from "./util.logger";
 
 const noResultsMessage = "No results, the Certificate List may be empty.";
 
-async function ListCerts(): Promise<
-  | DescribeCertificateCommandOutput[]
-  | "No results, the Certificate List may be empty."
-> {
+export async function listAcmCertificates(): Promise<DescribeCertificateCommandOutput[]> {
   // AWS credentials options
   const credentials: CredentialsOptions = {
     accessKeyId: config.accessKeyId,
@@ -37,7 +34,7 @@ async function ListCerts(): Promise<
   try {
     certList = await client.send(listCommand);
   } catch (error) {
-    logger.errro(error, "ERROR FETCHING CERTIFICATE LIST");
+    logger.error(error, "ERROR FETCHING CERTIFICATE LIST");
     throw new Error(error);
   }
 
@@ -52,17 +49,19 @@ async function ListCerts(): Promise<
         })
       );
     } catch (error) {
-      logger.errro(error, "ERROR LOADING CERTIFICATE DESCRIPTION(S)");
+      logger.error(error, "ERROR LOADING CERTIFICATE DESCRIPTION(S)");
       throw new Error(error);
     }
   }
 
-  return noResultsMessage;
+  throw new Error(noResultsMessage);
 }
 
-ListCerts()
-  .then((data) =>
-    logger.info(typeof data === "object" ? data : { data }, "VIEW DATA")
-  )
+listAcmCertificates()
+  .then((data) => {
+    // logger.info(data, "VIEW AWS ACM CERTIFICATES");
+    const [first] = data;
+    return first?.Certificate?.CertificateArn;
+  })
   .catch((error) => logger.error(error, "ERROR (ListCerts)!"))
   .finally(() => logger.info("LIST CERTS FUNCTION COMPLETE"));
