@@ -3,6 +3,7 @@ import { NodeSSH } from "node-ssh";
 import isequal from "lodash.isequal";
 import { config } from "./config";
 import { logger } from "./util.logger";
+import path from "path";
 
 // The values of this object match the filenames
 // in the remote directory. We have to loop instead
@@ -26,9 +27,9 @@ async function run(sshConfig: Config) {
     throw new Error(error);
   }
 
-  const remotePath: string = `/etc/letsencrypt/live/${config.ssh.host}/`;
-  const localPath: string = `${__dirname}/downloaded/`;
-  let remoteFile: Record<string, any> = {};
+  const remotePath = `/etc/letsencrypt/live/${config.ssh.host}/`;
+  const localPath = path.join(__dirname, "/downloaded/");
+  const remoteFile: Record<string, any> = {};
 
   // Once connected retrieve the remote files
   for (const [key, filename] of Object.entries(certNames)) {
