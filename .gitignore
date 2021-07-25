@@ -76,3 +76,9 @@ ormconfig.json
 
 # Hide the client-side build directory
 packages/client/dist
+
+# Hide files downloaded from remote server
+administrative/src/downloaded
+
+# Hide admin dev files
+administrative/.env
