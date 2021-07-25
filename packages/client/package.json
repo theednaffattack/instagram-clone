@@ -57,6 +57,7 @@
     "formik": "^2.2.9",
     "framer-motion": "^4.1.17",
     "graphql": "^15.5.1",
+    "http-proxy-middleware": "^2.0.1",
     "internal-ip": "^6.2.0",
     "jsonwebtoken": "^8.5.1",
     "linaria": "^2.1.0",

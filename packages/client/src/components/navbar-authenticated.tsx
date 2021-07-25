@@ -30,7 +30,7 @@ export function NavbarAuthenticated({ dataMe }: NavbarProps): JSX.Element {
   // user is not logged in
   let body = (
     <>
-      <Link href="/login" passHref>
+      <Link href="/" passHref>
         <ChLink mr={2}>login</ChLink>
       </Link>
       <Link href="/register" passHref>

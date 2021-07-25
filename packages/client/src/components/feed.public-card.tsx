@@ -87,7 +87,7 @@ export function errFlashReducer(
     ["clicked-disabled-message"]: (
       <Text>
         Please{" "}
-        <Link href="/login" passHref>
+        <Link href="/" passHref>
           <a tabIndex={0} style={{ color: "rebeccapurple" }}>
             login
           </a>
@@ -98,7 +98,7 @@ export function errFlashReducer(
     ["clicked-disabled-comment"]: (
       <Text>
         Please{" "}
-        <Link href="/login" passHref>
+        <Link href="/" passHref>
           <a tabIndex={0} style={{ color: "rebeccapurple" }}>
             login
           </a>
@@ -109,7 +109,7 @@ export function errFlashReducer(
     ["clicked-disabled-favorite"]: (
       <Text>
         Please{" "}
-        <Link href="/login" passHref>
+        <Link href="/" passHref>
           <a tabIndex={0} style={{ color: "rebeccapurple" }}>
             login
           </a>

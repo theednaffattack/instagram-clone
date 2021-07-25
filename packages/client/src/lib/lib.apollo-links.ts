@@ -84,8 +84,7 @@ export const errorLink = onError(({ graphQLErrors, networkError }) => {
     );
 
   if (filteredAuthErrors && filteredAuthErrors.length > 0) {
-    !isServer() &&
-      Router.replace("/login?flash=You must be authenticated", "/login");
+    !isServer() && Router.replace("/?error=You must be authenticated", "/");
     return;
   }
 
