@@ -182,19 +182,12 @@ const getOptions = (req: NextApiRequest, res: Response) => ({
             },
             withCredentials: process.env.NODE_ENV === "production",
           });
-
-          logger.info(loginResponse, "WHAT IS LOGIN RESPONSE");
         } catch (error) {
           logger.error(error, "ERROR REQUESTING BACKEND USER - LOGIN");
           logger.trace(error);
 
           throw new Error(error);
         }
-
-        logger.info(
-          loginResponse.data.data.login.tokenData.userId,
-          "WHAT IS LOGIN RESPONSE... USER ID?"
-        );
 
         // It's a hybrid return so if there's an errors array
         // grab it and throw it.
@@ -204,7 +197,7 @@ const getOptions = (req: NextApiRequest, res: Response) => ({
           const [theError] = loginResponse.data.data.login.errors;
           //Translate the custom error object into URL
           // params so that we can see them on the page.
-          const finalError = serialize(theError);
+          const finalError = `&${serialize(theError)}`;
           logger.info(
             { finalError, theError },
             "VIEW CUSTOM LOGIN ERROR MESSAGE"
@@ -255,7 +248,6 @@ const getOptions = (req: NextApiRequest, res: Response) => ({
         if (loginResponse.data.data.login.tokenData) {
           // Any object returned will be saved in `user` property of the JWT
           return loginResponse.data.data.login.tokenData;
-          // return user.data.data.login.accessToken;
         } else {
           // If you return null or false then the credentials will be rejected
           // return null;

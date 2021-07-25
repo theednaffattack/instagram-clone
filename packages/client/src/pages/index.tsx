@@ -8,6 +8,13 @@ interface HomeProps {
 }
 
 export function Home({ router }: HomeProps): JSX.Element {
+  const { error, field, message } = router.query;
+  // const { error } = useRouter().query;
+  // eslint-disable-next-line no-console
+  console.log("VIEW ERROR");
+  // eslint-disable-next-line no-console
+  console.log(error);
+
   return (
     <>
       <NextSeo
@@ -42,7 +49,7 @@ export function Home({ router }: HomeProps): JSX.Element {
           cardType: "summary_large_image",
         }}
       />
-
+      TOP LEVEL ERROR: {JSON.stringify({ field, message }, null, 2)}
       <Login router={router} />
     </>
   );

@@ -31,6 +31,6 @@ export default async function signOutHandler(
   res.status(200);
   return res.send(true);
   // res.redirect("/feed");
-  // res.writeHead(302, { Location: "/login" });
+  // res.writeHead(302, { Location: "/" });
   // res.end();
 }

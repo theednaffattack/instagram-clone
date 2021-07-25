@@ -25,7 +25,7 @@ const Logout = (): JSX.Element | void => {
   }
   if (data) {
     if (router) {
-      router.push("/login");
+      router.push("/");
     }
   }
   return <div>LOUGOUT</div>;

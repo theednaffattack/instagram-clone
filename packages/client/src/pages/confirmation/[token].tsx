@@ -22,7 +22,7 @@ const Confirmation: NextPage<ConfirmationProps> = ({ userConfirmed }) => {
     body = (
       <Flex flexDirection="column" alignItems="center" justifyContent="center">
         <Text>Thank you for confirming your account!</Text>
-        <NextLink href="/login" passHref>
+        <NextLink href="/" passHref>
           <Link>Login</Link>
         </NextLink>
       </Flex>

@@ -55,7 +55,7 @@ const PostById: NextPage<PostByIdProps> = ({ router }) => {
             <AlertTitle mr={2}>Your session has expired!</AlertTitle>
             <AlertDescription>
               Please{" "}
-              <Link href="/login" passHref>
+              <Link href="/" passHref>
                 <a>Log in</a>
               </Link>
               .
