@@ -22,8 +22,6 @@ export class LoginResolver {
     @Arg("password", () => String, { description: "Your user password" }) password: string,
     @Ctx() ctx: MyContext
   ): Promise<LoginResponse> {
-    logger.info("LOGIN FIRING");
-
     let config: ServerConfigProps;
 
     try {
@@ -37,11 +35,6 @@ export class LoginResolver {
 
     try {
       user = await ctx.dbConnection.getRepository(User).findOne({ where: { username } });
-      logger.info("Found a user!!!");
-
-      if (user) {
-        logger.info(user, "FOUND A USER!!!");
-      }
     } catch (error) {
       console.error(error);
       throw Error(error);
@@ -63,10 +56,6 @@ export class LoginResolver {
       throw Error(error);
     }
 
-    logger.info({ valid }, "AFTER CF COOKIES ARE SET");
-
-    // const valid = user.password === password;
-
     // if the supplied password is invalid return early
     if (!valid) {
       return {
@@ -80,8 +69,6 @@ export class LoginResolver {
         errors: [{ field: "username", message: "Please confirm your account." }],
       };
     }
-
-    logger.info({}, "BEFORE CF COOKIES ARE SET");
 
     if (config.awsConfig.cfPublicKeyId && config.awsConfig.cfPrivateKey) {
       const homeIp = internalIp.v4.sync();
@@ -141,8 +128,6 @@ export class LoginResolver {
       };
     }
 
-    logger.info({}, "AFTER CF COOKIES ARE SET");
-
     // all is well return the user we found
 
     ctx.userId = user.id;
@@ -160,8 +145,6 @@ export class LoginResolver {
     };
 
     sendRefreshToken({ res: ctx.res, user, config });
-    logger.info("VIEW LOGIN DETAILS");
-    logger.info({ tokenObj, cookie: ctx.res.cookie }, "THE DETAILS");
 
     // Remember the ACCESS TOKEN is in the response.
     return tokenObj;

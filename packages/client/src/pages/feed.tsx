@@ -1,32 +1,13 @@
-import { useSession } from "next-auth/client";
 import { NextSeo } from "next-seo";
 import type { Router } from "next/router";
 import React from "react";
-import AccessDenied from "../components/access-denied";
-import { LayoutAuthenticated } from "../components/layout-authenticated";
 import { PublicFeed } from "../components/public-feed";
-import { useHasMounted } from "../lib/lib.hooks.has-mounted";
 
 interface FeedProps {
   router: Router;
 }
 
 export function Feed({ router }: FeedProps): JSX.Element {
-  const [session, loading] = useSession();
-  const hasMounted = useHasMounted();
-
-  // // When rendering client side don't display anything until loading is complete
-  if (hasMounted === "hasMounted" && loading) return null;
-
-  // // If no session exists, display access denied message
-  if (hasMounted === "hasMounted" && !session) {
-    return (
-      <LayoutAuthenticated router={router}>
-        <AccessDenied />
-      </LayoutAuthenticated>
-    );
-  }
-
   return (
     <div>
       <NextSeo

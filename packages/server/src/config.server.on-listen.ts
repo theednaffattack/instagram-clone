@@ -22,6 +22,4 @@ GraphQL Playground available at:
 WebSocket subscriptions available at:
 ${colors.green("websockets")}: ws://${deets.homeIp}:${deets.port}${deets.subscriptionsPath}
 `);
-
-  logger.info("TESTING CHANGE");
 }

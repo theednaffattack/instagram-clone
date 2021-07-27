@@ -21,6 +21,4 @@ export function sendRefreshToken({ res, config, user }: SendRefreshTokenProps) {
       expires: sevenDays,
     }
   );
-
-  console.log("COOKIE WAS SET");
 }

@@ -1,29 +1,47 @@
 import { Box, Flex, Grid, Heading, Link, Text } from "@chakra-ui/react";
-import axios from "axios";
 import NavLink from "next/link";
-import { Router } from "next/router";
+import type { Router } from "next/router";
+import type { MouseEvent, PropsWithChildren } from "react";
 import * as React from "react";
-import { signOut } from "next-auth/client";
-import { PropsWithChildren } from "react";
+import { useLogoutMutation } from "../generated/graphql";
 
 interface LayoutAuthenticatedProps {
   isNOTLgScreen?: boolean;
   router: Router;
 }
 
-const logMeOut = async (evt?) => {
+async function handleLogout(
+  evt: MouseEvent<HTMLAnchorElement>,
+  logoutFunc: any,
+  router: Router
+) {
   evt.preventDefault();
-  await axios.post("/api/sign-out");
-  // const newData = await req.json();
 
-  // return setData(newData.results);
-};
+  let logoutResponse;
+  try {
+    logoutResponse = await logoutFunc();
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error logging out.");
+  }
+
+  // to support logging out from all windows
+  window.localStorage.setItem("logout", Date.now().toString());
+
+  // Logout response should be a boolean.
+  if (logoutResponse) {
+    router.push("/");
+  }
+}
 
 export function LayoutAuthenticated({
   children,
+  router,
 }: PropsWithChildren<LayoutAuthenticatedProps>): JSX.Element {
   // const [isNOTLgScreen, isBrowser] = useMediaQuery("(max-width: 62em)");
+  const [logoutFunc] = useLogoutMutation();
   const maxie = 1000;
+
   return (
     <>
       <Grid
@@ -58,40 +76,7 @@ export function LayoutAuthenticated({
             })}
             <Box>
               <Link
-                // href={
-                //   process.env.NODE_ENV !== "production"
-                //     ? process.env.NEXTAUTH_URL
-                //     : process.env.PRODUCTION_AUTH_URL
-                // }
-                onClick={async (evt) => {
-                  evt.preventDefault();
-                  try {
-                    await logMeOut(evt);
-                  } catch (error) {
-                    console.error(error);
-                  }
-
-                  try {
-                    await signOut({
-                      callbackUrl: `${
-                        process.env.NODE_ENV !== "production"
-                          ? process.env.NEXTAUTH_URL
-                          : process.env.PRODUCTION_AUTH_URL
-                      }/login`,
-                    });
-                  } catch (error) {
-                    console.error(error);
-                  }
-                  // to support logging out from all windows
-                  window.localStorage.setItem("logout", Date.now().toString());
-
-                  // try {
-                  //   await logoutFunc();
-                  // } catch (error) {
-                  //   console.error(error);
-                  // }
-                  // router.push("/");
-                }}
+                onClick={async (evt) => handleLogout(evt, logoutFunc, router)}
               >
                 <Text>logout</Text>
               </Link>
@@ -141,45 +126,7 @@ export function LayoutAuthenticated({
               })}
               <Box>
                 <Link
-                  // href={
-                  //   process.env.NODE_ENV !== "production"
-                  //     ? process.env.NEXTAUTH_URL
-                  //     : process.env.PRODUCTION_AUTH_URL
-                  // }
-                  onClick={async (evt) => {
-                    evt.preventDefault();
-
-                    try {
-                      await logMeOut();
-                    } catch (error) {
-                      console.error(error);
-                    }
-
-                    // Final Sign out
-                    try {
-                      await signOut({
-                        callbackUrl: `${
-                          process.env.NODE_ENV !== "production"
-                            ? process.env.NEXTAUTH_URL
-                            : process.env.NEXT_PUBLIC_PRODUCTION_BASE_URL
-                        }/login`,
-                      });
-                    } catch (error) {
-                      console.error(error);
-                    }
-                    // // to support logging out from all windows
-                    // window.localStorage.setItem(
-                    //   "logout",
-                    //   Date.now().toString()
-                    // );
-
-                    // try {
-                    //   await logoutFunc();
-                    // } catch (error) {
-                    //   console.error(error);
-                    // }
-                    // router.push("/");
-                  }}
+                  onClick={async (evt) => handleLogout(evt, logoutFunc, router)}
                 >
                   <Text>logout</Text>
                 </Link>
@@ -193,18 +140,6 @@ export function LayoutAuthenticated({
 }
 
 const navLinks = [
-  // {
-  //   href: "/feed",
-  //   name: "feed"
-  // },
-  // {
-  //   href: "/likes",
-  //   name: "likes"
-  // },
-  // {
-  //   href: "/discover",
-  //   name: "discover"
-  // },
   {
     href: "/create-post",
     name: "create post",

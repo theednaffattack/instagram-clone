@@ -28,7 +28,7 @@ async function run(sshConfig: Config) {
   }
 
   const remotePath = `/etc/letsencrypt/live/${config.ssh.host}/`;
-  const localPath = path.join(__dirname, "/downloaded/");
+  const localPath = path.join(__dirname, "/donwloaded/");
   const remoteFile: Record<string, any> = {};
 
   // Once connected retrieve the remote files

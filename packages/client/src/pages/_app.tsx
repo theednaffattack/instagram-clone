@@ -2,7 +2,6 @@ import { ApolloProvider } from "@apollo/client";
 import type Router from "next/dist/next-server/lib/router/router";
 import * as React from "react";
 import { ChakraProvider, Grid } from "@chakra-ui/react";
-import { Provider as AuthProvider } from "next-auth/client";
 
 import chakraTheme from "../styles/styles";
 import { useApollo } from "../lib/lib.apollo-client";
@@ -43,13 +42,11 @@ function MyApp({ Component, pageProps, router }: MyAppProps): JSX.Element {
   }
 
   return (
-    <AuthProvider session={pageProps.session}>
-      <ApolloProvider client={apolloClient}>
-        <ChakraProvider resetCSS theme={chakraTheme}>
-          {content}
-        </ChakraProvider>
-      </ApolloProvider>
-    </AuthProvider>
+    <ApolloProvider client={apolloClient}>
+      <ChakraProvider resetCSS theme={chakraTheme}>
+        {content}
+      </ChakraProvider>
+    </ApolloProvider>
   );
 }
 
