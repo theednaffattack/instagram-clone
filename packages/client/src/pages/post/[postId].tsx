@@ -10,7 +10,6 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { NextPage } from "next";
-import { useSession } from "next-auth/client";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Router } from "next/router";
@@ -24,7 +23,6 @@ type PostByIdProps = {
 };
 
 const PostById: NextPage<PostByIdProps> = ({ router }) => {
-  const [session] = useSession();
   const {
     data,
     error,
@@ -74,7 +72,7 @@ const PostById: NextPage<PostByIdProps> = ({ router }) => {
     return <div>loading...</div>;
   }
 
-  return session && <PublicCardDynamic cardProps={data.getGlobalPostById} />;
+  return <PublicCardDynamic cardProps={data.getGlobalPostById} />;
 };
 
 export default PostById;

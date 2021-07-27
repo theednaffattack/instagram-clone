@@ -1,5 +1,4 @@
 import { Flex, Link } from "@chakra-ui/react";
-import { signIn } from "next-auth/client";
 
 export default function AccessDenied(): JSX.Element {
   return (
@@ -10,7 +9,8 @@ export default function AccessDenied(): JSX.Element {
           href="/api/auth/signin"
           onClick={(e) => {
             e.preventDefault();
-            signIn();
+            // eslint-disable-next-line no-console
+            console.log("LINK CLICKED - ACCESS DENIED");
           }}
         >
           You must be signed in to view this page

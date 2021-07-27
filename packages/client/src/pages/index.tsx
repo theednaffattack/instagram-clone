@@ -1,20 +1,13 @@
 import { NextSeo } from "next-seo";
 import { Router } from "next/router";
 import { AppLayout } from "../components/layout.app";
-import { Login } from "../components/login-page";
+import { LoginPage } from "../components/login-page";
 
 interface HomeProps {
   router: Router;
 }
 
 export function Home({ router }: HomeProps): JSX.Element {
-  const { error, field, message } = router.query;
-  // const { error } = useRouter().query;
-  // eslint-disable-next-line no-console
-  console.log("VIEW ERROR");
-  // eslint-disable-next-line no-console
-  console.log(error);
-
   return (
     <>
       <NextSeo
@@ -49,8 +42,8 @@ export function Home({ router }: HomeProps): JSX.Element {
           cardType: "summary_large_image",
         }}
       />
-      TOP LEVEL ERROR: {JSON.stringify({ field, message }, null, 2)}
-      <Login router={router} />
+
+      <LoginPage router={router} />
     </>
   );
 }

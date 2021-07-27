@@ -3,9 +3,9 @@ import { onError } from "@apollo/client/link/error";
 import { WebSocketLink } from "@apollo/client/link/ws";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { setContext } from "@apollo/link-context";
-import { getSession } from "next-auth/client";
 import Router from "next/router";
 import { SubscriptionClient } from "subscriptions-transport-ws";
+import { getAccessToken } from "./lib.access-token";
 import { isServer } from "./utilities.is-server";
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -49,24 +49,12 @@ export const splitLink = !isServer()
   : httpLink;
 
 export const authLink = setContext(async (_, { headers = {} }) => {
-  let session;
-
-  try {
-    session = await getSession();
-  } catch (error) {
-    console.error(error);
-    throw new Error(error);
-  }
-
-  // Per next-auth docs 'getSession' can be called client or server-side.
-  // https://next-auth.js.org/getting-started/client#getsession
-  // We stuck the 'accessToken' on session when we initially logged in.
+  const accessToken = getAccessToken();
 
   return {
     headers: {
       ...headers,
-      authorization:
-        session && session.accessToken ? `Bearer ${session.accessToken}` : "",
+      authorization: accessToken ? `Bearer ${accessToken}` : "",
     },
   };
 });

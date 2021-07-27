@@ -1,54 +1,50 @@
 import { Box, Button, Link, Text } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
-import { signIn } from "next-auth/client";
 import type Router from "next/dist/next-server/lib/router/router";
 import NextLink from "next/link";
 import React from "react";
 import { Wrapper } from "../components/flex-wrapper";
 import { InputField } from "../components/forms.input-field";
+import { useLoginMutation } from "../generated/graphql";
+import { setAccessToken } from "../lib/lib.access-token";
+import { logger } from "../lib/lib.logger";
 import { LoginErrorMessage } from "./login-error-message";
 
 interface LoginPageProps {
   router: Router;
 }
 
-export function Login({ router }: LoginPageProps): JSX.Element {
-  const { field, message } = router.query;
+export function LoginPage({ router }: LoginPageProps): JSX.Element {
+  const { message } = router.query;
 
-  // eslint-disable-next-line no-console
-  console.log("VIEW FIELD AND MESSAGE");
-  // eslint-disable-next-line no-console
-  console.log({ [`${field}`]: message });
+  const [login] = useLoginMutation();
 
   return (
     <Formik
       initialValues={{ username: "", password: "", user_confirmed: <></> }}
       onSubmit={async (values) => {
+        let response;
         try {
-          await signIn("login", {
-            // redirect: false,
-            username: values.username,
-            password: values.password,
-            callbackUrl: `${
-              process.env.NODE_ENV !== "production"
-                ? process.env.NEXTAUTH_URL
-                : process.env.NEXT_PUBLIC_PRODUCTION_BASE_URL
-            }/feed`,
+          response = await login({
+            variables: { username: values.username, password: values.password },
           });
         } catch (error) {
-          console.error("SIGN IN ERROR");
-          console.error(error);
+          logger.error(error, "SIGN IN ERROR");
           throw new Error("Sign in error.");
+        }
+        if (
+          response &&
+          response.data &&
+          response.data.login &&
+          response.data.login.tokenData &&
+          response.data.login.tokenData.userId
+        ) {
+          setAccessToken(response.data.login.tokenData.accessToken);
+          router.push("/feed");
         }
       }}
     >
       {({ handleSubmit, isSubmitting }) => {
-        if (typeof message === "string" && typeof field === "string") {
-          // eslint-disable-next-line no-console
-          console.log("HEEEEEEY");
-          // setErrors({ [`${field}`]: message });
-          // setErrors({ username: "who" });
-        }
         return (
           <Wrapper flexDirection="column">
             <>

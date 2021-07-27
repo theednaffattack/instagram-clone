@@ -5,17 +5,18 @@ import { MyContext } from "./typings";
 import { logger } from "./lib.logger";
 
 export const isAuth: MiddlewareFn<MyContext> = async ({ context }, next) => {
+  logger.info({ headers: context.req.headers }, "WHAT ARE HEADERS?");
   const authorization = context.req.headers["authorization"];
   const config = await configBuildAndValidate();
-  logger.info({ authorization }, "1 VIEW AUTH HEADER");
+
   if (!authorization) {
+    logger.error("AUTH HEADER MISSING");
     throw new Error("Not authenticated");
   }
 
   let token;
   try {
     token = authorization.split(" ")[1];
-    logger.info({ token }, "2 VIEW TOKEN");
   } catch (error) {
     logger.error(error, "ERROR GETTING TOKEN FROM AUTH HEADER");
     throw new Error("Not authenticated");
@@ -25,7 +26,7 @@ export const isAuth: MiddlewareFn<MyContext> = async ({ context }, next) => {
 
   try {
     payload = verify(token, config.accessTokenSecret);
-    logger.info({ payload }, "3 VIEW PAYLOAD");
+
     if (typeof payload !== "string") {
       context.payload = payload;
     }
@@ -33,7 +34,6 @@ export const isAuth: MiddlewareFn<MyContext> = async ({ context }, next) => {
     logger.error(error, "ERROR VERIFYING JWT");
     throw new Error("Not authenticated");
   }
-  logger.info("4 NEXT STATEMENT");
 
   return next();
 };

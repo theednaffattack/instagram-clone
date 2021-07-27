@@ -40,6 +40,6 @@ export function createAuthenticationError({ message = "Not Authenticated" }: Cre
 
 export const JwtExpirationError = new ApolloError(
   "Your session has expired, please log in.",
-  { message: "fake messsage one" },
-  { message: "fake messsage two" }
+  { message: "CUSTOM_AUTH_ERROR" },
+  { message: "token is expired" }
 );
