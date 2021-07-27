@@ -5,7 +5,6 @@ import { MyContext } from "./typings";
 import { logger } from "./lib.logger";
 
 export const isAuth: MiddlewareFn<MyContext> = async ({ context }, next) => {
-  logger.info({ headers: context.req.headers }, "WHAT ARE HEADERS?");
   const authorization = context.req.headers["authorization"];
   const config = await configBuildAndValidate();
 
