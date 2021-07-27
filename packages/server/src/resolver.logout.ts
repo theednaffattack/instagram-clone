@@ -12,27 +12,23 @@ export class Logout {
     const config = await configBuildAndValidate();
 
     return new Promise((resolve) => {
-      return ctx.req.session.destroy((err: Error) => {
-        if (err) {
-          console.error(err);
-          return resolve(false);
-        }
+      const clearOptions = {
+        domain: config.cookieDomain,
+        httpOnly: true,
+        path: "/",
+        secure: config.env === "production",
+        // maxAge: ctx.req.session.cookie.maxAge,
+        // sameSite: "lax",
+      };
 
-        const clearOptions = {
-          domain: config.cookieDomain,
-          httpOnly: true,
-          path: "/",
-          secure: config.env === "production",
-          // maxAge: ctx.req.session.cookie.maxAge,
-          // sameSite: "lax",
-        };
+      // Clear app cookie
+      ctx.res.clearCookie(config.cookieName, clearOptions);
 
-        ctx.res.clearCookie(config.cookieName, clearOptions);
-        ctx.res.clearCookie("CloudFront-Key-Pair-Id", clearOptions);
-        ctx.res.clearCookie("CloudFront-Policy", clearOptions);
-        ctx.res.clearCookie("CloudFront-Signature", clearOptions);
-        return resolve(true);
-      });
+      // Clear the three cookies needed for CloudFront CDN.
+      ctx.res.clearCookie("CloudFront-Key-Pair-Id", clearOptions);
+      ctx.res.clearCookie("CloudFront-Policy", clearOptions);
+      ctx.res.clearCookie("CloudFront-Signature", clearOptions);
+      return resolve(true);
     });
   }
 }
