@@ -29,6 +29,7 @@ FROM node:alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
+ENV PORT 3030 
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
@@ -38,7 +39,7 @@ COPY --from=builder /app/next.config.js ./
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder --chown=nextjs:nodejs /app/dist/server.js ./dist/server.js
-COPY --from=builder /app/package.json ./package.json
+# COPY --from=builder /app/package.json ./package.json
 COPY --from=deps /app/node_modules ./node_modules
 
 USER nextjs
@@ -50,4 +51,5 @@ EXPOSE 3030
 # Uncomment the following line in case you want to disable telemetry.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
-CMD ["yarn", "start"]
+# CMD ["yarn", "start"]
+CMD ["node dist/server.js"]
