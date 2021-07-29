@@ -4,6 +4,7 @@ import type { Router } from "next/router";
 import type { MouseEvent, PropsWithChildren } from "react";
 import * as React from "react";
 import { useLogoutMutation } from "../generated/graphql";
+import { setAccessToken } from "../lib/lib.access-token";
 
 interface LayoutAuthenticatedProps {
   isNOTLgScreen?: boolean;
@@ -17,6 +18,10 @@ async function handleLogout(
 ) {
   evt.preventDefault();
 
+  // Set our global var to an empty string
+  setAccessToken("");
+
+  // Call logout function to unset cookies.
   let logoutResponse;
   try {
     logoutResponse = await logoutFunc();
@@ -25,7 +30,7 @@ async function handleLogout(
     throw new Error("Error logging out.");
   }
 
-  // to support logging out from all windows
+  // Update localStorage 'logout' to sign out from all windows
   window.localStorage.setItem("logout", Date.now().toString());
 
   // Logout response should be a boolean.

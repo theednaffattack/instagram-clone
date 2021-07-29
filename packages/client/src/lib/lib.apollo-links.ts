@@ -6,6 +6,7 @@ import { setContext } from "@apollo/link-context";
 import Router from "next/router";
 import { SubscriptionClient } from "subscriptions-transport-ws";
 import { getAccessToken } from "./lib.access-token";
+import { logger } from "./lib.logger";
 import { isServer } from "./utilities.is-server";
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -72,7 +73,14 @@ export const errorLink = onError(({ graphQLErrors, networkError }) => {
     );
 
   if (filteredAuthErrors && filteredAuthErrors.length > 0) {
-    !isServer() && Router.replace("/?error=You must be authenticated", "/");
+    logger.info({ pathname: Router.pathname }, "VIEW PATHNAME");
+    !isServer() &&
+      Router.replace(
+        `/?error=You must be authenticated${
+          Router.pathname !== "/" ? "&next=" + Router.pathname : null
+        }`,
+        "/"
+      );
     return;
   }
 

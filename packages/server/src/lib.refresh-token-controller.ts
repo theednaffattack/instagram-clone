@@ -3,6 +3,7 @@ import { verify } from "jsonwebtoken";
 import { configBuildAndValidate } from "./config.build-config";
 import { User } from "./entity.user";
 import { createAccessToken } from "./lib.authentication";
+import { logger } from "./lib.logger";
 import { sendRefreshToken } from "./lib.utilities.send-refresh-token";
 
 export async function refreshTokenController(dbConnection: any, req: Request, res: Response) {
@@ -12,8 +13,7 @@ export async function refreshTokenController(dbConnection: any, req: Request, re
   try {
     config = await configBuildAndValidate();
   } catch (error) {
-    console.error("ERROR GETTING CONFIG - REFRESH TOKEN");
-    console.error(error);
+    logger.error(error, "ERROR GETTING CONFIG - REFRESH TOKEN");
     throw new Error(error);
   }
 
@@ -34,8 +34,7 @@ export async function refreshTokenController(dbConnection: any, req: Request, re
   try {
     payload = verify(token, config.refreshTokenSecret);
   } catch (error) {
-    console.error("ERROR VERIFYING REFRESH TOKEN PAYLOAD");
-    console.error(error);
+    logger.error(error, "ERROR VERIFYING REFRESH TOKEN PAYLOAD");
     throw new Error(error);
   }
 
@@ -43,12 +42,18 @@ export async function refreshTokenController(dbConnection: any, req: Request, re
   // User inside.
   let user;
 
-  try {
-    user = await dbConnection.getRepository(User).findOne(token.payload.id);
-  } catch (error) {
-    console.error("ERROR FINDING USER");
-    console.error(error);
-    throw new Error(error);
+  if (typeof payload !== "string") {
+    try {
+      logger.info({ payload }, "VIEW PAYLOAD");
+      user = await dbConnection.getRepository(User).findOne(payload.id);
+    } catch (error) {
+      logger.error(error, "ERROR FINDING USER");
+      throw new Error(error);
+    }
+  } else {
+    const errorMessage = `Expecting jwt payload to be of type 'object'`;
+    logger.error(errorMessage);
+    throw new Error(errorMessage);
   }
 
   if (!user) {
@@ -61,15 +66,13 @@ export async function refreshTokenController(dbConnection: any, req: Request, re
   }
 
   if (user) {
-    console.log("SENDING REFRESH TOKEN");
+    logger.info("SENDING REFRESH TOKEN");
 
     // Reset our refresh token inside the secure cookie.
     sendRefreshToken({ config, res, user });
 
     // In addition we return a new access token.
-    // In the end this route returns new access tokens
-    // and renews its ability to request new access tokens.
-    return res.send({ ok: false, accessToken: createAccessToken({ config, user }) });
+    return res.send({ ok: true, accessToken: createAccessToken({ config, user }) });
   }
 
   // If we can't find a user send a failure case.

@@ -2,7 +2,7 @@ import { Box, Button, Link, Text } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
 import type Router from "next/dist/next-server/lib/router/router";
 import NextLink from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Wrapper } from "../components/flex-wrapper";
 import { InputField } from "../components/forms.input-field";
 import { useLoginMutation } from "../generated/graphql";
@@ -15,9 +15,17 @@ interface LoginPageProps {
 }
 
 export function LoginPage({ router }: LoginPageProps): JSX.Element {
+  const [, setFlashMessage] = useState(null);
+  const [login] = useLoginMutation();
+
   const { message } = router.query;
 
-  const [login] = useLoginMutation();
+  useEffect(() => {
+    // set flash message
+    if (router.query.error) {
+      setFlashMessage(router.query.error);
+    }
+  }, [router.query]);
 
   return (
     <Formik
@@ -40,7 +48,13 @@ export function LoginPage({ router }: LoginPageProps): JSX.Element {
           response.data.login.tokenData.userId
         ) {
           setAccessToken(response.data.login.tokenData.accessToken);
-          router.push("/feed");
+          if (router.query.next) {
+            // If there is a next query variable then use it as the URL.
+            router.push(router.query.next as string);
+          } else {
+            // default
+            router.push("/feed");
+          }
         }
       }}
     >

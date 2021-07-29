@@ -57,7 +57,10 @@ export function initializeApollo(
     _apolloClient.cache.restore(data);
   }
   // For SSG and SSR always create a new Apollo Client
-  if (typeof window === "undefined") return _apolloClient;
+  if (typeof window === "undefined") {
+    //
+    return _apolloClient;
+  }
   // Create the Apollo Client once in the client
   if (!apolloClient) apolloClient = _apolloClient;
 
