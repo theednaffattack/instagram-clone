@@ -18,6 +18,7 @@ import { Image } from "./entity.image";
 import { Post } from "./entity.post";
 import { User } from "./entity.user";
 import { PostInput } from "./gql-type.post-input";
+import { logger } from "./lib.logger";
 import { isAuth } from "./middleware.is-auth";
 import { MyContext } from "./typings";
 
@@ -122,8 +123,8 @@ export class CreatePost {
         relations: ["images", "posts", "followers"],
       });
     } catch (error) {
-      console.error("ERROR SELECTING USER - CREATE POST");
-      console.error(error);
+      logger.error("ERROR SELECTING USER - CREATE POST");
+      logger.error(error);
       throw Error(error);
     }
 
@@ -150,15 +151,15 @@ export class CreatePost {
             try {
               return await newImageRepo.save(newImage);
             } catch (error) {
-              console.error("ERROR SAVING NEW IMAGE INSIDE PROMISE ALL MAP 'let newImages'");
-              console.error(error);
+              logger.error("ERROR SAVING NEW IMAGE INSIDE PROMISE ALL MAP 'let newImages'");
+              logger.error(error);
               throw Error(error);
             }
           })
         );
       } catch (error) {
-        console.error("ERROR SAVING NEW IMAGE OUTSIDE PROMISE ALL MAP 'let newImages'");
-        console.error(error);
+        logger.error("ERROR SAVING NEW IMAGE OUTSIDE PROMISE ALL MAP 'let newImages'");
+        logger.error(error);
         throw Error(error);
       }
       // add the images to the user.images
@@ -174,8 +175,8 @@ export class CreatePost {
       try {
         savedUser = await userRepo.save(user);
       } catch (error) {
-        console.error("ERROR SAVING USER AFTER SAVING IMAGES");
-        console.error(error);
+        logger.error("ERROR SAVING USER AFTER SAVING IMAGES");
+        logger.error(error);
         throw Error(`Error saving user.`);
       }
 
@@ -185,6 +186,7 @@ export class CreatePost {
           text,
           title,
           user: savedUser,
+          userId: savedUser.id,
           images: [...newImages],
         };
 
@@ -195,8 +197,8 @@ export class CreatePost {
           const newPostModel = postRepo.create(postData);
           newPost = await postRepo.save(newPostModel);
         } catch (error) {
-          console.error("ERROR SAVING NEW POST");
-          console.error(error);
+          logger.error("ERROR SAVING NEW POST");
+          logger.error(error);
           throw Error(error);
         }
 
@@ -205,8 +207,8 @@ export class CreatePost {
           try {
             await newImageRepo.save(newSavedImage);
           } catch (error) {
-            console.error("ERROR SAVING NEW IMAGE", { imageIndex, newSavedImage });
-            console.error(error);
+            logger.error("ERROR SAVING NEW IMAGE", { imageIndex, newSavedImage });
+            logger.error(error);
             throw Error(error);
           }
         });
@@ -219,8 +221,8 @@ export class CreatePost {
         try {
           await userRepo.save(user);
         } catch (error) {
-          console.error("ERROR SAVING USER AFTER SAVING POST");
-          console.error(error);
+          logger.error("ERROR SAVING USER AFTER SAVING POST");
+          logger.error(error);
           throw Error(error);
         }
         // we use myPostPayload because of the subscription
@@ -236,7 +238,7 @@ export class CreatePost {
         try {
           await publish(myPostPayload);
         } catch (error) {
-          console.error(error);
+          logger.error(error);
           throw Error(error);
         }
 
@@ -244,7 +246,7 @@ export class CreatePost {
         try {
           await publishGlbl(myPostPayload);
         } catch (error) {
-          console.error(error);
+          logger.error(error);
           throw Error(error);
         }
 

@@ -1,20 +1,20 @@
 import { Box, Flex, Grid, Heading, Link, Text } from "@chakra-ui/react";
 import NavLink from "next/link";
-import type { Router } from "next/router";
+import type { NextRouter } from "next/router";
 import type { MouseEvent, PropsWithChildren } from "react";
 import * as React from "react";
 import { useLogoutMutation } from "../generated/graphql";
 import { setAccessToken } from "../lib/lib.access-token";
 
-interface LayoutAuthenticatedProps {
+export interface LayoutAuthenticatedProps {
   isNOTLgScreen?: boolean;
-  router: Router;
+  router: NextRouter;
 }
 
 async function handleLogout(
   evt: MouseEvent<HTMLAnchorElement>,
   logoutFunc: any,
-  router: Router
+  router: NextRouter
 ) {
   evt.preventDefault();
 

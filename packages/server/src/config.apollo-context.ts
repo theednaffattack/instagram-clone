@@ -1,6 +1,7 @@
 import { verify } from "jsonwebtoken";
-import { JwtExpirationError } from "./config.apollo-errors";
+import { JwtExpirationError, JwtMalformedError } from "./config.apollo-errors";
 import { ServerConfigProps } from "./config.build-config";
+import { logger } from "./lib.logger";
 import { MyContext } from "./typings";
 
 interface ConfigApolloProps {
@@ -40,7 +41,10 @@ const getContextFromHttpRequest = ({ req, res, dbConnection, config }: ConfigApo
 
   // JWT implementation
   const authorization = req.headers["authorization"];
-  if (authorization) {
+
+  logger.info({ authorization }, "GET CONTEXT FROM HTTP REQUEST");
+
+  if (authorization && authorization !== "Bearer public") {
     let token;
     try {
       token = authorization.split(" ")[1];
@@ -55,19 +59,28 @@ const getContextFromHttpRequest = ({ req, res, dbConnection, config }: ConfigApo
         config,
       };
     } catch (err) {
-      console.error("ERROR VERIFYING TOKEN - HTTP REQUESTS");
-      console.error({ err });
+      logger.error(err, "ERROR VERIFYING TOKEN - HTTP REQUESTS");
 
       if (err.message.includes("jwt expired")) {
-        console.error("JWT EXPIRED");
-        console.error(err);
+        logger.error(err, "JWT EXPIRED");
 
         // throw createAuthenticationError({
         //   message: "Your session has expired, please log in.",
         // });
         throw JwtExpirationError;
-        // throw new Error("Your session has expired, please log in.");
       }
+      if (err.message.includes("jwt malformed")) {
+        logger.error(err, "JWT MALFORMED");
+
+        // throw createAuthenticationError({
+        //   message: "Your session has expired, please log in.",
+        // });
+        throw JwtMalformedError;
+      }
+
+      // If it's not expired or malformed, but some other error?
+      throw new Error("Unknown JWT error");
+      // return { req, res, config, dbConnection };
 
       // throw new Error("Not authenticated");
       // return {

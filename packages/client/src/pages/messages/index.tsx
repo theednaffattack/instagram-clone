@@ -1,7 +1,7 @@
 import { Avatar, Button, Flex, Grid, Stack, Text } from "@chakra-ui/react";
 import { Formik } from "formik";
 import { NextPage } from "next";
-import type { Router } from "next/router";
+import type { NextRouter } from "next/router";
 import React, { useState } from "react";
 import { LayoutAuthenticated } from "../../components/layout-authenticated";
 import { MessagesGrid } from "../../components/messages-grid";
@@ -15,7 +15,7 @@ import {
 
 type MessagesProps = {
   isNOTLgScreen: boolean;
-  router: Router;
+  router: NextRouter;
 };
 
 const Messages: NextPage<MessagesProps> = ({ isNOTLgScreen, router }) => {

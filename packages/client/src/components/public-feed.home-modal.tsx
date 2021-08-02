@@ -1,13 +1,12 @@
 import { CloseButton } from "@chakra-ui/react";
 import { disableBodyScroll, enableBodyScroll } from "body-scroll-lock";
-import router, { Router } from "next/router";
+import { useRouter } from "next/router";
 import React, { forwardRef, useImperativeHandle, useRef } from "react";
 import ReactModal from "react-modal";
 import { GetGlobalPostsRelayQuery } from "../generated/graphql";
 import { PublicFeedCard } from "./feed.public-card";
 
 interface ModalProps {
-  router: Router;
   dataPosts: GetGlobalPostsRelayQuery;
   loadingPosts: boolean;
 }
@@ -19,11 +18,13 @@ const Modal = forwardRef<ReactModal, ModalProps>(
   ({ children, ...props }, ref) => {
     const modalRef = useRef<ReactModal>();
 
+    const { back, query } = useRouter();
+
     useImperativeHandle(ref, () => modalRef.current, [modalRef]);
 
     const internalFuncsPlusProps = {
-      isOpen: !!props.router.query.postId,
-      onRequestClose: () => router.back(),
+      isOpen: !!query.postId,
+      onRequestClose: () => back(),
       onAfterOpen: () => disableBodyScroll(modalRef.current),
       onAfterClose: () => enableBodyScroll(modalRef.current),
       ref: modalRef,
@@ -55,11 +56,11 @@ const Modal = forwardRef<ReactModal, ModalProps>(
           left={0}
           onClick={(event) => {
             event.preventDefault();
-            router.back();
+            back();
           }}
         />
         {props.dataPosts?.getGlobalPostsRelay?.edges
-          .filter(({ node: { id } }) => router.query.postId === id)
+          .filter(({ node: { id } }) => query.postId === id)
           .map(({ node }) => (
             <PublicFeedCard
               key={node.id}

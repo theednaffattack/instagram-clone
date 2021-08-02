@@ -16,6 +16,7 @@ import { Router } from "next/router";
 import React from "react";
 import { LayoutAuthenticated } from "../../components/layout-authenticated";
 import { MeQuery, useGetGlobalPostByIdQuery } from "../../generated/graphql";
+import { getPathnameValues } from "../../lib/get-pathname-values";
 
 type PostByIdProps = {
   router?: Router;
@@ -28,6 +29,7 @@ const PostById: NextPage<PostByIdProps> = ({ router }) => {
     error,
     loading: loadingGlobalPostById,
   } = useGetGlobalPostByIdQuery({
+    ssr: false,
     variables: {
       getpostinput: {
         postId: router?.query.postId as string,
@@ -72,7 +74,23 @@ const PostById: NextPage<PostByIdProps> = ({ router }) => {
     return <div>loading...</div>;
   }
 
-  return <PublicCardDynamic cardProps={data.getGlobalPostById} />;
+  function handleClick(
+    evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>
+  ): void {
+    evt.preventDefault();
+    router.back();
+  }
+
+  const { prevPath } = getPathnameValues();
+
+  return (
+    <>
+      <a href={prevPath} onClick={handleClick}>
+        back
+      </a>
+      <PublicCardDynamic cardProps={data.getGlobalPostById} />
+    </>
+  );
 };
 
 export default PostById;

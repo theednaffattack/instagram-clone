@@ -1,4 +1,4 @@
-import { Resolver, Mutation, Ctx } from "type-graphql";
+import { Ctx, Mutation, Resolver } from "type-graphql";
 import { configBuildAndValidate } from "./config.build-config";
 import { MyContext } from "./typings";
 
@@ -22,7 +22,12 @@ export class Logout {
       };
 
       // Clear app cookie
-      ctx.res.clearCookie(config.cookieName, clearOptions);
+      ctx.res.clearCookie(config.cookieName, {
+        domain: config.domain,
+        httpOnly: true,
+        secure: config.env === "production",
+        // expires: ctx.req.cookies[config.cookieName],
+      });
 
       // Clear the three cookies needed for CloudFront CDN.
       ctx.res.clearCookie("CloudFront-Key-Pair-Id", clearOptions);

@@ -3,15 +3,17 @@ import { onError } from "@apollo/client/link/error";
 import { WebSocketLink } from "@apollo/client/link/ws";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { setContext } from "@apollo/link-context";
+import axios, { AxiosRequestConfig } from "axios";
 import Router from "next/router";
 import { SubscriptionClient } from "subscriptions-transport-ws";
-import { getAccessToken } from "./lib.access-token";
+import { getAccessToken, setAccessToken } from "./lib.access-token";
 import { logger } from "./lib.logger";
 import { isServer } from "./utilities.is-server";
 
 const isProduction = process.env.NODE_ENV === "production";
 
 export const httpLink = new HttpLink({
+  // headers,
   uri: isProduction
     ? process.env.NEXT_PUBLIC_APOLLO_LINK_URI_PATH
     : process.env.NEXT_PUBLIC_DEVELOPMENT_GQL_URI,
@@ -50,8 +52,18 @@ export const splitLink = !isServer()
   : httpLink;
 
 export const authLink = setContext(async (_, { headers = {} }) => {
+  // Idea stolen from: https://hasura.io/learn/graphql/nextjs-fullstack-serverless/apollo-client/
+  let newToken;
+  try {
+    newToken = await requestAccessToken();
+  } catch (error) {
+    logger.error(
+      error,
+      "ERROR REQUESTING REFRESH TOKEN (WHICH ALSO SETS AN ACCESS TOKEN)"
+    );
+  }
   const accessToken = getAccessToken();
-
+  logger.info({ accessToken, newToken }, "HOPEFULLY THE SAME(???)");
   return {
     headers: {
       ...headers,
@@ -73,17 +85,17 @@ export const errorLink = onError(({ graphQLErrors, networkError }) => {
     );
 
   if (filteredAuthErrors && filteredAuthErrors.length > 0) {
-    logger.info({ pathname: Router.pathname }, "VIEW PATHNAME");
     !isServer() &&
       Router.replace(
         `/?error=You must be authenticated${
           Router.pathname !== "/" ? "&next=" + Router.pathname : null
-        }`,
-        "/"
+        }`
       );
     return;
   }
 
+  // Try to filter out errors that have a path attribute
+  // Not sure why we're testing the first element for its type
   const filteredRoutes =
     graphQLErrors &&
     graphQLErrors?.filter((errorThing) => {
@@ -93,15 +105,64 @@ export const errorLink = onError(({ graphQLErrors, networkError }) => {
       return something === "register";
     });
 
+  // If there are no filtered routes or if it's an empty array somehow.
   if (
-    (graphQLErrors && filteredRoutes && filteredRoutes.length < 1) ||
+    (graphQLErrors && filteredRoutes && !filteredRoutes.length) ||
     (graphQLErrors && !filteredRoutes)
   ) {
     graphQLErrors.map(({ message, locations, path }) =>
-      console.warn(
+      logger.error(
         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
       )
     );
   }
+
+  // remove cached token on 401 from the server
+  if (
+    networkError &&
+    "statusCode" in networkError &&
+    networkError.name === "ServerError" &&
+    networkError.statusCode === 401
+  ) {
+    setAccessToken(null);
+  }
+
   if (networkError) console.error(`[Network error]: ${networkError}`);
 });
+
+export async function requestAccessToken(): Promise<void> {
+  // We only do this for the initial sign-in.
+  if (getAccessToken()) return;
+
+  // I think we only want this on the client (see if settings). It'd be
+  // much better to check for SSR somehow. Actually why wouldn't I have this
+  // server-only for refresh situations?
+  // if (!isServer()) {
+  const url =
+    process.env.NODE_ENV === "production"
+      ? process.env.NEXT_PUBLIC_REFRESH_URL
+      : process.env.NEXT_PUBLIC_DEV_REFRESH_URL;
+
+  const requestBody = {};
+  const axiosConfig: AxiosRequestConfig = { withCredentials: true };
+
+  let res;
+  try {
+    res = await axios.post(url, requestBody, axiosConfig);
+  } catch (err) {
+    logger.error(
+      err,
+      "ERROR REQUESTING ACCESS TOKEN AND SETTING REFRESH TOKEN COOKIE"
+    );
+  }
+
+  if (res.data.ok) {
+    setAccessToken(res.data.accessToken);
+    return res.data.accessToken;
+  } else {
+    // I set access token to "public" because setting it to an
+    // empty string is confusing elsewhere in the application.
+    setAccessToken("public");
+  }
+  // }
+}

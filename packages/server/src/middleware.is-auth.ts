@@ -23,6 +23,7 @@ export const isAuth: MiddlewareFn<MyContext> = async ({ context }, next) => {
 
   let payload;
 
+  logger.info({ token, secret: config.accessTokenSecret }, "VIEW TOKEN INFO - IS AUTH");
   try {
     payload = verify(token, config.accessTokenSecret);
 

@@ -43,3 +43,9 @@ export const JwtExpirationError = new ApolloError(
   { message: "CUSTOM_AUTH_ERROR" },
   { message: "token is expired" }
 );
+
+export const JwtMalformedError = new ApolloError(
+  "Your session token is incorrectly formatted. Please try again.",
+  { message: "CUSTOM_AUTH_ERROR" },
+  { message: "token is malformed" }
+);

@@ -243,8 +243,8 @@ export function PublicFeedCard({ cardProps }: CardProps): JSX.Element {
             <Text>{text}</Text>
 
             <Link
-              href={`/?postId=${id}`}
-              as={`/post/${id}`}
+              // href={`/?postId=${id}`}
+              href={`/post/${id}`}
               passHref
               scroll={false}
             >
