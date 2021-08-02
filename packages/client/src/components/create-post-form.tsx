@@ -101,7 +101,7 @@ export function CreatePostForm(): JSX.Element {
             values: { text: "", title: "", images: [] },
           });
           if (!errorCreatePost && router) {
-            router.push("/");
+            router.push("/feed");
           }
         }}
       >
