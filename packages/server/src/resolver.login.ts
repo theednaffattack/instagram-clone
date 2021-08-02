@@ -137,7 +137,7 @@ export class LoginResolver {
     const tokenObj: LoginResponse = {
       // Note: Sigining the token with "ACCESS TOKEN secret"
       tokenData: {
-        accessToken: createAccessToken({ config: ctx.config, user, expiresIn: "15m" }),
+        accessToken: createAccessToken({ config: ctx.config, user, expiresIn: "15s" }),
         expiresIn: fifteenMinutes,
         userId: user.id,
         version: user.tokenVersion,
