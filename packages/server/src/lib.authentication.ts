@@ -1,6 +1,7 @@
 import { sign } from "jsonwebtoken";
 import type { ServerConfigProps } from "./config.build-config";
 import type { User } from "./entity.user";
+import { logger } from "./lib.logger";
 
 interface CreateTokenProps {
   config: ServerConfigProps;
@@ -8,15 +9,15 @@ interface CreateTokenProps {
   expiresIn?: string;
 }
 
-export function createAccessToken({ config, user, expiresIn = "15m" }: CreateTokenProps) {
+export function createAccessToken({ config, user, expiresIn }: CreateTokenProps) {
   let token;
   try {
     token = sign({ userId: user.id }, config.accessTokenSecret, {
       expiresIn,
     });
   } catch (error) {
-    console.error("ERROR CREATING ACCESS TOKEN");
-    console.error(error);
+    logger.error("ERROR CREATING ACCESS TOKEN");
+    logger.error(error);
     throw new Error(error);
   }
   return token;
