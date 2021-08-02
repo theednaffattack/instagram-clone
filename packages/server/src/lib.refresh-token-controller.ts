@@ -73,7 +73,7 @@ export async function refreshTokenController(dbConnection: any, req: Request, re
     sendRefreshToken({ config, res, user });
 
     // In addition we return a new access token.
-    return res.send({ ok: true, accessToken: createAccessToken({ config, user }) });
+    return res.send({ ok: true, accessToken: createAccessToken({ config, user, expiresIn: "15s" }) });
   }
 
   // If we can't find a user send a failure case.
