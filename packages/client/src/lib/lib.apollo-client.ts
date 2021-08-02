@@ -1,14 +1,19 @@
 import {
   ApolloClient,
+  ApolloLink,
   InMemoryCache,
   NormalizedCacheObject,
 } from "@apollo/client";
-import { RetryLink } from "@apollo/client/link/retry";
 import { concatPagination } from "@apollo/client/utilities";
 import merge from "deepmerge";
 import isEqual from "lodash/isEqual";
 import { useMemo } from "react";
-import { authLink, errorLink, splitLink } from "./lib.apollo-links";
+import {
+  authLink,
+  errorLink,
+  refreshLink,
+  splitLink,
+} from "./lib.apollo-links";
 
 export const APOLLO_STATE_PROP_NAME = "__APOLLO_STATE__";
 
@@ -17,7 +22,8 @@ let apolloClient;
 function createApolloClient(_initialState) {
   return new ApolloClient({
     ssrMode: typeof window === "undefined",
-    link: errorLink.concat(authLink.concat(new RetryLink().concat(splitLink))),
+    link: ApolloLink.from([refreshLink as any, authLink, errorLink, splitLink]),
+    // link: errorLink.concat(authLink.concat(new RetryLink().concat(splitLink))),
     cache: new InMemoryCache({
       typePolicies: {
         Query: {
