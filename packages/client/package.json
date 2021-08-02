@@ -63,7 +63,7 @@
     "jsonwebtoken": "^8.5.1",
     "linaria": "^2.1.0",
     "next": "11.0.0",
-    "next-linaria": "^0.10.0",
+    "next-linaria": "1.0.0-beta",
     "next-seo": "^4.24.0",
     "node-jose-tools": "^1.6.28",
     "pino": "^6.12.0",
