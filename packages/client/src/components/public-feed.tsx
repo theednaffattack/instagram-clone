@@ -1,8 +1,6 @@
 import { Stack } from "@chakra-ui/react";
-import { Router } from "next/router";
-import React, { PropsWithChildren } from "react";
+import React from "react";
 import Modal from "react-modal";
-import { LayoutAuthenticated } from "../components/layout-authenticated";
 import {
   GlobalPostResponse,
   Image,
@@ -17,8 +15,6 @@ import { PublicFeedCard } from "./feed.public-card";
 import ModalDynamic from "./public-feed.home-modal";
 
 Modal.setAppElement("#__next");
-
-type IndexProps = { router: Router };
 
 export type GlobalPostsRelayEdges = Array<
   { __typename?: "PostEdge" } & Pick<PostEdge, "cursor"> & {
@@ -46,9 +42,7 @@ export type GlobalPostsRelayEdges = Array<
     }
 >;
 
-export function PublicFeed({
-  router,
-}: PropsWithChildren<IndexProps>): JSX.Element {
+export function PublicFeed(): JSX.Element {
   const [infState, setInfState] = React.useState<"idle" | "fetch-more">("idle");
 
   const initialGlobalPostsVariables = {
@@ -92,30 +86,24 @@ export function PublicFeed({
   useInfiniteScroll(scrollRef, setInfState);
 
   return (
-    <LayoutAuthenticated router={router}>
-      <>
-        <Stack my={50} spacing="3em">
-          {dataPosts
-            ? dataPosts.getGlobalPostsRelay?.edges?.map(({ node }) => {
-                return (
-                  <PublicFeedCard
-                    key={node.id}
-                    cardProps={node}
-                    loadingPosts={loadingPosts}
-                  />
-                );
-              })
-            : ""}
+    <>
+      <Stack my={50} spacing="3em">
+        {dataPosts
+          ? dataPosts.getGlobalPostsRelay?.edges?.map(({ node }) => {
+              return (
+                <PublicFeedCard
+                  key={node.id}
+                  cardProps={node}
+                  loadingPosts={loadingPosts}
+                />
+              );
+            })
+          : ""}
 
-          <div id="page-bottom-boundary" ref={scrollRef}></div>
-        </Stack>
+        <div id="page-bottom-boundary" ref={scrollRef}></div>
+      </Stack>
 
-        <ModalDynamic
-          dataPosts={dataPosts}
-          loadingPosts={loadingPosts}
-          router={router}
-        />
-      </>
-    </LayoutAuthenticated>
+      <ModalDynamic dataPosts={dataPosts} loadingPosts={loadingPosts} />
+    </>
   );
 }
