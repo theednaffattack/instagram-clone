@@ -7,7 +7,7 @@ interface WelcomeMessageProps {
 
 export const createWelcomeMessage = ({ toEmail, confirmationUri }: WelcomeMessageProps): Message => {
   return {
-    From: '"Spotify Clone" <eddie@eddienaff.dev>', // sender address
+    From: '"InstaClone" <eddie@eddienaff.dev>', // sender address
     To: toEmail, // list of receivers
     Subject: "Welcome to Spotify (Clone)", // Subject line
     TextBody: `Welcome to Spotify (Clone)! Please copy and paste the confirmation link below into the address bar of your preferred web browser to access your account.\n
