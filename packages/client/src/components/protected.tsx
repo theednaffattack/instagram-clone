@@ -7,7 +7,7 @@ interface ProtectedProps {
 }
 
 export function Protected({ children }: ProtectedProps): JSX.Element {
-  const { data, error, loading } = useMeQuery();
+  const { data, error, loading } = useMeQuery({ fetchPolicy: "network-only" });
   if (error) {
     logger.error(error);
     return null;
