@@ -14,7 +14,7 @@ export const APOLLO_STATE_PROP_NAME = "__APOLLO_STATE__";
 
 let apolloClient;
 
-function createApolloClient() {
+function createApolloClient(_initialState) {
   return new ApolloClient({
     ssrMode: typeof window === "undefined",
     link: errorLink.concat(authLink.concat(new RetryLink().concat(splitLink))),
@@ -34,7 +34,7 @@ export function initializeApollo(
   initialState = null
 ): ApolloClient<NormalizedCacheObject> {
   const _apolloClient: ApolloClient<NormalizedCacheObject> =
-    apolloClient ?? createApolloClient();
+    apolloClient ?? createApolloClient(initialState);
 
   // If your page has Next.js data fetching methods that use Apollo Client, the initial state
   // gets hydrated here

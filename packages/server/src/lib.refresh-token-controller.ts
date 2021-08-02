@@ -7,6 +7,7 @@ import { logger } from "./lib.logger";
 import { sendRefreshToken } from "./lib.utilities.send-refresh-token";
 
 export async function refreshTokenController(dbConnection: any, req: Request, res: Response) {
+  logger.info("REFRESH TOKEN FIRING");
   // First grab our config to get the secret
   // needed to decode the token.
   let config;
@@ -44,7 +45,7 @@ export async function refreshTokenController(dbConnection: any, req: Request, re
 
   if (typeof payload !== "string") {
     try {
-      logger.info({ payload }, "VIEW PAYLOAD");
+      logger.info({ payload }, "VIEW PAYLOAD - REFRESH TOKEN CONTROLLER");
       user = await dbConnection.getRepository(User).findOne(payload.id);
     } catch (error) {
       logger.error(error, "ERROR FINDING USER");

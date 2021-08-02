@@ -2,6 +2,7 @@ import { FetchResult } from "@apollo/client";
 import axios, { AxiosRequestConfig } from "axios";
 import format from "date-fns/format";
 import { SignS3Mutation } from "../generated/graphql";
+import { logger } from "./lib.logger";
 import { PreviewFile, SignS3Func } from "./types";
 
 export async function uploadToS3(
@@ -24,7 +25,7 @@ export async function uploadToS3(
       type: file.type,
     });
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     throw Error(error);
   }
 
@@ -35,7 +36,7 @@ export async function uploadToS3(
   try {
     await axios.put(signedRequest, newFileToUpload, options);
   } catch (error) {
-    console.error("ERROR SENDING FILES TO S3.", error);
+    logger.error("ERROR SENDING FILES TO S3.", error);
     throw Error(error);
   }
 }

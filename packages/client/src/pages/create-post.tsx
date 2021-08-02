@@ -1,22 +1,13 @@
-import { NextPage } from "next";
-import { Router } from "next/router";
 import React from "react";
 import { CreatePostForm } from "../components/create-post-form";
 import { LayoutAuthenticated } from "../components/layout-authenticated";
-import { MeQuery } from "../generated/graphql";
+import { Protected } from "../components/protected";
 
-type CreatePostProps = {
-  me: MeQuery;
-  router?: Router;
-};
+function CreatePost(): JSX.Element {
+  return <CreatePostForm />;
+}
 
-const CreatePost: NextPage<CreatePostProps> = ({ router }) => {
-  // Otherwise render the create post page
-  return (
-    <LayoutAuthenticated router={router}>
-      <CreatePostForm />
-    </LayoutAuthenticated>
-  );
-};
+CreatePost.authentication = Protected;
+CreatePost.layout = LayoutAuthenticated;
 
 export default CreatePost;

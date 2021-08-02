@@ -1,6 +1,7 @@
 import aws from "aws-sdk";
 import { Args, ArgsType, Field, Float, InputType, Int, Mutation, ObjectType, Resolver } from "type-graphql";
 import { configBuildAndValidate, ServerConfigProps } from "./config.build-config";
+import { logger } from "./lib.logger";
 
 @InputType()
 class ImageSubInput {
@@ -54,10 +55,8 @@ export class SignS3 {
     try {
       config = await configBuildAndValidate();
     } catch (error) {
-      console.error("ERROR CREATING CONFIG OBJECT 'SignS3'");
-      console.error(error);
-
-      throw Error(error);
+      logger.error(error, "ERROR CREATING CONFIG OBJECT 'SignS3'");
+      throw new Error(error);
     }
 
     const credentials = {
@@ -91,12 +90,20 @@ export class SignS3 {
     //   })
     // );
 
-    const signedStuff = s3Params.map((param) => {
-      let signedRequest = s3.getSignedUrl("putObject", param);
-      const url = `https://${config.awsConfig.s3Bucket}.s3.amazonaws.com/${param.Key}`;
+    const signedStuff = await Promise.all(
+      s3Params.map(async (param) => {
+        let signedRequest;
+        try {
+          signedRequest = await s3.getSignedUrlPromise("putObject", param);
+        } catch (error) {
+          logger.error(error, "Error obtaining individual signature inside a map func.");
+          throw new Error("Error retrieving file upload signature.");
+        }
+        const url = `https://${config.awsConfig.s3Bucket}.s3.amazonaws.com/${param.Key}`;
 
-      return { url, signedRequest };
-    });
+        return { url, signedRequest };
+      })
+    );
 
     return {
       signatures: [...signedStuff],

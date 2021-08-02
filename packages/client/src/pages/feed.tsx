@@ -1,15 +1,12 @@
 import { NextSeo } from "next-seo";
-import type { Router } from "next/router";
 import React from "react";
+import { LayoutAuthenticated } from "../components/layout-authenticated";
+import { Protected } from "../components/protected";
 import { PublicFeed } from "../components/public-feed";
 
-interface FeedProps {
-  router: Router;
-}
-
-export function Feed({ router }: FeedProps): JSX.Element {
+export function Feed(): JSX.Element {
   return (
-    <div>
+    <>
       <NextSeo
         title="Instagram Clone"
         description="A simple clone of Instagram"
@@ -42,9 +39,13 @@ export function Feed({ router }: FeedProps): JSX.Element {
           cardType: "summary_large_image",
         }}
       />
-      <PublicFeed router={router} />
-    </div>
+      <Protected>
+        <PublicFeed />
+      </Protected>
+    </>
   );
 }
+
+Feed.layout = LayoutAuthenticated;
 
 export default Feed;

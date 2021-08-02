@@ -7,6 +7,8 @@ import { GetGlobalPostsInput } from "./gql-type.get-global-posts-input";
 import { GlobalPostResponse } from "./gql-type.global-posts-response";
 import { MyContext } from "./typings";
 import { formatDistance } from "date-fns";
+import { isAuth } from "./middleware.is-auth";
+import { logger } from "./lib.logger";
 
 @Resolver()
 export class GetGlobalPosts {

@@ -14,6 +14,7 @@ import {
 import { Post } from "./entity.post";
 import { EdgeType, ConnectionType, ConnectionArgs } from "./gql-type.connection-args";
 import { GlobalPostResponse } from "./gql-type.global-posts-response";
+import { isAuth } from "./middleware.is-auth";
 import { MyContext } from "./typings";
 
 const formatDate = (date: any) => format(date, "yyyy-MM-dd HH:mm:ss");
@@ -49,6 +50,7 @@ export class GetGlobalPostsRelay {
     return postPayload;
   }
 
+  @UseMiddleware(isAuth)
   @Query(() => PostConnection, {
     name: "getGlobalPostsRelay",
     nullable: true,
