@@ -31,7 +31,7 @@ export function Feed(): JSX.Element {
             { url: "https://www.example.ie/og-image-03.jpg" },
             { url: "https://www.example.ie/og-image-04.jpg" },
           ],
-          site_name: "Spotify Clone",
+          site_name: "InstaClone",
         }}
         twitter={{
           handle: "@eddienaff",
