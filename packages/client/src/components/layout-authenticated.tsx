@@ -1,20 +1,22 @@
 import { Box, Flex, Grid, Heading, Link, Text } from "@chakra-ui/react";
 import NavLink from "next/link";
-import type { NextRouter } from "next/router";
-import type { MouseEvent, PropsWithChildren } from "react";
+import { NextRouter, useRouter } from "next/router";
+import type { MouseEvent, ReactNode } from "react";
 import * as React from "react";
 import { useLogoutMutation } from "../generated/graphql";
 import { setAccessToken } from "../lib/lib.access-token";
+import { logger } from "../lib/lib.logger";
+import { useAuth } from "./authentication-provider";
 
 export interface LayoutAuthenticatedProps {
-  isNOTLgScreen?: boolean;
-  router: NextRouter;
+  children?: ReactNode;
 }
 
 async function handleLogout(
   evt: MouseEvent<HTMLAnchorElement>,
   logoutFunc: any,
-  router: NextRouter
+  push: NextRouter["push"],
+  signOut: () => void
 ) {
   evt.preventDefault();
 
@@ -26,24 +28,26 @@ async function handleLogout(
   try {
     logoutResponse = await logoutFunc();
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     throw new Error("Error logging out.");
   }
 
   // Update localStorage 'logout' to sign out from all windows
   window.localStorage.setItem("logout", Date.now().toString());
 
+  // Sign out func
+  signOut();
   // Logout response should be a boolean.
   if (logoutResponse) {
-    router.push("/");
+    push("/");
   }
 }
 
 export function LayoutAuthenticated({
   children,
-  router,
-}: PropsWithChildren<LayoutAuthenticatedProps>): JSX.Element {
-  // const [isNOTLgScreen, isBrowser] = useMediaQuery("(max-width: 62em)");
+}: LayoutAuthenticatedProps): JSX.Element {
+  const { signOut } = useAuth();
+  const { push } = useRouter();
   const [logoutFunc] = useLogoutMutation();
   const maxie = 1000;
 
@@ -67,6 +71,7 @@ export function LayoutAuthenticated({
           width="100%"
         >
           <Heading>Instagram (clone)</Heading>
+
           <Flex ml="auto">
             {navLinks.map(({ href, name }) => {
               return (
@@ -81,7 +86,9 @@ export function LayoutAuthenticated({
             })}
             <Box>
               <Link
-                onClick={async (evt) => handleLogout(evt, logoutFunc, router)}
+                onClick={async (evt) =>
+                  handleLogout(evt, logoutFunc, push, signOut)
+                }
               >
                 <Text>logout</Text>
               </Link>
@@ -131,7 +138,9 @@ export function LayoutAuthenticated({
               })}
               <Box>
                 <Link
-                  onClick={async (evt) => handleLogout(evt, logoutFunc, router)}
+                  onClick={async (evt) =>
+                    handleLogout(evt, logoutFunc, push, signOut)
+                  }
                 >
                   <Text>logout</Text>
                 </Link>

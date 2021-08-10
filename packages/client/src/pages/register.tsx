@@ -5,7 +5,9 @@ import React, { useState } from "react";
 
 import { Wrapper } from "../components/flex-wrapper";
 import { InputField } from "../components/forms.input-field";
+import { AppLayout } from "../components/layout.app";
 import { useRegisterMutation } from "../generated/graphql";
+import withApollo from "../lib/lib.apollo-client_v2";
 import { toErrorMap } from "../lib/utilities.toErrorMap";
 
 function Register(): JSX.Element {
@@ -79,7 +81,13 @@ function Register(): JSX.Element {
   );
 }
 
-export default Register;
+const RegisterBase = withApollo(Register);
+
+Register.layout = AppLayout;
+
+RegisterBase.layout = AppLayout;
+
+export default RegisterBase;
 
 function RegisterForm({
   handleSubmit,

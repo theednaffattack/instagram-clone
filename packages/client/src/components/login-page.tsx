@@ -1,4 +1,10 @@
 import {
+  ApolloClient,
+  FetchResult,
+  MutationFunctionOptions,
+  useApolloClient,
+} from "@apollo/client";
+import {
   Alert,
   AlertDescription,
   AlertIcon,
@@ -11,22 +17,33 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
-import type Router from "next/dist/next-server/lib/router/router";
+import { NextRouter } from "next/dist/next-server/lib/router/router";
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 import React, { PropsWithChildren, useEffect, useRef, useState } from "react";
 import { Wrapper } from "../components/flex-wrapper";
 import { InputField } from "../components/forms.input-field";
-import { useLoginMutation } from "../generated/graphql";
-import { setAccessToken } from "../lib/lib.access-token";
+import {
+  LoginMutation,
+  LoginMutationVariables,
+  useLoginMutation,
+} from "../generated/graphql";
 import { logger } from "../lib/lib.logger";
+import { useAuth } from "./authentication-provider";
 import { LoginErrorMessage } from "./login-error-message";
 
-interface LoginPageProps {
-  router: Router;
+interface LoginFormProps {
+  username: string;
+  password: string;
+  user_confirmed: JSX.Element;
 }
 
-export function LoginPage({ router }: LoginPageProps): JSX.Element {
+export function LoginPage(): JSX.Element {
+  const router = useRouter();
   const [flashMessage, setFlashMessage] = useState<string>(null);
+  const { signIn } = useAuth();
+
+  const client = useApolloClient();
   const [login] = useLoginMutation();
 
   const { message } = router.query;
@@ -41,36 +58,9 @@ export function LoginPage({ router }: LoginPageProps): JSX.Element {
   return (
     <Formik
       initialValues={{ username: "", password: "", user_confirmed: <></> }}
-      onSubmit={async (values) => {
-        let response;
-        try {
-          response = await login({
-            variables: { username: values.username, password: values.password },
-          });
-        } catch (error) {
-          logger.error(error, "SIGN IN ERROR");
-          throw new Error("Sign in error.");
-        }
-        if (response && response.errors && response.errors.length) {
-          setFlashMessage(response.errors[0].message);
-        }
-        if (
-          response &&
-          response.data &&
-          response.data.login &&
-          response.data.login.tokenData &&
-          response.data.login.tokenData.userId
-        ) {
-          setAccessToken(response.data.login.tokenData.accessToken);
-          if (router.query.next && router.query.next !== "/") {
-            // If there is a next query variable then use it as the URL.
-            router.push(router.query.next as string);
-          } else {
-            // default
-            router.push("/feed");
-          }
-        }
-      }}
+      onSubmit={(values) =>
+        handleSubmit({ values, login, setFlashMessage, router, client, signIn })
+      }
     >
       {({ handleSubmit, isSubmitting }) => {
         return (
@@ -182,4 +172,61 @@ function LoginFlash({
       />
     </Alert>
   );
+}
+
+interface HandleSubmitProps {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  client: ApolloClient<object>;
+  login: (
+    options?: MutationFunctionOptions<LoginMutation, LoginMutationVariables>
+  ) => Promise<
+    FetchResult<LoginMutation, Record<string, any>, Record<string, any>>
+  >;
+  router: NextRouter;
+  setFlashMessage: React.Dispatch<React.SetStateAction<string>>;
+  signIn: (token: string, userId: string) => void;
+  values: LoginFormProps;
+}
+
+async function handleSubmit({
+  values,
+  login,
+  setFlashMessage,
+  router,
+  client,
+  signIn,
+}: HandleSubmitProps): Promise<void> {
+  let response;
+  try {
+    await client.resetStore();
+    response = await login({
+      variables: { username: values.username, password: values.password },
+    });
+  } catch (error) {
+    logger.error(error, "SIGN IN ERROR");
+    throw new Error("Sign in error.");
+  }
+  if (response && response.errors && response.errors.length) {
+    setFlashMessage(response.errors[0].message);
+  }
+  if (
+    response &&
+    response.data &&
+    response.data.login &&
+    response.data.login.tokenData &&
+    response.data.login.tokenData.userId
+  ) {
+    const token = response.data.login.tokenData.accessToken;
+    const userId = response.data.login.tokenData.userId;
+
+    signIn(token, userId);
+    // setAccessToken(response.data.login.tokenData.accessToken);
+    if (router.query.next && router.query.next !== "/") {
+      // If there is a next query variable then use it as the URL.
+      router.push(router.query.next as string);
+    } else {
+      // default
+      router.push("/feed");
+    }
+  }
 }

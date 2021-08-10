@@ -5,7 +5,7 @@ import * as React from "react";
 import { globalStyles } from "../styles/global-styles";
 
 export type LayoutProps = {
-  children: React.ReactChildren[] | React.ReactChild;
+  children?: React.ReactNode;
   className?: string;
 };
 

@@ -1,10 +1,11 @@
 import { Box, Button, Text } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
 import React, { useState } from "react";
-
-import { InputField } from "../components/forms.input-field";
 import { Wrapper } from "../components/box-wrapper";
+import { InputField } from "../components/forms.input-field";
+import { LayoutAuthenticated } from "../components/layout-authenticated";
 import { useForgotPasswordMutation } from "../generated/graphql";
+import { withApollo } from "../lib/lib.apollo-client_v2";
 
 function ForgotPassword(): JSX.Element {
   const [mutationState, setMutationState] =
@@ -51,4 +52,8 @@ function ForgotPassword(): JSX.Element {
   );
 }
 
-export default ForgotPassword;
+ForgotPassword.layout = LayoutAuthenticated;
+
+const ForgotPasswordApollo = withApollo(ForgotPassword);
+
+export default ForgotPasswordApollo;

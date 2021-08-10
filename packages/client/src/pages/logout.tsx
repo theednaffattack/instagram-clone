@@ -1,7 +1,9 @@
 import router from "next/router";
 import React, { useEffect } from "react";
 import { ErrorMessage } from "../components/error-message";
+import { AppLayout } from "../components/layout.app";
 import { useLogoutMutation } from "../generated/graphql";
+import withApollo from "../lib/lib.apollo-client_v2";
 
 // type LogoutServerSideProps = Promise<{
 //   props: {
@@ -31,41 +33,8 @@ const Logout = (): JSX.Element | void => {
   return <div>LOUGOUT</div>;
 };
 
-// export async function getServerSideProps(ctx: MyContext): Promise<any> {
-//   if (!ctx.apolloClient) ctx.apolloClient = initializeApollo();
+Logout.layout = AppLayout;
 
-//   try {
-//     // await ctx.apolloClient.resetStore();
-//     await ctx.apolloClient.cache.reset();
-//   } catch (error) {
-//     console.error("APOLLO RESET STORE", error);
-//     throw Error("Error resetting Apollo cache.");
-//   }
+const LogoutApollo = withApollo(Logout);
 
-//   try {
-//     await ctx.apolloClient.mutate<LogoutMutation>({
-//       mutation: LogoutDocument,
-//     });
-
-//     return {
-//       redirect: {
-//         destination: "/",
-//         permanent: false,
-//       },
-//     };
-//   } catch (error) {
-//     console.error("APOLLO MUTATE ERROR", error);
-//     throw Error("Error logging out.");
-//   }
-
-//   // return { props: {} };
-//   // return {
-//   //   props: {
-//   //     initialApolloState: {}, //apolloClient.cache.extract()
-//   //     revalidate: 1,
-//   //     response,
-//   //   },
-//   // };
-// }
-
-export default Logout;
+export default LogoutApollo;

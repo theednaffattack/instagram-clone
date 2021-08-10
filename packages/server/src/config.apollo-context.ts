@@ -60,6 +60,7 @@ const getContextFromHttpRequest = ({ req, res, dbConnection, config }: ConfigApo
       };
     } catch (err) {
       logger.error(err, "ERROR VERIFYING TOKEN - HTTP REQUESTS");
+      logger.error(authorization.split(" ")[1]);
 
       if (err.message.includes("jwt expired")) {
         logger.error(err, "JWT EXPIRED");
@@ -79,7 +80,7 @@ const getContextFromHttpRequest = ({ req, res, dbConnection, config }: ConfigApo
       }
 
       // If it's not expired or malformed, but some other error?
-      throw new Error("Unknown JWT error");
+      throw new Error(err);
       // return { req, res, config, dbConnection };
 
       // throw new Error("Not authenticated");

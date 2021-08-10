@@ -5,6 +5,7 @@ import * as Express from "express";
 import http from "http";
 import "reflect-metadata";
 import { Connection, createConnection } from "typeorm";
+import { json } from "body-parser";
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
 import { configApolloContext } from "./config.apollo-context";
 import { configGraphQLSubscriptions } from "./config.apollo-subscriptions";
@@ -109,6 +110,7 @@ export async function server(config: ServerConfigProps) {
       cors(corsOptions)
     );
 
+    app.use(json());
     app.use(cookieParser());
     // app.use(sessionMiddleware);
 

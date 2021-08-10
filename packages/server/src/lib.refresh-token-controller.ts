@@ -35,7 +35,7 @@ export async function refreshTokenController(dbConnection: any, req: Request, re
   try {
     payload = verify(token, config.refreshTokenSecret);
   } catch (error) {
-    logger.error(error, "ERROR VERIFYING REFRESH TOKEN PAYLOAD");
+    logger.error({ error, token, secret: config.refreshTokenSecret }, "ERROR VERIFYING REFRESH TOKEN PAYLOAD");
     throw new Error(error);
   }
 
@@ -73,7 +73,7 @@ export async function refreshTokenController(dbConnection: any, req: Request, re
     sendRefreshToken({ config, res, user });
 
     // In addition we return a new access token.
-    return res.send({ ok: true, accessToken: createAccessToken({ config, user }) });
+    return res.send({ ok: true, accessToken: createAccessToken({ config, user, expiresIn: "15s" }) });
   }
 
   // If we can't find a user send a failure case.

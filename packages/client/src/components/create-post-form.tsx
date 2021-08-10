@@ -24,7 +24,7 @@ const inputStyles = css`
   display: none;
 `;
 
-export function CreatePostForm(): JSX.Element {
+function CreatePostForm(): JSX.Element {
   const fileInputRef = useRef<HTMLInputElement>();
 
   const [createPost, { error: errorCreatePost }] = useCreatePostMutation({
@@ -247,3 +247,5 @@ const updateGlobalPosts: MutationUpdaterFn<CreatePostMutation> = (
     },
   });
 };
+
+export default CreatePostForm;

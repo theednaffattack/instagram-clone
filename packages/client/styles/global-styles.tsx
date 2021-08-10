@@ -1,4 +1,4 @@
-import { css } from "@linaria/core";
+import { css } from "linaria";
 
 export const globalStyles = css`
   :global() {
@@ -18,7 +18,6 @@ export const globalStyles = css`
       -moz-osx-font-smoothing: grayscale;
       font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
         Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-      overflow: hidden;
     }
 
     div#__next {
@@ -63,8 +62,6 @@ export const globalStyles = css`
   --breakpoint-md: 768px;
   --breakpoint-lg: 992px;
   --breakpoint-xl: 1200px;
-
-  --focus-outline: #007bff;
 
   /* stolen from bootstrap link: https://getbootstrap.com/docs/4.0/components/alerts/ */
   --alert-primary-background-color: #cce5ff;

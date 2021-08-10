@@ -1,10 +1,65 @@
+import { css } from "@linaria/core";
 import { NextSeo } from "next-seo";
 import React from "react";
-import { LayoutAuthenticated } from "../components/layout-authenticated";
-import { Protected } from "../components/protected";
-import { PublicFeed } from "../components/public-feed";
+import { useAuth } from "../components/authentication-provider";
+import { PublicFeedCard } from "../components/feed.public-card";
+import LayoutMultiState from "../components/layout-multi-state";
+import { stack } from "../components/styles";
+import { useGetGlobalPostsRelayQuery } from "../generated/graphql";
+import { useInfiniteScroll, useLazyLoading } from "../lib/custom-hooks";
+import withApollo from "../lib/lib.apollo-client_v2";
+import { logger } from "../lib/lib.logger";
+
+const flexContainer = css`
+  display: flex;
+  flex-direction: columnn;
+`;
 
 export function Feed(): JSX.Element {
+  const { authState } = useAuth();
+  const [infState, setInfState] = React.useState<"idle" | "fetch-more">("idle");
+
+  const initialGlobalPostsVariables = {
+    after: null,
+    before: null,
+    first: 2,
+    last: null,
+  };
+
+  const {
+    data: dataPosts,
+    loading: loadingPosts,
+    // error: errorPosts,
+    fetchMore: fetchMorePosts,
+  } = useGetGlobalPostsRelayQuery({
+    variables: initialGlobalPostsVariables,
+  });
+
+  useLazyLoading(".card-img-top", dataPosts?.getGlobalPostsRelay?.edges);
+
+  React.useEffect(() => {
+    logger.info("INFINITE FETCHER RUNNING - 1");
+    // If there's a next page, cursor in pageInfo.
+    if (dataPosts?.getGlobalPostsRelay?.pageInfo?.hasNextPage === true) {
+      logger.info("INFINITE FETCHER RUNNING - 2");
+      fetchMorePosts({
+        variables: {
+          first: initialGlobalPostsVariables.first,
+          after:
+            dataPosts?.getGlobalPostsRelay?.edges[
+              dataPosts?.getGlobalPostsRelay?.edges?.length - 1
+            ].cursor,
+        },
+      });
+    }
+    // Reset infinite scroller state to "idle", regardless
+    // next page state.
+    setInfState("idle");
+  }, [infState === "fetch-more", fetchMorePosts]);
+
+  const scrollSentinelRef = React.useRef<HTMLDivElement>(null);
+
+  useInfiniteScroll(scrollSentinelRef, setInfState);
   return (
     <>
       <NextSeo
@@ -31,7 +86,7 @@ export function Feed(): JSX.Element {
             { url: "https://www.example.ie/og-image-03.jpg" },
             { url: "https://www.example.ie/og-image-04.jpg" },
           ],
-          site_name: "Spotify Clone",
+          site_name: "InstaClone",
         }}
         twitter={{
           handle: "@eddienaff",
@@ -39,13 +94,36 @@ export function Feed(): JSX.Element {
           cardType: "summary_large_image",
         }}
       />
-      <Protected>
-        <PublicFeed />
-      </Protected>
+
+      {authState.userId ? (
+        <div className={stack}>
+          {/* <PublicFeed /> */}
+
+          {dataPosts
+            ? dataPosts.getGlobalPostsRelay?.edges?.map(({ node }) => {
+                return (
+                  <PublicFeedCard
+                    key={node.id}
+                    cardProps={node}
+                    loadingPosts={loadingPosts}
+                  />
+                );
+              })
+            : ""}
+
+          <div id="page-bottom-boundary" ref={scrollSentinelRef}></div>
+        </div>
+      ) : (
+        <div className={flexContainer}>Oh no, not authenticated</div>
+      )}
     </>
   );
 }
 
-Feed.layout = LayoutAuthenticated;
+Feed.layout = LayoutMultiState;
 
-export default Feed;
+const FeedApollo = withApollo(Feed);
+
+// FeedApollo.layout = LayoutAuthenticated;
+
+export { FeedApollo, FeedApollo as default };
