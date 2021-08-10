@@ -8,7 +8,6 @@ import { stack } from "../components/styles";
 import { useGetGlobalPostsRelayQuery } from "../generated/graphql";
 import { useInfiniteScroll, useLazyLoading } from "../lib/custom-hooks";
 import withApollo from "../lib/lib.apollo-client_v2";
-import { logger } from "../lib/lib.logger";
 
 const flexContainer = css`
   display: flex;
@@ -38,10 +37,8 @@ export function Feed(): JSX.Element {
   useLazyLoading(".card-img-top", dataPosts?.getGlobalPostsRelay?.edges);
 
   React.useEffect(() => {
-    logger.info("INFINITE FETCHER RUNNING - 1");
     // If there's a next page, cursor in pageInfo.
     if (dataPosts?.getGlobalPostsRelay?.pageInfo?.hasNextPage === true) {
-      logger.info("INFINITE FETCHER RUNNING - 2");
       fetchMorePosts({
         variables: {
           first: initialGlobalPostsVariables.first,
