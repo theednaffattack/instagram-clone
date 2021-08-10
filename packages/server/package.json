@@ -28,6 +28,7 @@
     "apollo-server-express": "^2.25.0",
     "aws-sdk": "^2.918.0",
     "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
     "class-validator": "0.12.0",
     "colors": "^1.4.0",
     "connect-redis": "^5.2.0",
