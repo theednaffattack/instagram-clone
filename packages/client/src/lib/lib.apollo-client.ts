@@ -5,24 +5,69 @@ import {
   NormalizedCacheObject,
 } from "@apollo/client";
 import { concatPagination } from "@apollo/client/utilities";
+import { setContext } from "@apollo/link-context";
 import merge from "deepmerge";
 import isEqual from "lodash/isEqual";
 import { useMemo } from "react";
-import {
-  authLink,
-  errorLink,
-  refreshLink,
-  splitLink,
-} from "./lib.apollo-links";
+import { getAccessToken, setAccessToken } from "./lib.access-token";
+import { errorLink, refreshLink, splitLink } from "./lib.apollo-links";
+import { logger } from "./lib.logger";
+import { requestAccessToken } from "./lib.request-server-access-token";
+import { isServer } from "./utilities.is-server";
 
 export const APOLLO_STATE_PROP_NAME = "__APOLLO_STATE__";
 
 let apolloClient;
 
-function createApolloClient(_initialState) {
+function createApolloClient(
+  _initialState,
+  ssrCookie?: string,
+  serverAccessToken?: string
+) {
+  logger.info("CREATE APOLLO CLIENT");
+  logger.info({ serverAccessToken });
+
   return new ApolloClient({
-    ssrMode: typeof window === "undefined",
-    link: ApolloLink.from([refreshLink as any, authLink, errorLink, splitLink]),
+    ssrMode: isServer(),
+    link: ApolloLink.from([
+      setContext(async (_, { headers = {} }) => {
+        let newServerAccessToken;
+        if (!getAccessToken()) {
+          try {
+            newServerAccessToken = await requestAccessToken(
+              ssrCookie,
+              "apollo-client"
+            );
+          } catch (error) {
+            logger.error(error);
+          }
+          if (newServerAccessToken) {
+            setAccessToken(newServerAccessToken);
+          }
+        }
+
+        const accessToken = isServer()
+          ? newServerAccessToken
+          : getAccessToken();
+
+        logger.info("AUTH HEADER WHILE SENDING - APOLLO CLIENT");
+        logger.info({
+          accessToken: accessToken ? accessToken : "not defined",
+          isServer: isServer(),
+        });
+        return {
+          headers: {
+            ...headers,
+            authorization: accessToken
+              ? `Bearer ${accessToken}`
+              : "public blank",
+          },
+        };
+      }),
+      refreshLink as any,
+      errorLink,
+      splitLink,
+    ]),
     // link: errorLink.concat(authLink.concat(new RetryLink().concat(splitLink))),
     cache: new InMemoryCache({
       typePolicies: {
@@ -37,10 +82,14 @@ function createApolloClient(_initialState) {
 }
 
 export function initializeApollo(
-  initialState = null
+  initialState = null,
+  cookie?: string,
+  accessToken?: string
 ): ApolloClient<NormalizedCacheObject> {
+  logger.info("INITIALIZE APOLLO");
+  logger.info({ accessToken });
   const _apolloClient: ApolloClient<NormalizedCacheObject> =
-    apolloClient ?? createApolloClient(initialState);
+    apolloClient ?? createApolloClient(initialState, cookie, accessToken);
 
   // If your page has Next.js data fetching methods that use Apollo Client, the initial state
   // gets hydrated here
@@ -63,7 +112,7 @@ export function initializeApollo(
     _apolloClient.cache.restore(data);
   }
   // For SSG and SSR always create a new Apollo Client
-  if (typeof window === "undefined") {
+  if (isServer()) {
     //
     return _apolloClient;
   }
@@ -86,8 +135,17 @@ export function addApolloState(
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function useApollo(pageProps: any): ApolloClient<NormalizedCacheObject> {
+export function useApollo(
+  pageProps: any,
+  cookie?: string,
+  accessToken?: string
+): ApolloClient<NormalizedCacheObject> {
+  logger.info("USE APOLLO");
+  logger.info({ accessToken });
   const state = pageProps[APOLLO_STATE_PROP_NAME];
-  const store = useMemo(() => initializeApollo(state), [state]);
+  const store = useMemo(
+    () => initializeApollo(state, cookie, accessToken),
+    [state]
+  );
   return store;
 }

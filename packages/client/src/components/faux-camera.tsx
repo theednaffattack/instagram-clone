@@ -4,7 +4,7 @@ import Measure, { ContentRect } from "react-measure";
 import { Flex, Button } from "@chakra-ui/react";
 
 import { CreatePostWithupload } from "./create-post-with-upload";
-import { CameraAction, CameraStateType } from "../pages/post/new";
+import { CameraAction, CameraStateType } from "../lib/lib.hooks.use-camera";
 
 export interface SizeRect {
   readonly width: number;

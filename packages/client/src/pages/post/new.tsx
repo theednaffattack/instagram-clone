@@ -1,8 +1,7 @@
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import Axios from "axios";
 import { Field, FieldArray, Form, Formik } from "formik";
-import { NextPage } from "next";
-import { Router } from "next/router";
+import { useRouter } from "next/router";
 import * as React from "react";
 import { v4 } from "uuid";
 import { InputField } from "../../components/forms.input-field";
@@ -14,76 +13,10 @@ import {
   useCreatePostMutation,
   useSignS3Mutation,
 } from "../../generated/graphql";
+import withApollo from "../../lib/lib.apollo-client_v2";
 
-export interface CameraStateType {
-  cameraStatus: "cameraIsOpen" | "cameraIsClosed";
-  cardImage: Blob | null;
-}
-
-export type CameraAction =
-  | { type: "openCameraInit" }
-  | { type: "closeCamera" }
-  | { type: "clearCardImage" }
-  | { type: "setCardImage"; payload: Blob };
-
-const initialCameraState: CameraStateType = {
-  cameraStatus: "cameraIsClosed",
-  cardImage: null,
-};
-
-function initCamera(theInitialCameraState: CameraStateType): CameraStateType {
-  return {
-    cameraStatus: theInitialCameraState.cameraStatus,
-    cardImage: theInitialCameraState.cardImage,
-  };
-}
-
-function cameraReducer(
-  state: CameraStateType,
-  action: CameraAction
-): CameraStateType {
-  switch (action.type) {
-    case "openCameraInit":
-      return {
-        cameraStatus: "cameraIsOpen",
-        cardImage: null,
-      };
-
-    case "closeCamera":
-      return {
-        cameraStatus: "cameraIsClosed",
-        cardImage: null,
-      };
-
-    case "clearCardImage":
-      return {
-        cameraStatus: state.cameraStatus,
-        cardImage: null,
-      };
-
-    case "setCardImage":
-      return {
-        cameraStatus: state.cameraStatus,
-        cardImage: action.payload,
-      };
-
-    default:
-      return initialCameraState;
-  }
-}
-
-type NewProps = {
-  router: Router;
-};
-
-const New: NextPage<NewProps> = ({ router }) => {
-  const [cameraState, cameraDispatch] = React.useReducer(
-    cameraReducer,
-    initialCameraState,
-    initCamera
-  );
-  // eslint-disable-next-line no-console
-  console.log({ cameraState, cameraDispatch });
+function New(): JSX.Element {
+  const router = useRouter();
 
   const [
     signS3,
@@ -130,7 +63,7 @@ const New: NextPage<NewProps> = ({ router }) => {
   });
 
   return (
-    <LayoutAuthenticated router={router}>
+    <LayoutAuthenticated>
       <Box>
         <Text fontSize="3xl">Create Post</Text>
 
@@ -303,9 +236,13 @@ const New: NextPage<NewProps> = ({ router }) => {
       </Box>
     </LayoutAuthenticated>
   );
-};
+}
 
-export default New;
+New.layout = LayoutAuthenticated;
+
+const NewApollo = withApollo(New);
+
+export default NewApollo;
 
 const blobToFile = (theBlob: Blob, filename: string) => {
   const theFile = new File([theBlob], filename, {

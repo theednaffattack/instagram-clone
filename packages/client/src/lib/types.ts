@@ -34,6 +34,5 @@ export type MyNextPage<P> = NextPage<P> &
   P & {
     layout: ({
       children,
-      router,
     }: PropsWithChildren<LayoutAuthenticatedProps>) => JSX.Element;
   };

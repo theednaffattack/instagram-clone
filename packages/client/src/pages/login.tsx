@@ -1,10 +1,16 @@
-import { AppProps } from "next/dist/next-server/lib/router/router";
 import React from "react";
+import { AppLayout } from "../components/layout.app";
 import { LoginPage } from "../components/login-page";
+import withApollo from "../lib/lib.apollo-client_v2";
 
-0;
-function Login({ router }: AppProps): JSX.Element {
-  return <LoginPage router={router} />;
+function Login(): JSX.Element {
+  return <LoginPage />;
 }
 
-export default Login;
+const LoginApollo = withApollo(Login);
+
+Login.layout = AppLayout;
+
+LoginApollo.layout = AppLayout;
+
+export default LoginApollo;

@@ -9,21 +9,18 @@ import {
   CloseButton,
   Flex,
 } from "@chakra-ui/react";
-import { NextPage } from "next";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Router } from "next/router";
+import { useRouter } from "next/router";
 import React from "react";
 import { LayoutAuthenticated } from "../../components/layout-authenticated";
-import { MeQuery, useGetGlobalPostByIdQuery } from "../../generated/graphql";
+import { useGetGlobalPostByIdQuery } from "../../generated/graphql";
 import { getPathnameValues } from "../../lib/get-pathname-values";
+import withApollo from "../../lib/lib.apollo-client_v2";
 
-type PostByIdProps = {
-  router?: Router;
-  me: MeQuery;
-};
+function PostById(): JSX.Element {
+  const router = useRouter();
 
-const PostById: NextPage<PostByIdProps> = ({ router }) => {
   const {
     data,
     error,
@@ -65,7 +62,7 @@ const PostById: NextPage<PostByIdProps> = ({ router }) => {
         ) : null;
     }
     return (
-      <LayoutAuthenticated router={router}>
+      <LayoutAuthenticated>
         <Flex flexDirection="column">{pluckedError}</Flex>
       </LayoutAuthenticated>
     );
@@ -91,6 +88,10 @@ const PostById: NextPage<PostByIdProps> = ({ router }) => {
       <PublicCardDynamic cardProps={data.getGlobalPostById} />
     </>
   );
-};
+}
 
-export default PostById;
+PostById.layout = LayoutAuthenticated;
+
+const PostByIdApollo = withApollo(PostById);
+
+export default PostByIdApollo;

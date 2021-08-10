@@ -185,7 +185,7 @@ export function PublicFeedCard({ cardProps }: CardProps): JSX.Element {
   }, []);
 
   return (
-    <Box key={id} border="1px solid rgb(219,219,219)">
+    <Box key={id} border="1px solid rgb(219,219,219)" bg="#FFF">
       {/* <ChImage
         // maxHeight={{ sm: "50px", md: "50px", lg: "50px", xl: "70px" }}
         maxHeight={["400px", "200px", "200px", "700px"]}
@@ -243,8 +243,8 @@ export function PublicFeedCard({ cardProps }: CardProps): JSX.Element {
             <Text>{text}</Text>
 
             <Link
-              // href={`/?postId=${id}`}
-              href={`/post/${id}`}
+              href={`/feed?postId=${id}`}
+              // href={`/post/${id}`}
               passHref
               scroll={false}
             >

@@ -15,7 +15,9 @@ import { isServer } from "./utilities.is-server";
 const isProduction = process.env.NODE_ENV === "production";
 
 export const httpLink = new HttpLink({
-  // headers,
+  // headers: {
+  //   authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : "not-set",
+  // },
   uri: isProduction
     ? process.env.NEXT_PUBLIC_APOLLO_LINK_URI_PATH
     : process.env.NEXT_PUBLIC_DEVELOPMENT_GQL_URI,
@@ -59,82 +61,127 @@ export const refreshLink = new TokenRefreshLink({
     const token = getAccessToken();
 
     if (!token) {
-      logger.info({ token }, "TOKEN IS UNDEFINED - REFRESH LINK");
       return true;
     }
 
     try {
       const { exp } = jwtDecode<JwtPayload>(token);
-      logger.info({ token, exp }, "VIEW DECODED TOKEN INFO - REFRESH LINK");
-      const expires = new Date(exp * 1000);
-
-      const dateTimeFormat = new Intl.DateTimeFormat("en", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour12: true,
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      });
-
-      logger.info({
-        expiration: dateTimeFormat.format(expires),
-        now: dateTimeFormat.format(new Date()),
-      });
-      // If the time now is later than the expiration time
-      // return false. The token is not valid and not undefined.
-      if (new Date() >= expires) return false;
-      // If the date now is earlier than expiration (has not expired)
-      // return true. The token is valid and not undefined.s
-      return true;
+      if (Date.now() >= exp * 1000) {
+        return false;
+      } else {
+        return true;
+      }
     } catch {
-      // In case of error while decoding the token, return false.
-      // The token is not valid and possibly undefined (The JWT may be
-      // malformed or some other unknown error).
       return false;
     }
   },
-  fetchAccessToken: async () => {
+  fetchAccessToken: () => {
     const url =
       process.env.NODE_ENV === "production"
         ? process.env.NEXT_PUBLIC_REFRESH_URL
-        : process.env.NEXT_PUBLIC_DEV_REFRESH_URL;
-    logger.info("FETCH RUNNING");
-    return fetch(url, { method: "POST", credentials: "include" });
-  },
-  handleFetch: (accessToken: string) => {
-    setAccessToken(accessToken);
-    // TODO: I might want to consider changing the expireTime
-    // const accessTokenDecrypted = jwtDecode<JwtPayload>(accessToken);
-    // setExpiresIn(parseExp(accessTokenDecrypted.exp).toString());
-  },
-  // handleResponse: (operation, accessTokenField) => (response) => any,
-  handleError: (err: Error) => {
-    // full control over handling token fetch Error
-    logger.warn("Your refresh token is invalid. Please try to re-login");
-    logger.error(err);
+        : process.env.NEXT_PUBLIC_DEV_REFRESH_UR;
 
-    // TODO: custom action here
-    // setAccesstoken(null) ???;
-    // multi-window logout;
-    // send the logout function???
-    // redirect to login with a flash message
-    // user.logout();
+    return fetch(url, {
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify({ data: { from: "lib.apollo-links.ts" } }),
+    });
+  },
+  handleFetch: (accessToken) => {
+    setAccessToken(accessToken);
+  },
+  handleError: (err) => {
+    logger.warn("Your refresh token is invalid. Try to relogin");
+    logger.error(err);
   },
 });
+
+// export const refreshLink = new TokenRefreshLink({
+//   accessTokenField: "accessToken",
+//   isTokenValidOrUndefined: () => {
+//     return true;
+//     // const token = getAccessToken();
+
+//     // if (!token) {
+//     //   logger.info({ token }, "TOKEN IS UNDEFINED - REFRESH LINK");
+//     //   return true;
+//     // }
+
+//     // try {
+//     //   const { exp } = jwtDecode<JwtPayload>(token);
+//     //   logger.info({ token, exp }, "VIEW DECODED TOKEN INFO - REFRESH LINK");
+//     //   const expires = new Date(exp * 1000);
+
+//     //   const dateTimeFormat = new Intl.DateTimeFormat("en", {
+//     //     year: "numeric",
+//     //     month: "long",
+//     //     day: "numeric",
+//     //     hour12: true,
+//     //     hour: "2-digit",
+//     //     minute: "2-digit",
+//     //     second: "2-digit",
+//     //   });
+
+//     //   logger.info({
+//     //     expiration: dateTimeFormat.format(expires),
+//     //     now: dateTimeFormat.format(new Date()),
+//     //   });
+//     //   // If the time now is later than the expiration time
+//     //   // return false. The token is not valid and not undefined.
+//     //   if (new Date() >= expires) return false;
+//     //   // If the date now is earlier than expiration (has not expired)
+//     //   // return true. The token is valid and not undefined.s
+//     //   return true;
+//     // } catch {
+//     //   // In case of error while decoding the token, return false.
+//     //   // The token is not valid and possibly undefined (The JWT may be
+//     //   // malformed or some other unknown error).
+//     //   return false;
+//     // }
+//   },
+//   fetchAccessToken: () => {
+//     const url =
+//       process.env.NODE_ENV === "production"
+//         ? process.env.NEXT_PUBLIC_REFRESH_URL
+//         : process.env.NEXT_PUBLIC_DEV_REFRESH_URL;
+//     logger.info("FETCH RUNNING");
+//     return fetch(url, {
+//       method: "POST",
+//       credentials: "include",
+//       body: JSON.stringify({}),
+//     });
+//   },
+//   handleFetch: (accessToken: string) => {
+//     logger.info({ accessToken }, "HANDLE FETCH RUNNING");
+//     setAccessToken(accessToken);
+//     // TODO: I might want to consider changing the expireTime
+//     // const accessTokenDecrypted = jwtDecode<JwtPayload>(accessToken);
+//     // setExpiresIn(parseExp(accessTokenDecrypted.exp).toString());
+//   },
+//   // handleResponse: (operation, accessTokenField) => (response) => any,
+//   handleError: (err: Error) => {
+//     // full control over handling token fetch Error
+//     logger.warn("Your refresh token is invalid. Please try to re-login");
+//     logger.error(err);
+
+//     // TODO: custom action here
+//     // setAccesstoken(null) ???;
+//     // multi-window logout;
+//     // send the logout function???
+//     // redirect to login with a flash message
+//     // user.logout();
+//   },
+// });
 
 /**
  * Sets the authorization header on outbound requests
  */
-export const authLink = setContext(async (_, { headers = {} }) => {
-  const accessToken = getAccessToken();
-  logger.info("AUTH HEADER WHILE SENDING");
-  logger.info({ headers, accessToken });
+export const authLink = setContext((_request, { headers }) => {
+  const token = getAccessToken();
   return {
     headers: {
       ...headers,
-      authorization: accessToken ? `Bearer ${accessToken}` : "",
+      authorization: token ? `bearer ${token}` : "",
     },
   };
 });

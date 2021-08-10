@@ -1,13 +1,9 @@
 import { NextSeo } from "next-seo";
-import { Router } from "next/router";
 import { AppLayout } from "../components/layout.app";
 import { LoginPage } from "../components/login-page";
+import withApollo from "../lib/lib.apollo-client_v2";
 
-interface HomeProps {
-  router: Router;
-}
-
-export function Home({ router }: HomeProps): JSX.Element {
+export function Home(): JSX.Element {
   return (
     <>
       <NextSeo
@@ -43,11 +39,37 @@ export function Home({ router }: HomeProps): JSX.Element {
         }}
       />
 
-      <LoginPage router={router} />
+      <LoginPage />
     </>
   );
 }
 
 Home.layout = AppLayout;
 
-export default Home;
+const HomeApollo = withApollo(Home);
+
+HomeApollo.layout = AppLayout;
+
+export default HomeApollo;
+
+// export async function getServerSideProps(ctx: MyContext): Promise<{
+//   props: {
+//     cookie: string;
+//     accessToken: string;
+//   };
+// }> {
+//   const findAppCookie = cookies(ctx);
+//   const icCookie = findAppCookie[process.env.NEXT_PUBLIC_COOKIE_PREFIX];
+
+//   let accessToken: string;
+//   try {
+//     accessToken = await requestAccessToken(
+//       icCookie,
+//       "home -> getServerSideProps"
+//     );
+//   } catch (error) {
+//     logger.error(error);
+//   }
+
+//   return { props: { cookie: icCookie, accessToken } };
+// }

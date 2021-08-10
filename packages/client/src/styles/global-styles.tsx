@@ -18,6 +18,7 @@ export const globalStyles = css`
       -moz-osx-font-smoothing: grayscale;
       font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
         Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+      overflow: hidden;
     }
 
     div#__next {

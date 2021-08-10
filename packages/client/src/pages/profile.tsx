@@ -1,13 +1,15 @@
 import { Avatar, Button, Text } from "@chakra-ui/react";
-import { NextPage } from "next";
+import { useAuth } from "../components/authentication-provider";
 import { Layout } from "../components/layout.basic";
 import { useMeQuery } from "../generated/graphql";
+import withApollo from "../lib/lib.apollo-client_v2";
 
-const Profile: NextPage = () => {
+function Profile(): JSX.Element {
+  const { authState } = useAuth();
+
   const { data } = useMeQuery();
-
-  return (
-    <Layout>
+  if (authState.userId) {
+    return (
       <>
         <Avatar size="lg" name={data?.me?.username} />
         <Text fontSize="3xl">{data?.me?.username}</Text>
@@ -15,25 +17,14 @@ const Profile: NextPage = () => {
           jsut a button
         </Button>
       </>
-    </Layout>
-  );
-};
+    );
+  } else {
+    return <div>Unauthenticated</div>;
+  }
+}
 
-// Profile.getInitialProps = async (ctx: MyContext) => {
-//   if (!ctx.apolloClient) ctx.apolloClient = initializeApollo();
+Profile.layout = Layout;
 
-//   let meResponse;
-//   try {
-//     meResponse = await ctx.apolloClient.mutate({
-//       mutation: MeDocument,
-//     });
-//   } catch (error) {
-//     console.warn("ERROR", error);
-//   }
+const ProfileApollo = withApollo(Profile);
 
-//   return {
-//     me: meResponse?.data ? meResponse?.data : {},
-//   };
-// };
-
-export default Profile;
+export default ProfileApollo;

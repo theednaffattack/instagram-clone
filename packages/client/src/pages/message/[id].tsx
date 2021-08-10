@@ -1,14 +1,12 @@
 import { Flex, Heading, Image, Text } from "@chakra-ui/react";
-import { NextPage } from "next";
-import { Router } from "next/router";
+import { useRouter } from "next/router";
 import React from "react";
+import { LayoutAuthenticated } from "../../components/layout-authenticated";
 import { useGetGlobalPostByIdQuery } from "../../generated/graphql";
+import withApollo from "../../lib/lib.apollo-client_v2";
 
-interface MessageByIdProps {
-  router: Router;
-}
-
-const MessageById: NextPage<MessageByIdProps> = ({ router }) => {
+function MessageById(): JSX.Element {
+  const router = useRouter();
   const {
     query: { id },
   } = router;
@@ -30,6 +28,10 @@ const MessageById: NextPage<MessageByIdProps> = ({ router }) => {
       <Text>{error ? error : ""}</Text>
     </Flex>
   );
-};
+}
 
-export default MessageById;
+MessageById.layout = LayoutAuthenticated;
+
+const MessageByIdApollo = withApollo(MessageById);
+
+export default MessageByIdApollo;

@@ -38,6 +38,7 @@ export function FeedBoxedImage({
             <img
               alt={`${images[0].id}-alt`}
               key={`${images[0].id}-placeholder`}
+              width="100%"
               object-fit="cover"
               src="https://via.placeholder.com/800"
             />

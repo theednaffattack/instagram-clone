@@ -1,16 +1,19 @@
 import { Box, Button, Flex, Link, Text } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
-import { NextPage } from "next";
+import { GetServerSidePropsContext } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { ReactElement, useState } from "react";
 import { Wrapper } from "../../components/box-wrapper";
 import { InputField } from "../../components/forms.input-field";
+import { LayoutAuthenticated } from "../../components/layout-authenticated";
 import { FieldError, useChangePasswordMutation } from "../../generated/graphql";
+import withApollo from "../../lib/lib.apollo-client_v2";
+import { MyNextPage } from "../../lib/types";
 import { formatValidationErrors } from "../../lib/utilities.graphQLErrors.format-apollo-validation-errors";
 import { toErrorMap } from "../../lib/utilities.toErrorMap";
 
-const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
+function ChangePassword({ token }: MyNextPage<{ token: string }>): JSX.Element {
   const [changePassword] = useChangePasswordMutation();
   const [tokenErrorHelper, setTokenErrorHelper] = useState<ReactElement>();
   const router = useRouter();
@@ -83,12 +86,20 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
       }}
     </Formik>
   );
-};
+}
 
-// ChangePassword.getInitialProps = ({ query }) => {
-//   return {
-//     token: query.token as string
-//   };
-// };
+export async function getServerSideProps({
+  query,
+}: GetServerSidePropsContext): Promise<{
+  token: string;
+}> {
+  return {
+    token: query.token as string,
+  };
+}
 
-export default ChangePassword;
+ChangePassword.layout = LayoutAuthenticated;
+
+const ChangePasswordApollo = withApollo(ChangePassword);
+
+export default ChangePasswordApollo;

@@ -2,8 +2,7 @@ import * as React from "react";
 import { Flex, Button } from "@chakra-ui/react";
 
 import Camera from "./old-camera";
-// import FauxCamera from "./faux-camera";
-import { CameraAction, CameraStateType } from "../pages/post/new";
+import { CameraAction, CameraStateType } from "../lib/lib.hooks.use-camera";
 
 interface CameraModuleProps {
   cameraDispatch: React.Dispatch<CameraAction>;

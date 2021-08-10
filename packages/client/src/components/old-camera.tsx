@@ -6,7 +6,8 @@ import { Button, Flex } from "@chakra-ui/react";
 import styles from "../components/camera.module.css";
 
 import { useOffsets, useCardRatio, useUserMedia } from "../lib/custom-hooks";
-import { CameraAction, CameraStateType } from "../pages/post/new";
+import { CameraAction, CameraStateType } from "../lib/lib.hooks.use-camera";
+// import { CameraAction, CameraStateType } from "../pages/post/new";
 
 export interface SizeRect {
   readonly width: number;

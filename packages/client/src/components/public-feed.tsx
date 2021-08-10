@@ -1,5 +1,5 @@
 import { Stack } from "@chakra-ui/react";
-import React from "react";
+import React, { useEffect } from "react";
 import Modal from "react-modal";
 import {
   GlobalPostResponse,
@@ -63,7 +63,7 @@ export function PublicFeed(): JSX.Element {
 
   useLazyLoading(".card-img-top", dataPosts?.getGlobalPostsRelay?.edges);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // If there's a next page, cursor it in.
     if (dataPosts?.getGlobalPostsRelay?.pageInfo?.hasNextPage === true) {
       fetchMorePosts({
@@ -87,7 +87,7 @@ export function PublicFeed(): JSX.Element {
 
   return (
     <>
-      <Stack my={50} spacing="3em">
+      <Stack spacing="3em">
         {dataPosts
           ? dataPosts.getGlobalPostsRelay?.edges?.map(({ node }) => {
               return (
