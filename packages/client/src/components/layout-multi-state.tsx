@@ -1,7 +1,6 @@
 import dynamic from "next/dynamic";
 import { NextRouter, useRouter } from "next/router";
 import React, { ReactNode, useState } from "react";
-import { logger } from "../lib/lib.logger";
 import { globalStyles } from "../styles/global-styles";
 import ModalDynamic from "./modal";
 import {
@@ -24,13 +23,6 @@ function LayoutMultiState({ children }: LayoutProps): JSX.Element {
   const [openModalPage, setOpenModalPage] = useState<OpenModalStates>("none");
   const router = useRouter();
   const tmpQuery = router.query;
-  const filteredForOpen = Object.entries(tmpQuery).filter(([key, value]) => {
-    logger.info("VIEW PARSED QUERY VALUES");
-    logger.info({ [key]: value });
-    if (value === "open") {
-      return key;
-    }
-  });
 
   const pageCache: string[] = [];
   for (const [key, value] of Object.entries(tmpQuery)) {
@@ -41,10 +33,6 @@ function LayoutMultiState({ children }: LayoutProps): JSX.Element {
 
   const [pageToOpen] = pageCache;
   let modalBody;
-  logger.info(
-    { tmp: tmpQuery, pageToOpen: filteredForOpen },
-    "CHECK ROUTER.QUERY"
-  );
   if (pageToOpen && pageToOpen === "createPost") {
     modalBody = <CreatePostFormDynamic />;
   }
