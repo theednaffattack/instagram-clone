@@ -35,7 +35,7 @@ export async function refreshTokenController(dbConnection: any, req: Request, re
   try {
     payload = verify(token, config.refreshTokenSecret);
   } catch (error) {
-    logger.error(error, "ERROR VERIFYING REFRESH TOKEN PAYLOAD");
+    logger.error({ error, token, secret: config.refreshTokenSecret }, "ERROR VERIFYING REFRESH TOKEN PAYLOAD");
     throw new Error(error);
   }
 
