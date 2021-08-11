@@ -209,7 +209,7 @@ export function PublicFeedCard({ cardProps }: CardProps): JSX.Element {
         <Flex alignItems="center">
           <Box pl={2}>
             <LikesAndCommentsSummary
-              disabled={true}
+              disabled={false}
               comments_count={comments_count}
               currently_liked={currently_liked}
               likes_count={likes_count}
