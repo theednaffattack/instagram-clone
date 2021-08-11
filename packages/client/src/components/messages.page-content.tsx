@@ -301,4 +301,4 @@ function MessagesPageContent(): JSX.Element {
   );
 }
 
-export { MessagesPageContent };
+export { MessagesPageContent, MessagesPageContent as default };
