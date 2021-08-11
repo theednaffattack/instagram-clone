@@ -12,6 +12,7 @@ import {
 } from "./styles";
 
 const CreatePostFormDynamic = dynamic(() => import("./create-post-form"));
+const PostByIdDynamic = dynamic(() => import("./post-by-id.page-content"));
 
 interface LayoutProps {
   children?: ReactNode;
@@ -24,10 +25,13 @@ function LayoutMultiState({ children }: LayoutProps): JSX.Element {
   const router = useRouter();
   const tmpQuery = router.query;
 
-  const pageCache: string[] = [];
+  const pageCache: OpenModalStates[] = [];
   for (const [key, value] of Object.entries(tmpQuery)) {
     if (value === "open") {
-      pageCache.push(key);
+      pageCache.push(key as OpenModalStates);
+    }
+    if (key === "postId" && typeof value === "string") {
+      pageCache.push(key as OpenModalStates);
     }
   }
 
@@ -35,6 +39,9 @@ function LayoutMultiState({ children }: LayoutProps): JSX.Element {
   let modalBody;
   if (pageToOpen && pageToOpen === "createPost") {
     modalBody = <CreatePostFormDynamic />;
+  }
+  if (pageToOpen && pageToOpen === "postId") {
+    modalBody = <PostByIdDynamic />;
   }
   return (
     <>
@@ -114,12 +121,16 @@ function HomeBottomNavIcons({
       svgViewbox: "0 0 24 24",
       text: "profile",
     },
-  ].map(({ linkHref, text: _text, svgKey, svgViewbox }, index) => (
-    <div className="css-70qvj9" key={`nav-link-${linkHref}-${index}`}>
+  ].map(({ linkHref, text, svgKey, svgViewbox }, index) => (
+    <div
+      color="#e2e8f0"
+      className="css-70qvj9"
+      key={`nav-link-${linkHref}-${index}`}
+    >
       <button
         type="button"
         className="chakra-button css-10wuup2"
-        aria-label="Like button"
+        aria-label={`Open ${text}`}
         tabIndex={0}
       >
         <svg
@@ -133,7 +144,7 @@ function HomeBottomNavIcons({
           height="2em"
           width="2em"
           xmlns="http://www.w3.org/2000/svg"
-          style={{ color: "currentcolor" }}
+          style={{ color: "currentColor" }}
         >
           {svgPaths[svgKey]}
         </svg>
@@ -168,7 +179,7 @@ function HomeTopNavIcons({
       text: "following",
     },
     {
-      linkHref: `/${callerPage}?messages=open`,
+      linkHref: `/messages`,
       linkAs: "/messages",
       svgKey: "messages",
       svgViewbox: "0 0 24 24",
@@ -178,39 +189,37 @@ function HomeTopNavIcons({
         strokeWidth: 2,
       },
     },
-  ].map(
-    ({ linkHref, svgKey, svgViewbox, text: _text, svgOverrides }, index) => (
-      <div className="css-70qvj9" key={`top-nav-link-${linkHref}-${index}`}>
-        <button
-          type="button"
-          className="chakra-button css-10wuup2"
-          aria-label="Like button"
-          tabIndex={0}
-          onClick={() => {
-            //
-            router.push(linkHref);
-          }}
+  ].map(({ linkHref, svgKey, svgViewbox, text, svgOverrides }, index) => (
+    <div className="css-70qvj9" key={`top-nav-link-${linkHref}-${index}`}>
+      <button
+        type="button"
+        className="chakra-button css-10wuup2"
+        aria-label={`Open ${text}`}
+        tabIndex={0}
+        onClick={() => {
+          //
+          router.push(linkHref);
+        }}
+      >
+        <svg
+          stroke="currentColor"
+          fill="currentColor"
+          strokeWidth="0"
+          viewBox={svgViewbox ? svgViewbox : "0 0 24 24"}
+          color="currentColor"
+          aria-hidden="true"
+          focusable="false"
+          height="2em"
+          width="2em"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{ color: "currentcolor" }}
+          {...svgOverrides}
         >
-          <svg
-            stroke="currentColor"
-            fill="currentColor"
-            strokeWidth="0"
-            viewBox={svgViewbox ? svgViewbox : "0 0 24 24"}
-            color="currentColor"
-            aria-hidden="true"
-            focusable="false"
-            height="2em"
-            width="2em"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{ color: "currentcolor" }}
-            {...svgOverrides}
-          >
-            {svgPaths[svgKey]}
-          </svg>
-        </button>
-      </div>
-    )
-  );
+          {svgPaths[svgKey]}
+        </svg>
+      </button>
+    </div>
+  ));
   return (
     <div style={{ display: "flex", flexDirection: "row" }}>{navLinkInfo}</div>
   );
