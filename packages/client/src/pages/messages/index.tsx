@@ -3,7 +3,7 @@ import { NextSeo } from "next-seo";
 import { useRouter } from "next/router";
 import React from "react";
 import { useAuth } from "../../components/authentication-provider";
-import { LayoutAuthenticated } from "../../components/layout-authenticated";
+import LayoutMultiState from "../../components/layout-multi-state";
 import { MessagesPageContent } from "../../components/messages.page-content";
 import { withApollo } from "../../lib/lib.apollo-client_v2";
 import { logger } from "../../lib/lib.logger";
@@ -65,11 +65,11 @@ export function Messages(): JSX.Element {
   }
 }
 
-Messages.layout = LayoutAuthenticated;
+Messages.layout = LayoutMultiState;
 
 const FinalMessages = withApollo(Messages);
 
-FinalMessages.layout = LayoutAuthenticated;
+FinalMessages.layout = LayoutMultiState;
 
 export default FinalMessages;
 
