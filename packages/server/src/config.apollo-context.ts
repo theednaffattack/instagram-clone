@@ -42,8 +42,6 @@ const getContextFromHttpRequest = ({ req, res, dbConnection, config }: ConfigApo
   // JWT implementation
   const authorization = req.headers["authorization"];
 
-  logger.info({ authorization }, "GET CONTEXT FROM HTTP REQUEST");
-
   if (authorization && authorization !== "Bearer public") {
     let token;
     try {
