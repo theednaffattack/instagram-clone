@@ -1,6 +1,5 @@
 import * as React from "react";
 import { GlobalPostsRelayEdges } from "../components/public-feed";
-import { logger } from "./lib.logger";
 import { isServer } from "./utilities.is-server";
 
 export type PossibleMediaStream = null | MediaStream;
@@ -14,7 +13,6 @@ export function useInfiniteScroll(
 ): void {
   const scrollObserver = React.useCallback(
     (node) => {
-      logger.info(node);
       new IntersectionObserver((entries) => {
         entries.forEach((en) => {
           if (en.intersectionRatio > 0) {
