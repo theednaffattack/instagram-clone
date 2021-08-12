@@ -33,9 +33,6 @@ export async function requestAccessToken(
         "Content-Type": "application/json",
       },
     });
-    logger.info("VIEW RESPONSE & COOKIE");
-    logger.info({ res, cookie });
-    // res = await axios.post(url, requestBody, axiosConfig);
   } catch (err) {
     logger.error(
       err,
@@ -46,8 +43,6 @@ export async function requestAccessToken(
   let data;
   try {
     data = await res.json();
-    logger.info("VIEW DATA (json)");
-    logger.info({ data });
   } catch (error) {
     logger.error(error, "CONVERTING REQUEST DATA TO JSON");
   }
