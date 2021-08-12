@@ -14,6 +14,7 @@ import {
 import { Post } from "./entity.post";
 import { EdgeType, ConnectionType, ConnectionArgs } from "./gql-type.connection-args";
 import { GlobalPostResponse } from "./gql-type.global-posts-response";
+import { logger } from "./lib.logger";
 import { isAuth } from "./middleware.is-auth";
 import { MyContext } from "./typings";
 
@@ -93,7 +94,14 @@ export class GetGlobalPostsRelay {
       });
     }
 
-    const findPosts = await getPosts.getMany();
+    let findPosts;
+    try {
+      findPosts = await getPosts.getMany();
+    } catch (error) {
+      logger.error("ERROR FINDING POSTS - GET POSTS: RELAY");
+      logger.error(error);
+      throw new Error(error);
+    }
 
     // const flippedPosts = findPosts.reverse();
     const preppedPosts = findPosts.slice(0, realLimit); // .reverse();
