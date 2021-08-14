@@ -88,6 +88,7 @@
     "@graphql-codegen/typescript": "^1.22.2",
     "@graphql-codegen/typescript-operations": "^1.18.1",
     "@graphql-codegen/typescript-react-apollo": "^2.2.6",
+    "@graphql-codegen/typescript-urql": "^3.0.0",
     "@linaria/webpack-loader": "3.0.0-beta.4",
     "@testing-library/react": "^11.2.7",
     "@types/cookie": "^0.4.0",
