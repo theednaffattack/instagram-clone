@@ -88,15 +88,33 @@ export class GetGlobalPostsRelay {
       // .skip(first)
       .take(realLimitPlusOne);
 
-    if (after !== null) {
-      getPosts.where("post.created_at <= :cursor::timestamp", {
-        cursor: formatDate(after ? parseISO(after) : new Date()),
+    logger.info({ afterShouldBe: formatDate(after ? parseISO(after) : new Date()), after });
+
+    // If using 'after'
+    if (after && after !== null) {
+      getPosts.where("post.created_at >= :cursor::timestamp", {
+        cursor: formatDate(parseISO(after)),
+      });
+    }
+
+    // If using 'before'
+    if (before && before !== null) {
+      getPosts.where("post.created_at < :cursor::timestamp", {
+        cursor: formatDate(parseISO(before)),
       });
     }
 
     let findPosts;
     try {
       findPosts = await getPosts.getMany();
+      logger.info("NO POSTS?");
+      logger.info({ numberOfPosts: findPosts.length });
+      logger.info({
+        hasNextPage: findPosts.length === realLimitPlusOne,
+        viewPosts: findPosts.map(({ id, images, text }) => {
+          return { id, text, numImages: images.length };
+        }),
+      });
     } catch (error) {
       logger.error("ERROR FINDING POSTS - GET POSTS: RELAY");
       logger.error(error);
