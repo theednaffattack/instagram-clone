@@ -7,7 +7,10 @@ import {
   split,
 } from "@apollo/client";
 import { WebSocketLink } from "@apollo/client/link/ws";
-import { getMainDefinition } from "@apollo/client/utilities";
+import {
+  getMainDefinition,
+  relayStylePagination,
+} from "@apollo/client/utilities";
 import { setContext } from "@apollo/link-context";
 import { TokenRefreshLink } from "apollo-link-token-refresh";
 import fetch from "isomorphic-unfetch";
@@ -27,7 +30,15 @@ const initApolloClient = (
   userId: string,
   setAuthToken: (token: string) => void
 ) => {
-  const cache = new InMemoryCache().restore(initialState);
+  const cache = new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          getGlobalPostsRelay: relayStylePagination(),
+        },
+      },
+    },
+  }).restore(initialState);
 
   const httpLink = createHttpLink({
     uri:
