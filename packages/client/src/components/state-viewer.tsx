@@ -1,3 +1,4 @@
+import { css } from "@linaria/core";
 import { useState } from "react";
 import { stateViewer } from "./styles";
 
@@ -14,7 +15,7 @@ function StateViewer({ state, title }: StateViewerProps): JSX.Element {
     visibility === "isCollapsed" ? null : (
       <>
         <h1>{title}</h1>
-        <pre>{JSON.stringify(state, null, 2)}</pre>
+        <pre className={preStyle}>{JSON.stringify(state, null, 2)}</pre>
       </>
     );
   function handleClick(event: any) {
@@ -37,3 +38,7 @@ function StateViewer({ state, title }: StateViewerProps): JSX.Element {
 }
 
 export { StateViewer };
+
+const preStyle = css`
+  white-space: pre-wrap;
+`;

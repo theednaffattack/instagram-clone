@@ -123,7 +123,12 @@ export const positionFixedViewer = css`
   position: fixed;
   top: 0;
   left: 0;
+  bottom: 0;
   background-color: rgba(252, 232, 241, 0.25);
   border: 2px dashed hotpink;
   max-width: 500px;
+  overflow-y: auto;
+  &.collapsed {
+    bottom: auto;
+  }
 `;

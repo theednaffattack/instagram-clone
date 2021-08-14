@@ -38,5 +38,15 @@ export function PositionFixedWrapper({
         </div>
       </>
     );
-  return <div className={positionFixedViewer}>{content}</div>;
+  return (
+    <div
+      className={
+        positionFixedViewer +
+        " " +
+        (visibility === "isCollapsed" ? "collapsed" : null)
+      }
+    >
+      {content}
+    </div>
+  );
 }
