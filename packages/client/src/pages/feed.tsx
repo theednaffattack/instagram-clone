@@ -4,10 +4,14 @@ import React from "react";
 import { useAuth } from "../components/authentication-provider";
 import { PublicFeedCard } from "../components/feed.public-card";
 import LayoutMultiState from "../components/layout-multi-state";
+import { PositionFixedWrapper } from "../components/position-fixed-wrapper";
+import { StateViewer } from "../components/state-viewer";
 import { stack } from "../components/styles";
 import { useGetGlobalPostsRelayQuery } from "../generated/graphql";
 import { useInfiniteScroll, useLazyLoading } from "../lib/custom-hooks";
 import withApollo from "../lib/lib.apollo-client_v2";
+import { useHasMounted } from "../lib/lib.hooks.has-mounted";
+import { logger } from "../lib/lib.logger";
 
 const flexContainer = css`
   display: flex;
@@ -32,27 +36,74 @@ export function Feed(): JSX.Element {
     fetchMore: fetchMorePosts,
   } = useGetGlobalPostsRelayQuery({
     variables: initialGlobalPostsVariables,
+    ssr: false,
+    nextFetchPolicy: "cache-first",
   });
 
   useLazyLoading(".card-img-top", dataPosts?.getGlobalPostsRelay?.edges);
 
+  const mountedStatus = useHasMounted();
+
   React.useEffect(() => {
     // If there's a next page, cursor in pageInfo.
     if (dataPosts?.getGlobalPostsRelay?.pageInfo?.hasNextPage === true) {
+      logger.info("IN USE EFFECT");
+      logger.info({
+        hasNextPage: dataPosts?.getGlobalPostsRelay?.pageInfo?.hasNextPage,
+      });
       fetchMorePosts({
         variables: {
           first: initialGlobalPostsVariables.first,
-          after:
-            dataPosts?.getGlobalPostsRelay?.edges[
-              dataPosts?.getGlobalPostsRelay?.edges?.length - 1
-            ].cursor,
+          before: dataPosts.getGlobalPostsRelay.pageInfo.endCursor,
+          after: dataPosts.getGlobalPostsRelay.pageInfo.endCursor,
+          // dataPosts?.getGlobalPostsRelay?.edges[
+          //   dataPosts?.getGlobalPostsRelay?.edges?.length - 1
+          // ].cursor,
         },
+        // updateQuery: (prev, { fetchMoreResult }) => {
+        //   if (!fetchMoreResult) return prev;
+
+        //   const newObj = Object.assign({}, prev, {
+        //     getGlobalPostsRelay: {
+        //       __typename: prev.getGlobalPostsRelay.__typename,
+        //       edges: [
+        //         ...prev.getGlobalPostsRelay?.edges,
+        //         ...fetchMoreResult.getGlobalPostsRelay?.edges,
+        //       ],
+        //       pageInfo: {
+        //         hasNextPage:
+        //           fetchMoreResult.getGlobalPostsRelay?.pageInfo.hasNextPage,
+        //         hasPreviousPage:
+        //           fetchMoreResult.getGlobalPostsRelay?.pageInfo.hasPreviousPage,
+        //         startCursor: prev.getGlobalPostsRelay?.pageInfo.startCursor,
+        //         endCursor:
+        //           fetchMoreResult.getGlobalPostsRelay?.pageInfo.endCursor,
+        //       },
+        //     },
+        //   });
+
+        //   logger.info("VIEW UPDATE QUERY");
+        //   logger.info({
+        //     fetchMoreHasPage:
+        //       fetchMoreResult.getGlobalPostsRelay?.pageInfo.hasNextPage,
+        //     fetchMoreResult,
+        //     prev,
+        //     newObj,
+        //   });
+
+        //   return newObj;
+        // },
       });
     }
     // Reset infinite scroller state to "idle", regardless
     // next page state.
     setInfState("idle");
-  }, [infState === "fetch-more", fetchMorePosts]);
+  }, [
+    infState === "fetch-more",
+    mountedStatus === "hasMounted",
+    // dataPosts?.getGlobalPostsRelay?.pageInfo,
+    fetchMorePosts,
+  ]);
 
   const scrollSentinelRef = React.useRef<HTMLDivElement>(null);
 
@@ -95,7 +146,22 @@ export function Feed(): JSX.Element {
       {authState.userId ? (
         <div className={stack}>
           {/* <PublicFeed /> */}
-
+          <PositionFixedWrapper>
+            <StateViewer
+              state={
+                dataPosts ? dataPosts.getGlobalPostsRelay?.edges.length : null
+              }
+              title="NUMBER OF POSTS"
+            />
+            <StateViewer
+              state={
+                dataPosts ? dataPosts?.getGlobalPostsRelay?.pageInfo : null
+              }
+              title="PAGE INFO"
+            />
+            <StateViewer state={infState} title="INIFINITE LOADING STATE" />
+            <StateViewer state={authState} title="AUTH LOADING STATE" />
+          </PositionFixedWrapper>
           {dataPosts
             ? dataPosts.getGlobalPostsRelay?.edges?.map(({ node }) => {
                 return (

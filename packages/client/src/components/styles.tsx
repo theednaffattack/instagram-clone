@@ -36,6 +36,7 @@ export const middleRow = css`
 export const stack = css`
   overflow-y: auto;
   display: flex;
+  position: relative;
   flex-direction: column;
 
   & > div {
@@ -112,4 +113,17 @@ export const button = css`
   &:hover {
     background: var(--chakra-colors-gray-200);
   }
+`;
+
+export const stateViewer = css`
+  border: 2px dashed hotpink;
+`;
+
+export const positionFixedViewer = css`
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: rgba(252, 232, 241, 0.25);
+  border: 2px dashed hotpink;
+  max-width: 500px;
 `;
