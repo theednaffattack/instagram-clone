@@ -18,7 +18,7 @@ export class GetGlobalPostById {
     { postId }: GetGlobalPostByIdInput,
     @Ctx() ctx: MyContext
   ): Promise<GlobalPostResponse | null> {
-    let singleGlobalPost = await ctx.dbConnection
+    const singleGlobalPost = await ctx.dbConnection
       .getRepository(Post)
       .createQueryBuilder("post")
       .leftJoinAndSelect("post.images", "images")
@@ -35,7 +35,7 @@ export class GetGlobalPostById {
     // if the Post record doesn't exist the variable is false
     // if the record does exist but the logged in user is not among the likes...
     // the variable is false. If the user HAS liked the Post the variable is true
-    let currentlyLiked =
+    const currentlyLiked =
       singleGlobalPost && singleGlobalPost.likes.length >= 1
         ? singleGlobalPost.likes.filter((likeRecord) => {
             return likeRecord.user.id === ctx.userId;

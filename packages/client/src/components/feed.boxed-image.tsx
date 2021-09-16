@@ -32,7 +32,9 @@ export function FeedBoxedImage({
             onError={() => {
               setImageLoadState("isError");
             }}
-            style={imageLoadState === "isLoaded" ? null : { display: "none" }}
+            style={
+              imageLoadState === "isLoaded" ? undefined : { display: "none" }
+            }
           />
           {imageLoadState !== "isLoaded" ? (
             <img
@@ -53,7 +55,7 @@ export function FeedBoxedImage({
 
 function handleImageLoaded(
   dispatch: React.Dispatch<
-    React.SetStateAction<"isLoaded" | "isLoading" | "init">
+    React.SetStateAction<"isLoaded" | "isLoading" | "isError" | "init">
   >
 ) {
   dispatch("isLoaded");

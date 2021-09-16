@@ -1,25 +1,26 @@
-import { getConnection } from "typeorm";
-import type { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
+import { Connection } from "typeorm";
+import { handleAsyncSimple } from "./lib.handle-async";
+import { handleCatchBlockError } from "./lib.handle-catch-block-error";
+import { logger } from "./lib.logger";
 
-export async function productionMigrations(dbConnection: any, connectOptions: PostgresConnectionOptions) {
+export async function productionMigrations(dbConnection: Connection): Promise<void> {
   let retries = 5;
   // Loop to run migrations. Keep
   // trying until
   while (retries) {
-    try {
-      const viewMigrations = await dbConnection?.runMigrations();
-      if (viewMigrations) {
-        console.log("MIGRATIONS HAVE BEEN RUN", viewMigrations);
-      }
+    const [viewMigrations, error] = await handleAsyncSimple(dbConnection?.runMigrations);
+    if (error) {
+      logger.error("ERROR RUNNING TYPEORM MIGRATIONS");
+      handleCatchBlockError(error);
+    }
+    if (viewMigrations) {
       break;
-    } catch (error) {
-      console.error("ERROR RUNNING TYPEORM MIGRATIONS", error);
     }
 
     retries -= 1;
 
-    console.log(`\n\nRETRIES LEFT: ${retries}\n\n`);
+    logger.info(`\n\nRETRIES LEFT: ${retries}\n\n`);
     // wait 5 seconds
-    setTimeout(() => console.log("MIGRATION WAIT TIMEOUT FIRING"), 5000);
+    setTimeout(() => logger.info("MIGRATION WAIT TIMEOUT FIRING"), 5000);
   }
 }

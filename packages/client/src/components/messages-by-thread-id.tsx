@@ -13,7 +13,7 @@ export function MessagesByThreadId({
 }: {
   threadId: string;
 }): JSX.Element {
-  const { data, error, loading } = useGetMessagesByThreadIdQuery({
+  const [{ data, error, fetching }] = useGetMessagesByThreadIdQuery({
     variables: {
       input: {
         threadId,
@@ -22,7 +22,7 @@ export function MessagesByThreadId({
     },
   });
 
-  if (data || loading) {
+  if (data || fetching) {
     return (
       <>
         {data?.getMessagesByThreadId?.edges?.map(({ node }) => {
@@ -36,13 +36,13 @@ export function MessagesByThreadId({
                 bg="white"
                 key={node.id}
               >
-                {loading ? (
+                {fetching ? (
                   <SkeletonCircle size="10" />
                 ) : (
                   <Avatar src={node?.sentBy?.profileImageUri ?? undefined} />
                 )}
 
-                {loading ? (
+                {fetching ? (
                   <SkeletonText mt="4" noOfLines={4} spacing="4" />
                 ) : (
                   <Text>{node.text}</Text>
@@ -58,14 +58,14 @@ export function MessagesByThreadId({
                 bg="white"
                 key={node.id}
               >
-                {loading ? (
+                {fetching ? (
                   <SkeletonText mt="4" noOfLines={4} spacing="4" />
                 ) : (
                   <Flex flexWrap="wrap">
                     <Text>{node.text}</Text>
                   </Flex>
                 )}
-                {loading ? (
+                {fetching ? (
                   <SkeletonCircle size="10" />
                 ) : (
                   <Avatar

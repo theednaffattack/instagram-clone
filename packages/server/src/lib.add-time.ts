@@ -1,10 +1,10 @@
+type TimeInterval = "year" | "quarter" | "month" | "week" | "day" | "hour" | "minute" | "second";
+
 interface AddTimeProps {
   date: Date;
   amount: number;
   interval: TimeInterval;
 }
-
-type TimeInterval = "year" | "quarter" | "month" | "week" | "day" | "hour" | "minute" | "second";
 
 // Adapted from: https://stackoverflow.com/a/1214753/9448010
 // With JSFiddle: http://jsfiddle.net/2rgcosfe/
@@ -31,10 +31,10 @@ export function addTime({ date, interval, amount }: AddTimeProps): Date | undefi
       `The 'interval' argument must be either: "year", "quarter", "month", "week", "day", "hour", "minute", or "second"`
     );
 
-  let ret: Date | undefined = new Date(date); //don't change original date
+  let ret: Date | undefined = new Date(date); // don't change original date
 
   const checkMonthRollover = function (): void {
-    if (ret && ret.getDate() != date.getDate()) ret.setDate(0);
+    if (ret && ret.getDate() !== date.getDate()) ret.setDate(0);
   };
 
   if (ret) {

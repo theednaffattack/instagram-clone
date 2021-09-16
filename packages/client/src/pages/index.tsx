@@ -1,7 +1,6 @@
 import { NextSeo } from "next-seo";
 import { AppLayout } from "../components/layout.app";
 import { LoginPage } from "../components/login-page";
-import withApollo from "../lib/lib.apollo-client_v2";
 
 export function Home(): JSX.Element {
   return (
@@ -46,11 +45,15 @@ export function Home(): JSX.Element {
 
 Home.layout = AppLayout;
 
-const HomeApollo = withApollo(Home);
+// const HomeUrql: WithUrqlAndLayout = withUrqlClient((_ssrExchange, _ctx) => ({
+//   // ...add your Client options here
+//   fetchOptions: { credentials: "include" },
+//   url: process.env.NEXT_PUBLIC_DEVELOPMENT_GQL_URI,
+// }))(Home);
 
-HomeApollo.layout = AppLayout;
+// HomeUrql.layout = AppLayout;
 
-export default HomeApollo;
+export default Home;
 
 // export async function getServerSideProps(ctx: MyContext): Promise<{
 //   props: {

@@ -1,13 +1,9 @@
 import { CloseButton } from "@chakra-ui/react";
 import { disableBodyScroll, enableBodyScroll } from "body-scroll-lock";
 import { useRouter } from "next/router";
-import React, {
-  forwardRef,
-  ReactNode,
-  useImperativeHandle,
-  useRef,
-} from "react";
+import React, { forwardRef, ReactNode, useImperativeHandle } from "react";
 import ReactModal from "react-modal";
+import { useHandleElement } from "../lib/libs.hooks.use-dom-element";
 
 ReactModal.setAppElement("#__next");
 
@@ -22,17 +18,17 @@ interface ModalProps {
  */
 const Modal = forwardRef<ReactModal, ModalProps>(
   ({ body, children, identifier, ...props }, ref) => {
-    const modalRef = useRef<ReactModal>();
+    const [modalRef, element] = useHandleElement<ReactModal>();
 
     const { back, query } = useRouter();
 
-    useImperativeHandle(ref, () => modalRef.current, [modalRef]);
+    useImperativeHandle(ref, () => element, [element]);
 
     const internalFuncsPlusProps = {
-      isOpen: !!query[identifier],
+      isOpen: identifier ? !!query[identifier] : false,
       onRequestClose: () => back(),
-      onAfterOpen: () => disableBodyScroll(modalRef.current),
-      onAfterClose: () => enableBodyScroll(modalRef.current),
+      onAfterOpen: () => disableBodyScroll(element),
+      onAfterClose: () => enableBodyScroll(element),
       ref: modalRef,
       shouldCloseOnEsc: true,
       ...props,

@@ -3,11 +3,13 @@ import bcrypt from "bcryptjs";
 import { CookieOptions } from "express";
 import internalIp from "internal-ip";
 import { Arg, Ctx, Mutation, Resolver } from "type-graphql";
-import { configBuildAndValidate, ServerConfigProps } from "./config.build-config";
+import { configBuildAndValidate } from "./config.build-config";
 import { User } from "./entity.user";
-import { createAccessToken } from "./lib.authentication";
+import { createTokenData } from "./lib.create-token-data";
+import { handleAsyncSimple, handleAsyncWithArgs } from "./lib.handle-async";
+import { handleCatchBlockError } from "./lib.handle-catch-block-error";
 import { logger } from "./lib.logger";
-import { addDays, addMinutes } from "./lib.utilities.manipulate-time";
+import { addDays } from "./lib.utilities.manipulate-time";
 import { sendRefreshToken } from "./lib.utilities.send-refresh-token";
 import { LoginResponse } from "./type.login-response";
 import { MyContext } from "./typings";
@@ -22,22 +24,17 @@ export class LoginResolver {
     @Arg("password", () => String, { description: "Your user password" }) password: string,
     @Ctx() ctx: MyContext
   ): Promise<LoginResponse> {
-    let config: ServerConfigProps;
+    const [config, errorConfig] = await handleAsyncSimple(configBuildAndValidate);
 
-    try {
-      config = await configBuildAndValidate();
-    } catch (error) {
-      console.error(error);
-      throw new Error("Error creating 'config' object.");
+    if (errorConfig) {
+      handleCatchBlockError(errorConfig);
     }
 
     let user;
-
     try {
       user = await ctx.dbConnection.getRepository(User).findOne({ where: { username } });
     } catch (error) {
-      console.error(error);
-      throw Error(error);
+      handleCatchBlockError(error);
     }
 
     // if we can't find a user return an obscure result to prevent fishing
@@ -47,13 +44,11 @@ export class LoginResolver {
       };
     }
 
-    let valid;
-    try {
-      valid = await bcrypt.compare(password, user.password);
-    } catch (error) {
-      console.error("ERROR COMPARING ENCRYPTED PASSWORD");
-      console.error(error);
-      throw Error(error);
+    const [valid, validError] = await handleAsyncWithArgs(bcrypt.compare, [password, user.password]);
+
+    if (validError) {
+      logger.error("ERROR COMPARING ENCRYPTED PASSWORD");
+      handleCatchBlockError(validError);
     }
 
     // if the supplied password is invalid return early
@@ -77,7 +72,7 @@ export class LoginResolver {
         domain: config.env === "production" ? config.cookieDomain : homeIp,
         httpOnly: true,
         secure: config.env === "production",
-        expires: addDays(2),
+        expires: addDays(new Date(), 2),
         path: "/",
       };
 
@@ -106,7 +101,8 @@ export class LoginResolver {
           },
           (err, cfPolicy) => {
             if (err) {
-              console.error("ERROR GETTING THE CLOUDFRONT COOKIE SIGNED", err);
+              logger.error("ERROR GETTING THE CLOUDFRONT COOKIE SIGNED");
+              logger.error(err);
               throw err;
             } else {
               ctx.res.cookie("CloudFront-Policy", cfPolicy["CloudFront-Policy"], options);
@@ -116,13 +112,12 @@ export class LoginResolver {
           }
         );
       } catch (error) {
-        console.error("ERROR GETTING SIGNED COOKIE");
-        console.error(error);
-        throw Error(error);
+        logger.error("ERROR GETTING SIGNED COOKIE");
+        handleCatchBlockError(error);
       }
     } else {
       // NOTE: This should probably throw an Error
-      console.error("ERROR OBTAINING CLOUDFRONT SIGNING INFORMATION");
+      logger.error("ERROR OBTAINING CLOUDFRONT SIGNING INFORMATION");
       return {
         errors: [{ field: "password", message: "Error signing in." }],
       };
@@ -131,22 +126,23 @@ export class LoginResolver {
     // all is well return the user we found
 
     ctx.userId = user.id;
-    const fifteenMinutes = addMinutes(new Date(), 15);
     // const sevenDays = addDays(7);
 
-    const tokenObj: LoginResponse = {
-      // Note: Sigining the token with "ACCESS TOKEN secret"
-      tokenData: {
-        accessToken: createAccessToken({ config: ctx.config, user, expiresIn: "15s" }),
-        expiresIn: fifteenMinutes,
-        userId: user.id,
-        version: user.tokenVersion,
-      },
-    };
+    // const tokenObj: LoginResponse = {
+    //   // Note: Sigining the token with "ACCESS TOKEN secret"
+    //   tokenData: {
+    //     accessToken: createAccessToken({ config: ctx.config, user, expiresIn: "15m" }),
+    //     expiresIn: fifteenMinutes,
+    //     userId: user.id,
+    //     version: user.tokenVersion,
+    //   },
+    // };
+
+    const tokenData = createTokenData({ config, user, expireUnit: "s", expireInt: 15 });
 
     sendRefreshToken({ res: ctx.res, user, config });
 
     // Remember the ACCESS TOKEN is in the response.
-    return tokenObj;
+    return { tokenData };
   }
 }

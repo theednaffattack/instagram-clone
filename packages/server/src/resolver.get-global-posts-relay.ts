@@ -14,6 +14,8 @@ import {
 import { Post } from "./entity.post";
 import { EdgeType, ConnectionType, ConnectionArgs } from "./gql-type.connection-args";
 import { GlobalPostResponse } from "./gql-type.global-posts-response";
+import { handleAsyncSimple } from "./lib.handle-async";
+import { handleCatchBlockError } from "./lib.handle-catch-block-error";
 import { logger } from "./lib.logger";
 import { isAuth } from "./middleware.is-auth";
 import { MyContext } from "./typings";
@@ -28,8 +30,7 @@ export class PostConnection extends ConnectionType<PostEdge>("post", PostEdge) {
 
 @Resolver()
 export class GetGlobalPostsRelay {
-  // @ts-ignore
-  @Subscription((type) => PostConnection, {
+  @Subscription(() => PostConnection, {
     // the `payload` and `args` are available in the destructured
     // object below `{args, context, payload}`
     nullable: true,
@@ -40,7 +41,6 @@ export class GetGlobalPostsRelay {
       return "POSTS_GLOBAL";
     },
 
-    // @ts-ignore
     filter: ({ payload, context }: ResolverFilterData<PostConnection, ConnectionArgs>) => {
       return true;
     },
@@ -62,10 +62,10 @@ export class GetGlobalPostsRelay {
     @Args()
     {
       after,
-      // @ts-ignore
+
       before,
       first,
-      // @ts-ignore
+
       last,
     }: ConnectionArgs
   ): // @PubSub("GLOBAL_POSTS") publish: Publisher<GlobalPostResponse>
@@ -85,28 +85,26 @@ export class GetGlobalPostsRelay {
       .leftJoinAndSelect("post.likes", "likes")
       .leftJoinAndSelect("likes.user", "likeUser")
       .orderBy("post.created_at", "DESC")
-      // .skip(first)
       .take(realLimitPlusOne);
+    // .skip(first)
 
-    if (after !== null) {
+    if (before !== null) {
       getPosts.where("post.created_at <= :cursor::timestamp", {
-        cursor: formatDate(after ? parseISO(after) : new Date()),
+        cursor: formatDate(before ? parseISO(before) : new Date()),
       });
     }
 
-    let findPosts;
-    try {
-      findPosts = await getPosts.getMany();
-    } catch (error) {
-      logger.error("ERROR FINDING POSTS - GET POSTS: RELAY");
-      logger.error(error);
-      throw new Error(error);
+    const [findPosts, postsError] = await handleAsyncSimple(function () {
+      return getPosts.getMany();
+    });
+    if (postsError) {
+      handleCatchBlockError(postsError);
     }
 
     // const flippedPosts = findPosts.reverse();
-    const preppedPosts = findPosts.slice(0, realLimit); // .reverse();
+    const preppedPosts: Post[] = findPosts.slice(0, realLimit); // .reverse();
 
-    const startCursor = formatDate(after ? parseISO(after) : new Date());
+    const startCursor = before ? parseISO(before).toISOString() : new Date().toISOString();
 
     const cursorNoRecordsErrorMessage = "no 'created_at' record present to create new cursor";
 
@@ -115,7 +113,7 @@ export class GetGlobalPostsRelay {
         ? preppedPosts[preppedPosts.length - 1].created_at.toISOString()
         : cursorNoRecordsErrorMessage;
 
-    let relayCompatibleResponse: PostConnection = {
+    const relayCompatibleResponse: PostConnection = {
       edges: preppedPosts.map((post) => {
         const myCurrentlyLiked =
           post && post.likes.length >= 1

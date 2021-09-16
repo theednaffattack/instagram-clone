@@ -1,18 +1,14 @@
 import { Box, Link, Text } from "@chakra-ui/react";
 import NextLink from "next/link";
 import React from "react";
-
 import { GlobalPostsStack } from "../components/home.global-posts";
 import { LayoutAuthenticated } from "../components/layout-authenticated";
 import { useGetGlobalPostsRelayQuery } from "../generated/graphql";
-import withApollo from "../lib/lib.apollo-client_v2";
 
 function Explore(): JSX.Element {
-  const {
-    data: dataGlobalPosts,
-    error: errorPosts,
-    loading: loadingPosts,
-  } = useGetGlobalPostsRelayQuery();
+  const [
+    { data: dataGlobalPosts, error: errorPosts, fetching: fetchingPosts },
+  ] = useGetGlobalPostsRelayQuery();
 
   return (
     <Box>
@@ -22,7 +18,7 @@ function Explore(): JSX.Element {
       </NextLink>
       <GlobalPostsStack
         postsError={errorPosts}
-        postsFetching={loadingPosts}
+        postsFetching={fetchingPosts}
         posts={dataGlobalPosts?.getGlobalPostsRelay}
       />
     </Box>
@@ -31,6 +27,4 @@ function Explore(): JSX.Element {
 
 Explore.layout = LayoutAuthenticated;
 
-const ExploreApollo = withApollo(Explore);
-
-export default ExploreApollo;
+export { Explore as default };

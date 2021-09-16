@@ -7,13 +7,14 @@ import { Wrapper } from "../components/flex-wrapper";
 import { InputField } from "../components/forms.input-field";
 import { AppLayout } from "../components/layout.app";
 import { useRegisterMutation } from "../generated/graphql";
-import withApollo from "../lib/lib.apollo-client_v2";
+import { logger } from "../lib/lib.logger";
 import { toErrorMap } from "../lib/utilities.toErrorMap";
 
 function Register(): JSX.Element {
-  const [register, { error }] = useRegisterMutation();
-  const [registrationStatus, setRegistrationStatus] =
-    useState<"isNotRegistered" | "hasRegistered">("isNotRegistered");
+  const [{ error }, register] = useRegisterMutation();
+  const [registrationStatus, setRegistrationStatus] = useState<
+    "isNotRegistered" | "hasRegistered"
+  >("isNotRegistered");
   return (
     <Formik
       initialValues={{
@@ -26,16 +27,14 @@ function Register(): JSX.Element {
       onSubmit={async (values, { setErrors }) => {
         try {
           const response = await register({
-            variables: {
-              data: {
-                password: values.password,
-                // firstName: "iti2",
-                // lastName: "itiToo",
-                email: values.email,
-                username: values.username,
-                // termsAndConditions: true, //values.termsAndConditions,
-                // keepMeSignedIn: true, // values.keepMeSignedIn
-              },
+            data: {
+              password: values.password,
+              // firstName: "iti2",
+              // lastName: "itiToo",
+              email: values.email,
+              username: values.username,
+              // termsAndConditions: true, //values.termsAndConditions,
+              // keepMeSignedIn: true, // values.keepMeSignedIn
             },
           });
 
@@ -49,16 +48,16 @@ function Register(): JSX.Element {
             // router.push("/");
           }
         } catch (registerError) {
-          // Server validation errors are caught and handled here
-          // here.
+          // Server validation errors are caught and handled here.
           if (error?.graphQLErrors[0].extensions?.valErrors) {
             setErrors(toErrorMap(error?.graphQLErrors[0].extensions.valErrors));
           } else {
-            console.error("REGISTER ERROR", registerError);
+            logger.error("REGISTER ERROR");
+            logger.error({ error: registerError });
 
             // Non validation errors that are also not FieldErrors,
             // but have been server transformed into the same format.
-            setErrors(toErrorMap(registerError));
+            // setErrors(toErrorMap(registerError));
           }
         }
       }}
@@ -81,13 +80,9 @@ function Register(): JSX.Element {
   );
 }
 
-const RegisterBase = withApollo(Register);
-
 Register.layout = AppLayout;
 
-RegisterBase.layout = AppLayout;
-
-export default RegisterBase;
+export default Register;
 
 function RegisterForm({
   handleSubmit,

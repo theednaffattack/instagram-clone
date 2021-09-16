@@ -1,20 +1,7 @@
 import { format, formatDistance, parseISO } from "date-fns";
-import {
-  Args,
-  Ctx,
-  Field,
-  ObjectType,
-  Query,
-  Resolver,
-  ResolverFilterData,
-  Root,
-  Subscription,
-  UseMiddleware,
-} from "type-graphql";
-
+import { Args, Ctx, Field, ObjectType, Query, Resolver, ResolverFilterData, Root, Subscription } from "type-graphql";
 import { Post } from "./entity.post";
 import { ConnectionArgs } from "./gql-type.connection-args";
-
 import { GlobalPostResponse } from "./gql-type.global-posts-response";
 import { MyContext } from "./typings";
 
@@ -31,8 +18,7 @@ class PaginatedPosts {
 
 @Resolver()
 export class GetGlobalPostsSimplePagination {
-  // @ts-ignore
-  @Subscription((type) => GlobalPostResponse, {
+  @Subscription(() => GlobalPostResponse, {
     // the `payload` and `args` are available in the destructured
     // object below `{args, context, payload}`
     nullable: true,
@@ -43,7 +29,6 @@ export class GetGlobalPostsSimplePagination {
       return "POSTS_GLOBAL";
     },
 
-    // @ts-ignore
     filter: ({ payload, context }: ResolverFilterData<GlobalPostResponse, ConnectionArgs>) => {
       return true;
     },
@@ -62,14 +47,7 @@ export class GetGlobalPostsSimplePagination {
     @Ctx() ctx: MyContext,
 
     @Args()
-    {
-      after,
-      // @ts-ignore
-      before,
-      first,
-      // @ts-ignore
-      last,
-    }: ConnectionArgs
+    { after, before, first, last }: ConnectionArgs
   ): Promise<PaginatedPosts> {
     // @PubSub("GLOBAL_POSTS") publish: Publisher<GlobalPostResponse>
 
@@ -90,9 +68,9 @@ export class GetGlobalPostsSimplePagination {
       .take(realLimitPlusOne);
 
     // conditionally apply the cursor
-    if (after) {
+    if (before) {
       postsQb.where("post.created_at <= :cursor::timestamp", {
-        cursor: formatDate(after ? parseISO(after) : new Date()),
+        cursor: formatDate(before ? parseISO(before) : new Date()),
       });
     }
 
@@ -107,7 +85,7 @@ export class GetGlobalPostsSimplePagination {
 
     // Manually add follower status and whether
     // the user currently likes this post.
-    let paginatedReturn: PaginatedPosts = {
+    const paginatedReturn: PaginatedPosts = {
       hasMore: findPosts.length === realLimitPlusOne,
       posts: preppedPosts.map((post) => {
         currentlyLiked =
@@ -117,7 +95,7 @@ export class GetGlobalPostsSimplePagination {
               }).length > 0
             : false;
 
-        let returnThing: GlobalPostResponse = {
+        const returnThing: GlobalPostResponse = {
           ...post,
           isCtxUserIdAFollowerOfPostUser: post.user.followers.map((follower) => follower.id).includes(ctx.userId),
           likes_count: post.likes.length,

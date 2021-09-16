@@ -8,13 +8,12 @@ import { Wrapper } from "../../components/box-wrapper";
 import { InputField } from "../../components/forms.input-field";
 import { LayoutAuthenticated } from "../../components/layout-authenticated";
 import { FieldError, useChangePasswordMutation } from "../../generated/graphql";
-import withApollo from "../../lib/lib.apollo-client_v2";
 import { MyNextPage } from "../../lib/types";
 import { formatValidationErrors } from "../../lib/utilities.graphQLErrors.format-apollo-validation-errors";
 import { toErrorMap } from "../../lib/utilities.toErrorMap";
 
 function ChangePassword({ token }: MyNextPage<{ token: string }>): JSX.Element {
-  const [changePassword] = useChangePasswordMutation();
+  const [, changePassword] = useChangePasswordMutation();
   const [tokenErrorHelper, setTokenErrorHelper] = useState<ReactElement>();
   const router = useRouter();
   return (
@@ -22,19 +21,18 @@ function ChangePassword({ token }: MyNextPage<{ token: string }>): JSX.Element {
       initialValues={{ password: "", token }}
       onSubmit={async (values, { setErrors }) => {
         const response = await changePassword({
-          variables: {
-            data: {
-              password: values.password,
-              token:
-                typeof router.query.token === "string"
-                  ? router.query.token
-                  : "",
-            },
+          data: {
+            password: values.password,
+            token:
+              typeof router.query.token === "string" ? router.query.token : "",
           },
         });
         let validationErrors: FieldError[];
-        if (response.errors) {
-          validationErrors = formatValidationErrors(response.errors);
+
+        if (response.error) {
+          validationErrors = formatValidationErrors(
+            response.error.graphQLErrors
+          );
           const errorMap = toErrorMap(validationErrors);
           setErrors(errorMap);
         }
@@ -100,6 +98,4 @@ export async function getServerSideProps({
 
 ChangePassword.layout = LayoutAuthenticated;
 
-const ChangePasswordApollo = withApollo(ChangePassword);
-
-export default ChangePasswordApollo;
+export default ChangePassword;

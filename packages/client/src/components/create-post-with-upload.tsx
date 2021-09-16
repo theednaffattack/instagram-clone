@@ -1,15 +1,10 @@
 import { Button, Flex, Text } from "@chakra-ui/react";
-import { Field, FieldArray, Form, Formik } from "formik";
 import Axios from "axios";
+import { Field, FieldArray, Form, Formik } from "formik";
+import { useRouter } from "next/router";
 import React from "react";
 import { v4 } from "uuid";
-
-import {
-  useSignS3Mutation,
-  useCreatePostMutation,
-  PostConnection,
-} from "../generated/graphql";
-import { useRouter } from "next/router";
+import { useCreatePostMutation, useSignS3Mutation } from "../generated/graphql";
 import { InputField } from "./forms.input-field";
 import { TextArea } from "./forms.textarea";
 
@@ -48,49 +43,13 @@ export const CreatePostWithupload: React.FC<CreatePostWithuploadProps> = ({
 }) => {
   const router = useRouter();
   const [
+    ,
     signS3,
     // { data: dataSignS3, error: errorSignS3, loading: loadingSignS3 }
   ] = useSignS3Mutation();
 
-  const [createPost, { data: dataCreatePost, error: errorCreatePost }] =
-    useCreatePostMutation({
-      update(cache, { data: postMutationData }) {
-        // if there's no data don't screw around with the cache
-        if (!postMutationData) return;
-
-        cache.modify({
-          fields: {
-            getGlobalPostsRelay(existingPosts): PostConnection {
-              const { edges, __typename, pageInfo } = existingPosts;
-
-              return {
-                edges: [
-                  {
-                    __typename: "PostEdge",
-                    cursor: new Date().toISOString(),
-                    node: {
-                      comments_count: 0,
-                      likes_count: 0,
-                      currently_liked: false,
-                      likes: [],
-                      created_at: new Date().toISOString(),
-                      __typename: postMutationData?.createPost.__typename,
-                      images: postMutationData?.createPost.images,
-                      text: postMutationData?.createPost.text,
-                      title: postMutationData?.createPost.title,
-                      id: postMutationData?.createPost.id,
-                    },
-                  },
-                  ...edges,
-                ],
-                __typename,
-                pageInfo,
-              };
-            },
-          },
-        });
-      },
-    });
+  const [{ data: dataCreatePost, error: errorCreatePost }, createPost] =
+    useCreatePostMutation();
 
   return (
     <Flex
@@ -115,16 +74,14 @@ export const CreatePostWithupload: React.FC<CreatePostWithuploadProps> = ({
           const getVariables = await blobToFile(cardImage, v4());
 
           const s3SignatureResponse = await signS3({
-            variables: {
-              files: [
-                {
-                  lastModified: 0,
-                  size: 0,
-                  name: getVariables.name,
-                  type: getVariables.name,
-                },
-              ],
-            },
+            files: [
+              {
+                lastModified: 0,
+                size: 0,
+                name: getVariables.name,
+                type: getVariables.name,
+              },
+            ],
           });
 
           if (s3SignatureResponse && s3SignatureResponse.data) {
@@ -137,19 +94,17 @@ export const CreatePostWithupload: React.FC<CreatePostWithuploadProps> = ({
             resetForm();
 
             await createPost({
-              variables: {
-                data: {
-                  images: [s3SignatureResponse.data.signS3.signatures[0].url],
-                  text,
-                  title,
-                },
+              data: {
+                images: [s3SignatureResponse.data.signS3.signatures[0].url],
+                text,
+                title,
               },
             });
+          } else {
+            await createPost({
+              data: { text, title, images },
+            });
           }
-
-          await createPost({
-            variables: { data: { text, title, images } },
-          });
 
           setSubmitting(false);
           resetForm({

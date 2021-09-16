@@ -34,7 +34,7 @@ export function useInfiniteScroll(
 // lazy load images with intersection observer
 export const useLazyLoading = (
   imgSelector: string,
-  items: GlobalPostsRelayEdges // PostEdgeSubstitute
+  items: GlobalPostsRelayEdges | undefined // PostEdgeSubstitute
 ): void => {
   const imgObserver = React.useCallback((node: HTMLImageElement) => {
     const intObs = new IntersectionObserver((entries) => {
@@ -92,7 +92,7 @@ export function useCardRatio(
 
 export function useUserMedia(
   requestedMedia: MediaStreamConstraints
-): MediaStream {
+): MediaStream | null {
   const [mediaStream, setMediaStream] =
     React.useState<PossibleMediaStream>(null);
 

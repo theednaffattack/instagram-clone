@@ -22,7 +22,9 @@ export function NavbarAuthenticated({ dataMe }: NavbarProps): JSX.Element {
     // return setData(newData.results);
   };
 
-  const handleClick = (event) => {
+  const handleClick = (
+    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
+  ) => {
     event.preventDefault();
     fetchData();
   };
@@ -47,7 +49,10 @@ export function NavbarAuthenticated({ dataMe }: NavbarProps): JSX.Element {
       <>
         <Link href="/profile" passHref>
           <ChLink mr={2}>
-            <Avatar size="md" name={dataMe.me?.username} />
+            <Avatar
+              size="md"
+              name={dataMe.me?.username ? dataMe.me.username : undefined}
+            />
           </ChLink>
         </Link>
         <Link href="/logout" passHref>

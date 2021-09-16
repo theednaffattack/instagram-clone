@@ -1,22 +1,16 @@
-import { css } from "@linaria/core";
 import { NextSeo } from "next-seo";
-import React from "react";
-import { useAuth } from "../components/authentication-provider";
+import React, { useState } from "react";
 import { PublicFeedCard } from "../components/feed.public-card";
 import LayoutMultiState from "../components/layout-multi-state";
 import { stack } from "../components/styles";
+import type { GetGlobalPostsRelayQueryVariables } from "../generated/graphql";
 import { useGetGlobalPostsRelayQuery } from "../generated/graphql";
 import { useInfiniteScroll, useLazyLoading } from "../lib/custom-hooks";
-import withApollo from "../lib/lib.apollo-client_v2";
-
-const flexContainer = css`
-  display: flex;
-  flex-direction: columnn;
-`;
 
 export function Feed(): JSX.Element {
-  const { authState } = useAuth();
-  const [infState, setInfState] = React.useState<"idle" | "fetch-more">("idle");
+  const [infState, setInfState] = useState<"idle" | "fetch-more">("idle");
+
+  const pleaseFetch = infState === "fetch-more";
 
   const initialGlobalPostsVariables = {
     after: null,
@@ -25,34 +19,40 @@ export function Feed(): JSX.Element {
     last: null,
   };
 
-  const {
-    data: dataPosts,
-    loading: loadingPosts,
-    // error: errorPosts,
-    fetchMore: fetchMorePosts,
-  } = useGetGlobalPostsRelayQuery({
-    variables: initialGlobalPostsVariables,
-  });
+  const [variables, setVariables] = useState<GetGlobalPostsRelayQueryVariables>(
+    initialGlobalPostsVariables
+  );
+
+  const [{ data: dataPosts, error: errorPosts, fetching: loadingPosts }] =
+    useGetGlobalPostsRelayQuery({
+      variables,
+    });
 
   useLazyLoading(".card-img-top", dataPosts?.getGlobalPostsRelay?.edges);
 
   React.useEffect(() => {
     // If there's a next page, cursor in pageInfo.
+    // TODO:
+    // 1 -  Should 'dataPosts...' go in the 'useEffect' dependency array?
+    // 2 -  Should either of the setState functions go in
+    //      the 'useEffect' dependency array?
     if (dataPosts?.getGlobalPostsRelay?.pageInfo?.hasNextPage === true) {
-      fetchMorePosts({
-        variables: {
-          first: initialGlobalPostsVariables.first,
-          after:
-            dataPosts?.getGlobalPostsRelay?.edges[
-              dataPosts?.getGlobalPostsRelay?.edges?.length - 1
-            ].cursor,
-        },
+      // This kicks off another query as the variables have changed
+      setVariables({
+        first: 5,
+        after: null,
+        before: dataPosts?.getGlobalPostsRelay?.pageInfo.endCursor,
+        last: null,
       });
     }
-    // Reset infinite scroller state to "idle", regardless
-    // next page state.
+    // Reset the scroll state
     setInfState("idle");
-  }, [infState === "fetch-more", fetchMorePosts]);
+  }, [
+    pleaseFetch,
+    setVariables,
+    dataPosts?.getGlobalPostsRelay?.pageInfo.endCursor,
+    dataPosts?.getGlobalPostsRelay?.pageInfo?.hasNextPage,
+  ]);
 
   const scrollSentinelRef = React.useRef<HTMLDivElement>(null);
 
@@ -92,35 +92,27 @@ export function Feed(): JSX.Element {
         }}
       />
 
-      {authState.userId ? (
-        <div className={stack}>
-          {/* <PublicFeed /> */}
+      <div className={stack}>
+        {errorPosts ? <p>{JSON.stringify(errorPosts, null, 2)}</p> : null}
 
-          {dataPosts
-            ? dataPosts.getGlobalPostsRelay?.edges?.map(({ node }) => {
-                return (
-                  <PublicFeedCard
-                    key={node.id}
-                    cardProps={node}
-                    loadingPosts={loadingPosts}
-                  />
-                );
-              })
-            : ""}
+        {dataPosts
+          ? dataPosts.getGlobalPostsRelay?.edges?.map(({ node }) => {
+              return (
+                <PublicFeedCard
+                  key={node.id}
+                  cardProps={node}
+                  loadingPosts={loadingPosts}
+                />
+              );
+            })
+          : null}
 
-          <div id="page-bottom-boundary" ref={scrollSentinelRef}></div>
-        </div>
-      ) : (
-        <div className={flexContainer}>Oh no, not authenticated</div>
-      )}
+        <div id="page-bottom-boundary" ref={scrollSentinelRef}></div>
+      </div>
     </>
   );
 }
 
 Feed.layout = LayoutMultiState;
 
-const FeedApollo = withApollo(Feed);
-
-// FeedApollo.layout = LayoutAuthenticated;
-
-export { FeedApollo, FeedApollo as default };
+export { Feed as default };

@@ -68,7 +68,7 @@ export function formatGraphQLErrors(error: GraphQLError): GraphQLFormattedError 
   //   error.message = "Internal Server Error";
   logger.info({ extensions, locations, message, path }, "FORMAT APOLLO ERRORS - SERVER SIDE");
 
-  let getStacktrace = extensions.exception ? extensions.exception.stacktrace[0].replace("Error: ", "") : message;
+  const getStacktrace = extensions.exception ? extensions.exception.stacktrace[0].replace("Error: ", "") : message;
 
   return {
     message: getStacktrace,

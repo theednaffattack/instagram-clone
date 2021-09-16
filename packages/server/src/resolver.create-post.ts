@@ -18,6 +18,8 @@ import { Image } from "./entity.image";
 import { Post } from "./entity.post";
 import { User } from "./entity.user";
 import { PostInput } from "./gql-type.post-input";
+import { handleAsyncTs, handleAsyncWithArgs } from "./lib.handle-async";
+import { handleCatchBlockError } from "./lib.handle-catch-block-error";
 import { logger } from "./lib.logger";
 import { isAuth } from "./middleware.is-auth";
 import { MyContext } from "./typings";
@@ -116,16 +118,13 @@ export class CreatePost {
     { text, title, images }: PostInput
   ): Promise<PostSubType> {
     const userRepo = context.dbConnection.getRepository(User);
-    let user: User | undefined;
 
-    try {
-      user = await userRepo.findOne(context.userId, {
-        relations: ["images", "posts", "followers"],
-      });
-    } catch (error) {
-      logger.error("ERROR SELECTING USER - CREATE POST");
-      logger.error(error);
-      throw Error(error);
+    const [user, userError] = await handleAsyncWithArgs(userRepo.findOne, [
+      context.userId,
+      { relations: ["images", "posts", "followers"] },
+    ]);
+    if (userError) {
+      handleCatchBlockError(userError);
     }
 
     // If we can find a user...
@@ -143,41 +142,34 @@ export class CreatePost {
       });
 
       // save that image to the database
-      let newImages: Image[];
+      let newImages: Image[] = [];
 
       try {
         newImages = await Promise.all(
           newImageData.map(async (newImage) => {
-            try {
-              return await newImageRepo.save(newImage);
-            } catch (error) {
-              logger.error("ERROR SAVING NEW IMAGE INSIDE PROMISE ALL MAP 'let newImages'");
-              logger.error(error);
-              throw Error(error);
+            const [savedImage, newImageError] = await handleAsyncWithArgs(newImageRepo.save, [newImage]);
+            if (newImageError) {
+              handleCatchBlockError(newImageError);
             }
+            return savedImage;
           })
         );
+
+        // add the images to the user.images
+        // field / column
+        if (newImages !== null && newImages.length > 0) {
+          user.images = [...user.images, ...newImages];
+        }
       } catch (error) {
         logger.error("ERROR SAVING NEW IMAGE OUTSIDE PROMISE ALL MAP 'let newImages'");
-        logger.error(error);
-        throw Error(error);
-      }
-      // add the images to the user.images
-      // field / column
-      if (newImages !== null && newImages.length > 0) {
-        user.images = [...user.images, ...newImages];
+        handleCatchBlockError(error);
       }
 
       // save the user completing the many-to-one images-to-user
       // relation loop
-      let savedUser;
-
-      try {
-        savedUser = await userRepo.save(user);
-      } catch (error) {
-        logger.error("ERROR SAVING USER AFTER SAVING IMAGES");
-        logger.error(error);
-        throw Error(`Error saving user.`);
+      const [savedUser, savedUserError] = await handleAsyncWithArgs(userRepo.save, [user]);
+      if (savedUserError) {
+        handleCatchBlockError(savedUserError);
       }
 
       // both must be true to create a post, always
@@ -190,26 +182,19 @@ export class CreatePost {
           images: [...newImages],
         };
 
-        let newPost: Post;
         const postRepo = context.dbConnection.getRepository(Post);
 
-        try {
-          const newPostModel = postRepo.create(postData);
-          newPost = await postRepo.save(newPostModel);
-        } catch (error) {
-          logger.error("ERROR SAVING NEW POST");
-          logger.error(error);
-          throw Error(error);
+        const newPostModel = postRepo.create(postData);
+        const [newPost, newPostError] = await handleAsyncWithArgs(postRepo.save, [newPostModel]);
+        if (newPostError) {
+          handleCatchBlockError(newPostError);
         }
 
         newImages.forEach(async (newSavedImage, imageIndex) => {
           newSavedImage.post = newPost;
-          try {
-            await newImageRepo.save(newSavedImage);
-          } catch (error) {
-            logger.error("ERROR SAVING NEW IMAGE", { imageIndex, newSavedImage });
-            logger.error(error);
-            throw Error(error);
+          const [, savedNewRepoError] = await handleAsyncWithArgs(newImageRepo.save, [newSavedImage]);
+          if (savedNewRepoError) {
+            handleCatchBlockError(savedNewRepoError);
           }
         });
 
@@ -218,36 +203,31 @@ export class CreatePost {
           user.posts.push(newPost);
         }
 
-        try {
-          await userRepo.save(user);
-        } catch (error) {
-          logger.error("ERROR SAVING USER AFTER SAVING POST");
-          logger.error(error);
-          throw Error(error);
+        const [, newSavedUserError] = await handleAsyncWithArgs(userRepo.save, [user]);
+        if (newSavedUserError) {
+          handleCatchBlockError(newSavedUserError);
         }
+
         // we use myPostPayload because of the subscription
-        let myPostPayload: PostPayload = {
+        const myPostPayload: PostPayload = {
           ...newPost,
           likes_count: 0,
           comments_count: 0,
           currently_liked: false,
-          isCtxUserIdAFollowerOfPostUser: newPost.user.followers.map((follower) => follower.id).includes(user.id),
+          isCtxUserIdAFollowerOfPostUser: newPost.user.followers.map((follower: any) => follower.id).includes(user.id),
         };
 
         // I think this publishes to just our UI.
-        try {
-          await publish(myPostPayload);
-        } catch (error) {
-          logger.error(error);
-          throw Error(error);
+        const [, publishPostPayloadError] = await handleAsyncWithArgs(publish, [myPostPayload]);
+        if (publishPostPayloadError) {
+          handleCatchBlockError(publishPostPayloadError);
         }
 
         // Publish to global posts so everyone sees it.
-        try {
-          await publishGlbl(myPostPayload);
-        } catch (error) {
-          logger.error(error);
-          throw Error(error);
+
+        const [, publishGlobalPostPayloadError] = await handleAsyncWithArgs(publishGlbl, [myPostPayload]);
+        if (publishGlobalPostPayloadError) {
+          handleCatchBlockError(publishGlobalPostPayloadError);
         }
 
         return newPost;

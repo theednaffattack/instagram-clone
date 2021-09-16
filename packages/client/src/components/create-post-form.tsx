@@ -1,4 +1,5 @@
-import { FetchResult, MutationUpdaterFn } from "@apollo/client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// import { FetchResult, MutationUpdaterFn } from "@apollo/client";
 import { Box, Button, IconButton, Text } from "@chakra-ui/react";
 import { css } from "@linaria/core";
 import { FieldArray, Form, Formik } from "formik";
@@ -13,9 +14,10 @@ import {
   useSignS3Mutation,
 } from "../generated/graphql";
 import {
-  signAndUploadFiles,
   onFilesAdded,
+  signAndUploadFiles,
 } from "../lib/lib.helper.create-post-form";
+import { logger } from "../lib/lib.logger";
 import { PreviewFile } from "../lib/types";
 import { InputField } from "./forms.input-field";
 import { TextArea } from "./forms.textarea";
@@ -24,76 +26,105 @@ const inputStyles = css`
   display: none;
 `;
 
+interface FormValues {
+  title: string;
+  text: string;
+  images: PreviewFile[];
+}
+
 function CreatePostForm(): JSX.Element {
-  const fileInputRef = useRef<HTMLInputElement>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [createPost, { error: errorCreatePost }] = useCreatePostMutation({
-    update: updateGlobalPosts,
-  });
+  const [{ error: errorCreatePost }, createPost] = useCreatePostMutation();
 
-  const [signFile] = useSignS3Mutation();
+  const [
+    { data: dataSignFile, error: errorSignFile, fetching: fetchingSignFile },
+    signFile,
+  ] = useSignS3Mutation();
 
-  const [previewFiles, setPreviewFiles] = useState<PreviewFile[]>(null);
+  const [previewFiles, setPreviewFiles] = useState<PreviewFile[]>([]);
 
+  const [beginS3Process, setBeginS3Process] =
+    useState<"init" | "loading" | "completed">("init");
+
+  const initialValues: FormValues = { title: "", text: "", images: [] };
   return (
     <Box>
       <Text fontSize="3xl">Create Post</Text>
       <Formik
-        initialValues={{ title: "", text: "", images: [] }}
-        onSubmit={async (argOne, actions) => {
-          // First we'll send the files up to S3.
-          // Then we'll pass the results to the database.
-          let signS3Response: FetchResult<
-            SignS3Mutation,
-            Record<string, any>,
-            Record<string, any>
-          >[];
-          try {
-            signS3Response = await signAndUploadFiles(
-              argOne.images,
-              signFile,
-              previewFiles
-            );
-          } catch (s3UploadError) {
-            console.error(
-              "Error uploading (or maybe signing for trust) to S3",
-              s3UploadError
-            );
-          }
+        initialValues={initialValues}
+        onSubmit={async ({ images, text, title }, actions) => {
+          // First are there images?
+          if (images && previewFiles) {
+            // First we'll send the files up to S3.
+            // Then we'll pass the results to the database.
+            let signS3Response: (SignS3Mutation | undefined)[] | "init" =
+              "init";
+            try {
+              signS3Response = await signAndUploadFiles({
+                data: dataSignFile,
+                error: errorSignFile,
+                signFile,
+                previewFiles,
+              });
 
-          // ======================================
-          // BEG - IT'S RIGHT HERE, REDO THIS - BEG
-          // ======================================
-          // Create a new Post
-          try {
-            const [{ data }] = signS3Response;
-
-            const imageUris = [];
-
-            // Pull out just the Image uris we need to create the new Post.
-            for (const responseObj of data.signS3.signatures) {
-              const newUri = responseObj.url;
-              imageUris.push(newUri);
+              if (!signS3Response) {
+                throw new Error("No Response from S3 Signing.");
+              }
+            } catch (s3UploadError) {
+              logger.error(
+                "Error uploading (or maybe signing for trust) to S3"
+              );
+              if (s3UploadError instanceof Error) {
+                logger.error(s3UploadError);
+                throw new Error(s3UploadError.message);
+              }
+              if (typeof s3UploadError === "string") {
+                logger.error(s3UploadError);
+                throw new Error(s3UploadError);
+              }
             }
 
-            await createPost({
-              variables: {
-                data: {
-                  text: argOne.text,
-                  title: argOne.title,
-                  images: [...imageUris],
-                },
-              },
-            });
-          } catch (error) {
-            console.error("Error creating Post");
-            console.error(error);
-            throw Error(error);
-          }
+            // ======================================
+            // BEG - IT'S RIGHT HERE, REDO THIS - BEG
+            // ======================================
+            // Create a new Post
+            const imageUris = [];
+            if (signS3Response && typeof signS3Response !== "string") {
+              try {
+                for (const item of signS3Response) {
+                  if (item) {
+                    // Pull out just the Image uris we need to create the new Post.
+                    for (const responseObj of item.signS3.signatures) {
+                      const newUri = responseObj.url;
+                      imageUris.push(newUri);
+                    }
+                  }
+                }
 
-          // ======================================
-          // END - IT'S RIGHT HERE, REDO THIS - END
-          // ======================================
+                await createPost({
+                  data: {
+                    text: text,
+                    title: title,
+                    images: [...imageUris],
+                  },
+                });
+              } catch (error) {
+                logger.error("Error creating Post");
+                if (error instanceof Error) {
+                  logger.error(error);
+                  throw Error(error.message);
+                }
+                if (typeof error === "string") {
+                  logger.error({ error });
+                  throw new Error(error);
+                }
+              }
+            }
+            // ======================================
+            // END - IT'S RIGHT HERE, REDO THIS - END
+            // ======================================
+          }
 
           actions.setSubmitting(false);
           // clear the form
@@ -133,7 +164,7 @@ function CreatePostForm(): JSX.Element {
                 colorScheme="teal"
                 onClick={(evt) => {
                   evt.preventDefault();
-                  fileInputRef.current.click();
+                  fileInputRef?.current?.click();
                 }}
                 // disabled={isSubmitting}
               >
@@ -208,44 +239,44 @@ function CreatePostForm(): JSX.Element {
   );
 }
 
-const updateGlobalPosts: MutationUpdaterFn<CreatePostMutation> = (
-  cache,
-  { data: postMutationData }
-) => {
-  // if there's no data don't screw around with the cache
-  if (!postMutationData) return;
+// const updateGlobalPosts: MutationUpdaterFn<CreatePostMutation> = (
+//   cache,
+//   { data: postMutationData }
+// ) => {
+//   // if there's no data don't screw around with the cache
+//   if (!postMutationData) return;
 
-  cache.modify({
-    fields: {
-      getGlobalPostsRelay(existingPosts): PostConnection {
-        const { edges, __typename, pageInfo } = existingPosts;
+//   cache.modify({
+//     fields: {
+//       getGlobalPostsRelay(existingPosts): PostConnection {
+//         const { edges, __typename, pageInfo } = existingPosts;
 
-        return {
-          edges: [
-            {
-              __typename: "PostEdge",
-              cursor: new Date().toISOString(),
-              node: {
-                comments_count: 0,
-                likes_count: 0,
-                currently_liked: false,
-                likes: [],
-                created_at: new Date().toISOString(),
-                __typename: postMutationData?.createPost.__typename,
-                images: postMutationData?.createPost.images,
-                text: postMutationData?.createPost.text,
-                title: postMutationData?.createPost.title,
-                id: postMutationData?.createPost.id,
-              },
-            },
-            ...edges,
-          ],
-          __typename,
-          pageInfo,
-        };
-      },
-    },
-  });
-};
+//         return {
+//           edges: [
+//             {
+//               __typename: "PostEdge",
+//               cursor: new Date().toISOString(),
+//               node: {
+//                 comments_count: 0,
+//                 likes_count: 0,
+//                 currently_liked: false,
+//                 likes: [],
+//                 created_at: new Date().toISOString(),
+//                 __typename: postMutationData?.createPost.__typename,
+//                 images: postMutationData?.createPost.images,
+//                 text: postMutationData?.createPost.text,
+//                 title: postMutationData?.createPost.title,
+//                 id: postMutationData?.createPost.id,
+//               },
+//             },
+//             ...edges,
+//           ],
+//           __typename,
+//           pageInfo,
+//         };
+//       },
+//     },
+//   });
+// };
 
 export default CreatePostForm;

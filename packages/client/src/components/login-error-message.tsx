@@ -19,7 +19,7 @@ export function LoginErrorMessage({
 
   // Hide if dismissed
   if (errorVisibility === "hidden") {
-    return null;
+    return <></>;
   }
 
   if (typeof children === "string") {
@@ -79,4 +79,5 @@ export function LoginErrorMessage({
     }
     return <>{errorCache}</>;
   }
+  return <></>;
 }

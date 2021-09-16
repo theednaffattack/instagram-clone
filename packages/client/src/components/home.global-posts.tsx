@@ -1,11 +1,11 @@
 import { Box, Button, Heading, Image, Stack, Text } from "@chakra-ui/react";
 import React, { ReactElement, ReactNode } from "react";
-import { ApolloError } from "@apollo/client";
+import { CombinedError } from "urql";
 import { GetGlobalPostsRelayQuery } from "../generated/graphql";
 
 type GlobalPostsProps = {
   posts: GetGlobalPostsRelayQuery["getGlobalPostsRelay"];
-  postsError: ApolloError | undefined;
+  postsError: CombinedError | undefined;
   postsFetching: boolean;
 };
 

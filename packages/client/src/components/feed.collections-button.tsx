@@ -34,6 +34,6 @@ interface HandleClickProps {
 function handleClick({ setSavedToCollections }: HandleClickProps) {
   setSavedToCollections((prevState) => {
     if (prevState === "is_not_saved") return "is_saved";
-    if (prevState === "is_saved") return "is_not_saved";
+    return "is_not_saved";
   });
 }

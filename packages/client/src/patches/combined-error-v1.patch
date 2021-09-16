@@ -1,0 +1,24 @@
+diff --git a/dist/types/utils/error.d.ts b/dist/types/utils/error.d.ts
+index 5598b4dd01c6a055bcc700ddcd0571958f32e1b1..f403c8fb09b7e0a9446400c2db124251317982db 100644
+--- a/dist/types/utils/error.d.ts
++++ b/dist/types/utils/error.d.ts
+@@ -1,10 +1,16 @@
+ import { GraphQLError } from 'graphql';
++
++interface MyNetworkError extends Error {
++  result?: {
++    errors: any[];
++  };
++}
+ /** An error which can consist of GraphQL errors and Network errors. */
+ export declare class CombinedError extends Error {
+     name: string;
+     message: string;
+     graphQLErrors: GraphQLError[];
+
+     
+-    networkError?: Error;
++    networkError?: MyNetworkError;
+     response?: any;
+     constructor({ networkError, graphQLErrors, response, }: {
+         networkError?: Error;

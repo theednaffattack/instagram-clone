@@ -6,7 +6,6 @@ import * as React from "react";
 import { useLogoutMutation } from "../generated/graphql";
 import { setAccessToken } from "../lib/lib.access-token";
 import { logger } from "../lib/lib.logger";
-import { useAuth } from "./authentication-provider";
 
 export interface LayoutAuthenticatedProps {
   children?: ReactNode;
@@ -15,8 +14,7 @@ export interface LayoutAuthenticatedProps {
 async function handleLogout(
   evt: MouseEvent<HTMLAnchorElement>,
   logoutFunc: any,
-  push: NextRouter["push"],
-  signOut: () => void
+  push: NextRouter["push"]
 ) {
   evt.preventDefault();
 
@@ -28,15 +26,13 @@ async function handleLogout(
   try {
     logoutResponse = await logoutFunc();
   } catch (error) {
-    logger.error(error);
+    logger.error({ error });
     throw new Error("Error logging out.");
   }
 
   // Update localStorage 'logout' to sign out from all windows
   window.localStorage.setItem("logout", Date.now().toString());
 
-  // Sign out func
-  signOut();
   // Logout response should be a boolean.
   if (logoutResponse) {
     push("/");
@@ -46,7 +42,6 @@ async function handleLogout(
 export function LayoutAuthenticated({
   children,
 }: LayoutAuthenticatedProps): JSX.Element {
-  const { signOut } = useAuth();
   const { push } = useRouter();
   const [logoutFunc] = useLogoutMutation();
   const maxie = 1000;
@@ -86,9 +81,7 @@ export function LayoutAuthenticated({
             })}
             <Box>
               <Link
-                onClick={async (evt) =>
-                  handleLogout(evt, logoutFunc, push, signOut)
-                }
+                onClick={async (evt) => handleLogout(evt, logoutFunc, push)}
               >
                 <Text>logout</Text>
               </Link>
@@ -138,9 +131,7 @@ export function LayoutAuthenticated({
               })}
               <Box>
                 <Link
-                  onClick={async (evt) =>
-                    handleLogout(evt, logoutFunc, push, signOut)
-                  }
+                  onClick={async (evt) => handleLogout(evt, logoutFunc, push)}
                 >
                   <Text>logout</Text>
                 </Link>

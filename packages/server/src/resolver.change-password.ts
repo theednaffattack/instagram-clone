@@ -8,6 +8,9 @@ import { User } from "./entity.user";
 import { ChangePasswordInput } from "./gql-type.change-password-input";
 import { MyContext } from "./typings";
 import { returnRedisInstance } from "./config.redis";
+import { handleAsyncSimple, handleAsyncWithArgs } from "./lib.handle-async";
+import { handleCatchBlockError } from "./lib.handle-catch-block-error";
+import { logger } from "./lib.logger";
 
 @Resolver()
 export class ChangePassword {
@@ -17,23 +20,16 @@ export class ChangePassword {
     { token, password }: ChangePasswordInput,
     @Ctx() ctx: MyContext
   ): Promise<UserResponse> {
-    let redis;
-    let userId;
-
-    try {
-      redis = await returnRedisInstance();
-    } catch (error) {
-      console.error("ERROR GETTING REDIS INSTANCE - CREATE CONFIRMATION EMAIL");
-      console.error(error);
-      throw Error(error);
+    const [redis, redisError] = await handleAsyncSimple(returnRedisInstance);
+    if (redisError) {
+      logger.error("ERROR GETTING REDIS INSTANCE - CREATE CONFIRMATION EMAIL");
+      handleCatchBlockError(redisError);
     }
 
-    try {
-      userId = await redis.get(forgotPasswordPrefix + token);
-    } catch (error) {
-      console.error("ERROR GETTING USER ID FROM REDIS INSTANCE");
-      console.error(error);
-      throw Error(error);
+    const [userId, userIdError] = await handleAsyncWithArgs(redis.get, [forgotPasswordPrefix + token]);
+    if (userIdError) {
+      logger.error("ERROR GETTING USER ID FROM REDIS INSTANCE");
+      handleCatchBlockError(userIdError);
     }
 
     // token expired in redis, possibly bad token
@@ -48,8 +44,10 @@ export class ChangePassword {
       };
     }
 
-    const user = await ctx.dbConnection.getRepository(User).findOne(userId);
-
+    const [user, userError] = await handleAsyncWithArgs(ctx.dbConnection.getRepository(User).findOne, [userId]);
+    if (userError) {
+      handleCatchBlockError(userError);
+    }
     // can't find a user in the db
     if (!user) {
       return {
@@ -64,13 +62,27 @@ export class ChangePassword {
 
     // don't allow this token to be used to change
     // password again
-    await redis.del(forgotPasswordPrefix + token);
+    const [, redisDelError] = await handleAsyncWithArgs(redis.del, [forgotPasswordPrefix + token]);
+
+    if (redisDelError) {
+      handleCatchBlockError(redisDelError);
+    }
+
+    const [hashedPassword, hashedPasswordError] = await handleAsyncWithArgs(bcrypt.hash, [password, 12]);
+
+    if (hashedPasswordError) {
+      handleCatchBlockError(hashedPasswordError);
+    }
 
     // security
-    user.password = await bcrypt.hash(password, 12);
+    user.password = hashedPassword;
 
     // save updated password
-    await user.save();
+    const [, savedUserError] = await handleAsyncSimple(user.save);
+
+    if (savedUserError) {
+      handleCatchBlockError(savedUserError);
+    }
 
     // optional - login in the user
 

@@ -1,6 +1,10 @@
 import convict from "convict";
 import { ipaddress, url } from "convict-format-with-validator";
 import { v4 } from "internal-ip";
+import path from "path";
+import { handleAsyncWithArgs } from "./lib.handle-async";
+import { handleCatchBlockError } from "./lib.handle-catch-block-error";
+import { logger } from "./lib.logger";
 import { readFile } from "./lib.readFile";
 
 convict.addFormat(ipaddress);
@@ -21,7 +25,7 @@ export interface ServerConfigProps {
     cfDomain: string;
     s3Bucket: string;
   };
-  client_uri: string;
+  clientUri: string;
   cookieDomain: string;
   cookieName: string;
   domain: string;
@@ -133,7 +137,7 @@ const configBuilder = convict({
       sensitive: true,
     },
   },
-  client_uri: {
+  clientUri: {
     default: "https://ic.eddienaff.dev",
     doc: "The URI of our client application.",
     format: "url",
@@ -290,14 +294,11 @@ export const configBuildAndValidate = async function () {
     // // override default settings (load env file) to use development
     // // settings instead.
     // configBuilt.loadFile(`${__dirname}/secret.${env}-variables.json`);
-    let configOverride: string | undefined;
+    const filePath = path.join(__dirname, "secret.development-variables.json");
 
-    try {
-      configOverride = await readFile(`${__dirname}/secret.development-variables.json`);
-    } catch (error) {
-      console.error("Error reading development override configuration file.");
-      console.error(error);
-      configOverride = undefined;
+    const [configOverride, error] = await handleAsyncWithArgs(readFile, [filePath]);
+    if (error) {
+      handleCatchBlockError(error);
     }
 
     if (configOverride) {
@@ -313,7 +314,6 @@ export const configBuildAndValidate = async function () {
         // values and loop over it, setting our config values
         // in the loop
         if (value && typeof value === "object") {
-          const what = value;
           for (const [nestedKey, nestedValue] of Object.entries(value)) {
             configBuilder.set(`${key}.${nestedKey}`, nestedValue);
           }

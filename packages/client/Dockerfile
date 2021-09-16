@@ -1,5 +1,5 @@
 # Install dependencies only when needed
-FROM node:alpine AS deps
+FROM node:14.17.6-alpine3.13 AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
@@ -8,7 +8,7 @@ COPY ./yarn.lock ./
 RUN yarn install --frozen-lockfile --production
 
 # Rebuild the source code only when needed
-FROM node:alpine AS builder
+FROM node:14.17.6-alpine3.13 AS builder
 WORKDIR /app
 ADD  packages/client/.env.local ./.env.local
 ADD  packages/client/tsconfig.server.json ./tsconfig.server.json
@@ -25,7 +25,7 @@ ENV GENERATE_SOURCEMAP false
 RUN yarn install --frozen-lockfile && yarn build:all
 
 # Production image, copy all the files and run next
-FROM node:alpine AS runner
+FROM node:14.17.6-alpine3.13 AS runner
 WORKDIR /app
 
 ENV NODE_ENV production

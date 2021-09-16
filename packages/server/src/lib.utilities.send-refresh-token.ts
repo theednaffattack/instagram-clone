@@ -11,7 +11,7 @@ interface SendRefreshTokenProps {
 }
 
 export function sendRefreshToken({ res, config, user }: SendRefreshTokenProps) {
-  const sevenDays = addDays(7);
+  const sevenDays = addDays(new Date(), 7);
 
   res.cookie(
     config.cookieName,

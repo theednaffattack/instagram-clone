@@ -57,7 +57,7 @@ export class User extends BaseEntity {
   email: string;
 
   @Field(() => [File], { nullable: "itemsAndList" })
-  @OneToMany(() => File, (file) => file.upload_user, {
+  @OneToMany(() => File, (file) => file.uploadUser, {
     nullable: true,
     onDelete: "CASCADE",
   })

@@ -5,20 +5,18 @@ import { Wrapper } from "../components/box-wrapper";
 import { InputField } from "../components/forms.input-field";
 import { LayoutAuthenticated } from "../components/layout-authenticated";
 import { useForgotPasswordMutation } from "../generated/graphql";
-import { withApollo } from "../lib/lib.apollo-client_v2";
 
 function ForgotPassword(): JSX.Element {
-  const [mutationState, setMutationState] =
-    useState<"isNOTComplete" | "isComplete">("isNOTComplete");
-  const [forgotPassword] = useForgotPasswordMutation();
+  const [mutationState, setMutationState] = useState<
+    "isNOTComplete" | "isComplete"
+  >("isNOTComplete");
+  const [, forgotPassword] = useForgotPasswordMutation();
   return (
     <Formik
       initialValues={{ email: "" }}
       onSubmit={async (values) => {
         await forgotPassword({
-          variables: {
-            email: values.email,
-          },
+          email: values.email,
         });
         setMutationState("isComplete");
       }}
@@ -54,6 +52,4 @@ function ForgotPassword(): JSX.Element {
 
 ForgotPassword.layout = LayoutAuthenticated;
 
-const ForgotPasswordApollo = withApollo(ForgotPassword);
-
-export default ForgotPasswordApollo;
+export default ForgotPassword;

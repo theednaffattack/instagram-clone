@@ -21,19 +21,16 @@ export class AddMessageToThreadArgsInput {
 
 @InputType()
 export class AddMessageToThreadInputType {
-  // @ts-ignore
-  @Field((type) => ID)
+  @Field(() => ID)
   threadId: string;
 
-  // @ts-ignore
-  @Field((type) => String)
+  @Field(() => String)
   sentTo: string;
 
   @Field(() => [ID])
   invitees: string[];
 
-  // @ts-ignore
-  @Field((type) => String)
+  @Field(() => String)
   message: string;
 
   @Field(() => [String], { nullable: "itemsAndList" })

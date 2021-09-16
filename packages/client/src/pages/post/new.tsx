@@ -9,58 +9,22 @@ import { TextArea } from "../../components/forms.textarea";
 import { LayoutAuthenticated } from "../../components/layout-authenticated";
 import { Thumb } from "../../components/thumb";
 import {
-  PostConnection,
   useCreatePostMutation,
   useSignS3Mutation,
 } from "../../generated/graphql";
-import withApollo from "../../lib/lib.apollo-client_v2";
+import { handleCatchBlockError } from "../../lib/lib.handle-catch-block-error";
+import { handleAsyncWithArgs } from "../../lib/lib.handle-async-client";
 
 function New(): JSX.Element {
   const router = useRouter();
 
   const [
-    signS3,
+    ,
     // { data: dataSignS3, error: errorSignS3, loading: loadingSignS3 }
+    signS3,
   ] = useSignS3Mutation();
 
-  const [createPost, { error: errorCreatePost }] = useCreatePostMutation({
-    update(cache, { data: postMutationData }) {
-      // if there's no data don't screw around with the cache
-      if (!postMutationData) return;
-
-      cache.modify({
-        fields: {
-          getGlobalPostsRelay(existingPosts): PostConnection {
-            const { edges, __typename, pageInfo } = existingPosts;
-
-            return {
-              edges: [
-                {
-                  __typename: "PostEdge",
-                  cursor: new Date().toISOString(),
-                  node: {
-                    comments_count: 0,
-                    likes_count: 0,
-                    currently_liked: false,
-                    likes: [],
-                    created_at: new Date().toISOString(),
-                    __typename: postMutationData?.createPost.__typename,
-                    images: postMutationData?.createPost.images,
-                    text: postMutationData?.createPost.text,
-                    title: postMutationData?.createPost.title,
-                    id: postMutationData?.createPost.id,
-                  },
-                },
-                ...edges,
-              ],
-              __typename,
-              pageInfo,
-            };
-          },
-        },
-      });
-    },
-  });
+  const [{ error: errorCreatePost }, createPost] = useCreatePostMutation();
 
   return (
     <LayoutAuthenticated>
@@ -76,45 +40,75 @@ function New(): JSX.Element {
             ) => {
               const getVariables = blobToFile(images[0], v4());
 
-              const s3SignatureResponse = await signS3({
-                variables: {
-                  files: [
-                    {
-                      lastModified: 0,
-                      size: 0,
-                      name: getVariables.name,
-                      type: getVariables.name,
-                    },
-                  ],
-                },
-              });
+              const [s3SignatureResponse, s3SignError] =
+                await handleAsyncWithArgs(signS3, [
+                  {
+                    files: [
+                      {
+                        lastModified: 0,
+                        size: 0,
+                        name: getVariables.name,
+                        type: getVariables.name,
+                      },
+                    ],
+                  },
+                ]);
+
+              if (s3SignError) {
+                handleCatchBlockError(s3SignError);
+              }
+
+              // const s3SignatureResponse = await signS3({
+              //   files: [
+              //     {
+              //       lastModified: 0,
+              //       size: 0,
+              //       name: getVariables.name,
+              //       type: getVariables.name,
+              //     },
+              //   ],
+              // });
 
               if (s3SignatureResponse && s3SignatureResponse.data) {
                 // @TODO: LOOP OVER THE COLLECTION OF IMAGES
-                await uploadToImageService({
-                  file: images[0], // cardImage,
-                  signedRequest:
-                    s3SignatureResponse.data.signS3.signatures[0].signedRequest,
-                });
+
+                const [, uploadError] = await handleAsyncWithArgs(
+                  uploadToImageService,
+                  [
+                    {
+                      file: images[0], // cardImage,
+                      signedRequest:
+                        s3SignatureResponse.data.signS3.signatures[0]
+                          .signedRequest,
+                    },
+                  ]
+                );
+
+                if (uploadError) {
+                  handleCatchBlockError(uploadError);
+                }
 
                 resetForm();
 
-                await createPost({
-                  variables: {
-                    data: {
-                      images: [
-                        s3SignatureResponse.data.signS3.signatures[0].url,
-                      ],
-                      text,
-                      title,
+                const [, createPostError] = await handleAsyncWithArgs(
+                  createPost,
+                  [
+                    {
+                      data: {
+                        images: [
+                          s3SignatureResponse.data.signS3.signatures[0].url,
+                        ],
+                        text,
+                        title,
+                      },
                     },
-                  },
-                });
-              }
+                  ]
+                );
 
-              await createPost({
-                variables: { data: { text, title, images } },
-              });
+                if (createPostError) {
+                  handleCatchBlockError(createPostError);
+                }
+              }
 
               setSubmitting(false);
               resetForm({
@@ -240,9 +234,7 @@ function New(): JSX.Element {
 
 New.layout = LayoutAuthenticated;
 
-const NewApollo = withApollo(New);
-
-export default NewApollo;
+export { New as default };
 
 const blobToFile = (theBlob: Blob, filename: string) => {
   const theFile = new File([theBlob], filename, {
@@ -261,21 +253,65 @@ const uploadToImageService = async ({ file, signedRequest }: any) => {
   };
   const theFile = file;
 
-  const uploadReturnInfo = {
-    error: null,
-    response: null,
-  };
+  const [putInS3Response, putInS3Error] = await handleAsyncWithArgs(Axios.put, [
+    signedRequest,
+    theFile,
+    options,
+  ]);
 
-  try {
-    uploadReturnInfo.response = await Axios.put(
-      signedRequest,
-      theFile,
-      options
-    );
-  } catch (error) {
-    uploadReturnInfo.error = error;
-    console.error({ error });
+  if (putInS3Error) {
+    handleCatchBlockError(putInS3Error);
   }
 
-  return uploadReturnInfo;
+  // try {
+  //   uploadReturnInfo.response = await Axios.put(
+  //     signedRequest,
+  //     theFile,
+  //     options
+  //   );
+  // } catch (error) {
+  //   uploadReturnInfo.error = error;
+  //   console.error({ error });
+  // }
+
+  return putInS3Response;
 };
+
+// {
+//   update(cache, { data: postMutationData }) {
+//     // if there's no data don't screw around with the cache
+//     if (!postMutationData) return;
+
+//     cache.modify({
+//       fields: {
+//         getGlobalPostsRelay(existingPosts): PostConnection {
+//           const { edges, __typename, pageInfo } = existingPosts;
+
+//           return {
+//             edges: [
+//               {
+//                 __typename: "PostEdge",
+//                 cursor: new Date().toISOString(),
+//                 node: {
+//                   comments_count: 0,
+//                   likes_count: 0,
+//                   currently_liked: false,
+//                   likes: [],
+//                   created_at: new Date().toISOString(),
+//                   __typename: postMutationData?.createPost.__typename,
+//                   images: postMutationData?.createPost.images,
+//                   text: postMutationData?.createPost.text,
+//                   title: postMutationData?.createPost.title,
+//                   id: postMutationData?.createPost.id,
+//                 },
+//               },
+//               ...edges,
+//             ],
+//             __typename,
+//             pageInfo,
+//           };
+//         },
+//       },
+//     });
+//   },
+// }

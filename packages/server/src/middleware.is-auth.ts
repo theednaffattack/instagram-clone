@@ -1,15 +1,22 @@
-import { MiddlewareFn } from "type-graphql";
 import { verify } from "jsonwebtoken";
+import { MiddlewareFn } from "type-graphql";
 import { configBuildAndValidate } from "./config.build-config";
-import { MyContext } from "./typings";
 import { logger } from "./lib.logger";
+import { MyContext } from "./typings";
 
-export const isAuth: MiddlewareFn<MyContext> = async ({ context }, next) => {
+export const isAuth: MiddlewareFn<MyContext> = async ({ context, args, info }, next) => {
   const authorization = context.req.headers["authorization"];
   const config = await configBuildAndValidate();
+  if (authorization) {
+    logger.info("AUTH HEADER IS PRESENT");
+    logger.info({ authHeader: context.req.headers["authorization"] });
+    logger.info({ infoFieldName: info.fieldName });
+  }
 
   if (!authorization) {
     logger.error("AUTH HEADER MISSING");
+    logger.error(context.req.headers);
+    logger.info({ infoFieldName: info.fieldName });
     throw new Error("Not authenticated");
   }
 
@@ -17,7 +24,8 @@ export const isAuth: MiddlewareFn<MyContext> = async ({ context }, next) => {
   try {
     token = authorization.split(" ")[1];
   } catch (error) {
-    logger.error(error, "ERROR GETTING TOKEN FROM AUTH HEADER");
+    logger.error({ error });
+    logger.error("ERROR GETTING TOKEN FROM AUTH HEADER");
     throw new Error("Not authenticated");
   }
 
@@ -30,7 +38,8 @@ export const isAuth: MiddlewareFn<MyContext> = async ({ context }, next) => {
       context.payload = payload;
     }
   } catch (error) {
-    logger.error(error, "ERROR VERIFYING JWT");
+    logger.error({ error });
+    logger.error("ERROR GETTING TOKEN FROM AUTH HEADER");
     throw new Error("Not authenticated");
   }
 

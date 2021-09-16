@@ -1,18 +1,5 @@
-import {
-  Resolver,
-  Query,
-  UseMiddleware,
-  Arg,
-  InputType,
-  Field,
-  Int,
-  Subscription,
-  ObjectType,
-  Ctx,
-} from "type-graphql";
-
 import { format, parseISO } from "date-fns";
-
+import { Arg, Ctx, ObjectType, Query, Resolver, Subscription, UseMiddleware } from "type-graphql";
 import { Message } from "./entity.message";
 import { GetMessagesByThreadIdInput } from "./gql-type.get-message-by-thread-id-input";
 import { PaginatedRelayMessageResponse } from "./gql-type.paginated-relay-response";
@@ -108,15 +95,15 @@ export class GetMessagesByThreadId {
       .take(input.take)
       .getMany();
 
-    let response: MessageConnection = {
+    const response: MessageConnection = {
       edges: flippedMessages.map((message) => {
         return { cursor: message.created_at.toISOString(), node: message };
       }),
       pageInfo: {
         startCursor,
         endCursor: newCursor,
-        hasNextPage: afterMessages.length > 0 ? true : false,
-        hasPreviousPage: beforeMessages && beforeMessages.length > 0 ? true : false,
+        hasNextPage: afterMessages.length > 0,
+        hasPreviousPage: beforeMessages && beforeMessages.length > 0,
       },
     };
 

@@ -17,10 +17,10 @@ export function ErrorFlash({
   errorMessage,
   dispatchErrorFlash,
 }: ErrorFlashProps): JSX.Element {
-  const closeButtonFocusRef = useRef<HTMLButtonElement>();
+  const closeButtonFocusRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    closeButtonFocusRef.current.focus();
+    closeButtonFocusRef?.current?.focus();
   }, []);
   return (
     <Alert

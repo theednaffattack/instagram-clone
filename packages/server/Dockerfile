@@ -2,7 +2,7 @@
 # Dependencies stage.
 # Use this state to install production dependencies
 #
-FROM node:12.16.2 AS deps
+FROM node:14.17.6-alpine3.13 AS deps
 WORKDIR /usr/src/app
 COPY packages/server/package*.json ./
 COPY ./yarn.lock ./
@@ -13,7 +13,7 @@ RUN yarn install --frozen-lockfile --production
 # Builder stage.
 # This state compile our TypeScript to get the JavaScript code
 #
-FROM node:12.16.2 AS builder
+FROM node:14.17.6-alpine3.13 AS builder
 
 WORKDIR /usr/src/app
 # ENV YARN_CACHE_FOLDER=/dev/shm/yarn_cache
@@ -30,7 +30,7 @@ RUN yarn install --frozen-lockfile && yarn build
 # This state compile get back the JavaScript code from builder stage
 # It will also install the production package only
 #
-FROM node:12.16.2-slim
+FROM node:14.17.6-alpine3.13 as runner
 
 WORKDIR /app
 ENV NODE_ENV=production
@@ -41,7 +41,7 @@ ENV NODE_ENV=production
 
 ## We just need the build to execute the command
 COPY --from=deps /usr/src/app/node_modules ./node_modules
-COPY --from=builder /usr/src/app/package.json ./
+# COPY --from=builder /usr/src/app/package.json ./
 COPY --from=builder /usr/src/app/dist ./dist
 
 
