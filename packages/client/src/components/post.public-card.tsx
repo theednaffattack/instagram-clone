@@ -19,6 +19,25 @@ type CardProps = {
 };
 
 export default function PostPublicCard({ cardProps }: CardProps): JSX.Element {
+  const [errorFlash, dispatchErrorFlash] = useReducer(
+    errFlashReducer,
+    initialErrorFlashState,
+    initErrorFlashState
+  );
+
+  const [imageLoadState, setImageLoadState] = useState<
+    "isLoaded" | "isLoading" | "isError" | "init"
+  >("init");
+
+  // Immediately start loading the image
+  useEffect(() => {
+    setImageLoadState("isLoading");
+  }, []);
+
+  if (!cardProps) {
+    return <div>CARD PROPS UNDEFINED</div>;
+  }
+
   const {
     comments_count,
     currently_liked,
@@ -29,28 +48,14 @@ export default function PostPublicCard({ cardProps }: CardProps): JSX.Element {
     text,
   } = cardProps;
 
-  const [errorFlash, dispatchErrorFlash] = useReducer(
-    errFlashReducer,
-    initialErrorFlashState,
-    initErrorFlashState
-  );
-
-  const [imageLoadState, setImageLoadState] =
-    useState<"isLoaded" | "isLoading" | "isError" | "init">("init");
-
-  // Immediately start loading the image
-  useEffect(() => {
-    setImageLoadState("isLoading");
-  }, []);
-
   return (
     <Box key={id} border="1px solid rgb(219,219,219)">
       <FeedTopBar>
-        <CardShareMenu postTitle={text} />
+        <CardShareMenu postTitle={text ?? "NO TITLE"} />
       </FeedTopBar>
 
       <FeedBoxedImage
-        images={images}
+        images={images ?? []}
         imageLoadState={imageLoadState}
         setImageLoadState={setImageLoadState}
       />

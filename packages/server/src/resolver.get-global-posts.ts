@@ -1,4 +1,4 @@
-import { Args, Ctx, Query, Resolver, Root, Subscription, UseMiddleware } from "type-graphql";
+import { Args, Ctx, Query, Resolver, ResolverFilterData, Root, Subscription, UseMiddleware } from "type-graphql";
 import format from "date-fns/format";
 import parseISO from "date-fns/parseISO";
 
@@ -9,11 +9,11 @@ import { MyContext } from "./typings";
 import { formatDistance } from "date-fns";
 import { isAuth } from "./middleware.is-auth";
 import { logger } from "./lib.logger";
+import { PostInput } from "./gql-type.post-input";
 
 @Resolver()
 export class GetGlobalPosts {
-  // @ts-ignore
-  @Subscription((type) => GlobalPostResponse, {
+  @Subscription(() => GlobalPostResponse, {
     // the `payload` and `args` are available in the destructured
     // object below `{args, context, payload}`
     nullable: true,
@@ -24,7 +24,6 @@ export class GetGlobalPosts {
       return "POSTS_GLOBAL";
     },
 
-    // @ts-ignore
     filter: ({ payload, context }: ResolverFilterData<GlobalPostResponse, PostInput>) => {
       return true;
     },
@@ -69,7 +68,7 @@ export class GetGlobalPosts {
 
     const flippedPosts = findPosts.reverse();
 
-    let addFollowerStatusToGlobalPosts = flippedPosts.map((post) => {
+    const addFollowerStatusToGlobalPosts = flippedPosts.map((post) => {
       currentlyLiked =
         post && post.likes.length >= 1
           ? post.likes.filter((likeRecord) => {
@@ -77,7 +76,7 @@ export class GetGlobalPosts {
             }).length > 0
           : false;
 
-      let returnThing: GlobalPostResponse = {
+      const returnThing: GlobalPostResponse = {
         ...post,
         isCtxUserIdAFollowerOfPostUser: post.user.followers.map((follower) => follower.id).includes(ctx.userId),
         likes_count: post.likes.length,

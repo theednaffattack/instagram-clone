@@ -1,8 +1,17 @@
 import { CloudFront } from "aws-sdk";
 import internalIp from "internal-ip";
 import type { CookieOptions, Response } from "express";
+import { logger } from "./lib.logger";
 
 export async function cloudFrontCookies(res: Response): Promise<void> {
+  if (
+    process.env.CF_PUBLIC_KEY_ID === undefined ||
+    process.env.CF_PRIVATE_KEY === undefined
+  ) {
+    throw new Error(
+      "Private access keys appear to be undefined. Please set 'CF_PUBLIC_KEY_ID' and 'CF_PRIVATE_KEY' respectively."
+    );
+  }
   const homeIp = internalIp.v4.sync();
   const expireTime = Math.floor(new Date().getTime() / 1000) + 60 * 60 * 24 * 1; // Current Time in UTC + time in seconds, (60 * 60 * 24 * 1 = 1 day)
 
@@ -67,9 +76,15 @@ export async function cloudFrontCookies(res: Response): Promise<void> {
       }
     );
   } catch (error) {
-    console.error("ERROR GETTING SIGNED COOKIE");
-    console.error(error);
-    throw Error(error);
+    logger.error("ERROR GETTING SIGNED COOKIE");
+    logger.error({ error });
+    if (error instanceof Error) {
+      throw error;
+    }
+    if (typeof error === "string") {
+      throw new Error(error);
+    }
+    throw new Error(JSON.stringify(error));
   }
 }
 

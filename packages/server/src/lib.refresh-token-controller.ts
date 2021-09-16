@@ -2,20 +2,31 @@ import type { Request, Response } from "express";
 import { verify } from "jsonwebtoken";
 import { configBuildAndValidate } from "./config.build-config";
 import { User } from "./entity.user";
-import { createAccessToken } from "./lib.authentication";
+import { createTokenData } from "./lib.create-token-data";
+import { handleAsyncSimple, handleAsyncWithArgs } from "./lib.handle-async";
+import { handleCatchBlockError } from "./lib.handle-catch-block-error";
 import { logger } from "./lib.logger";
 import { sendRefreshToken } from "./lib.utilities.send-refresh-token";
 
+interface RefreshResponse {
+  ok: boolean;
+  tokenData: {
+    accessToken: string;
+    expiresIn: Date;
+    userId: string;
+    version: number;
+  };
+}
+
 export async function refreshTokenController(dbConnection: any, req: Request, res: Response) {
-  logger.info("REFRESH TOKEN FIRING");
   // First grab our config to get the secret
   // needed to decode the token.
-  let config;
-  try {
-    config = await configBuildAndValidate();
-  } catch (error) {
-    logger.error(error, "ERROR GETTING CONFIG - REFRESH TOKEN");
-    throw new Error(error);
+
+  const [config, configError] = await handleAsyncSimple(configBuildAndValidate);
+
+  if (configError) {
+    logger.error("ERROR GETTING CONFIG - REFRESH TOKEN");
+    handleCatchBlockError(configError);
   }
 
   // Second we'll extract the token from the
@@ -35,47 +46,56 @@ export async function refreshTokenController(dbConnection: any, req: Request, re
   try {
     payload = verify(token, config.refreshTokenSecret);
   } catch (error) {
-    logger.error({ error, token, secret: config.refreshTokenSecret }, "ERROR VERIFYING REFRESH TOKEN PAYLOAD");
-    throw new Error(error);
+    logger.error("ERROR VERIFYING REFRESH TOKEN PAYLOAD");
+    logger.error({ error, token, secret: config.refreshTokenSecret });
+    handleCatchBlockError(error);
   }
 
   // Fourth - the token is valid and we can access the
   // User inside.
-  let user;
 
-  if (typeof payload !== "string") {
-    try {
-      logger.info({ payload }, "VIEW PAYLOAD - REFRESH TOKEN CONTROLLER");
-      user = await dbConnection.getRepository(User).findOne(payload.id);
-    } catch (error) {
-      logger.error(error, "ERROR FINDING USER");
-      throw new Error(error);
+  if (payload && typeof payload !== "string") {
+    const [user, userError] = await handleAsyncWithArgs(dbConnection.getRepository(User).findOne, [payload.id]);
+
+    if (userError) {
+      logger.error("ERROR FINDING USER");
+      handleCatchBlockError(userError);
     }
-  } else {
-    const errorMessage = `Expecting jwt payload to be of type 'object'`;
-    logger.error(errorMessage);
-    throw new Error(errorMessage);
-  }
 
-  if (!user) {
-    return res.send({ ok: false, accessToken: "" });
-  }
+    if (!user) {
+      return res.send({ ok: false, accessToken: "" });
+    }
 
-  // If the (refresh) token versions don't match the token is invalid.
-  if (typeof payload !== "string" && user.tokenVersion !== payload.tokenVersion) {
-    return res.send({ ok: false, accessToken: "" });
-  }
+    // If the (refresh) token versions don't match the token is invalid.
+    if (typeof payload !== "string" && user.tokenVersion !== payload.tokenVersion) {
+      return res.send({ ok: false, accessToken: "" });
+    }
 
-  if (user) {
-    logger.info("SENDING REFRESH TOKEN");
+    if (user) {
+      // Reset our refresh token inside the secure cookie.
+      sendRefreshToken({ config, res, user });
 
-    // Reset our refresh token inside the secure cookie.
-    sendRefreshToken({ config, res, user });
+      const accessToken = createTokenData({ config, user, expireInt: 15, expireUnit: "s" });
 
-    // In addition we return a new access token.
-    return res.send({ ok: true, accessToken: createAccessToken({ config, user, expiresIn: "15s" }) });
+      const refreshResponse: RefreshResponse = {
+        ok: true,
+        tokenData: {
+          accessToken: accessToken.accessToken || "",
+          expiresIn: accessToken.expiresIn,
+          userId: accessToken.userId,
+          version: accessToken.version,
+        },
+      };
+
+      // In addition we return a new access token.
+      return res.send(refreshResponse);
+    } else {
+      const errorMessage = `Expecting jwt payload to be of type 'object'`;
+      logger.error(errorMessage);
+      throw new Error(errorMessage);
+    }
   }
 
   // If we can't find a user send a failure case.
-  res.status(400).send("Unable to verify token");
+  res.status(401).send("Unable to verify token");
 }

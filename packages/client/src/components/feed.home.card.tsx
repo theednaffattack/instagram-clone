@@ -65,7 +65,10 @@ export function PostCard({ cardProps }: CardProps): JSX.Element {
   return (
     <Box key={id}>
       <Flex alignItems="center" p={3}>
-        <Avatar src={user?.profileImageUri ?? ""} name={user?.username} />{" "}
+        <Avatar
+          src={user?.profileImageUri ?? ""}
+          name={user?.username ? user.username : undefined}
+        />{" "}
         <Text ml={4}>{user?.username}</Text>
         <IconButton
           ml="auto"

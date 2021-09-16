@@ -2,12 +2,11 @@ import { Avatar, Button, Flex, Grid, Stack, Text } from "@chakra-ui/react";
 import { Formik } from "formik";
 import React, { useState } from "react";
 import {
-  GetMessagesByThreadIdDocument,
-  GetMessagesByThreadIdQuery,
   useAddMessageToThreadMutation,
   useGetOnlyThreadsQuery,
   User,
 } from "../generated/graphql";
+import { logger } from "../lib/lib.logger";
 import { MessagesGrid } from "./messages-grid";
 
 function MessagesPageContent(): JSX.Element {
@@ -21,9 +20,9 @@ function MessagesPageContent(): JSX.Element {
     >();
   const [threadId, setThreadId] = useState<string | undefined>(undefined);
 
-  const [addMessage] = useAddMessageToThreadMutation();
+  const [, addMessage] = useAddMessageToThreadMutation();
 
-  const { data: dataThreads } = useGetOnlyThreadsQuery({
+  const [{ data: dataThreads }] = useGetOnlyThreadsQuery({
     variables: {
       feedinput: {
         take: 6,
@@ -45,68 +44,67 @@ function MessagesPageContent(): JSX.Element {
       onSubmit={async (values, { resetForm }) => {
         try {
           await addMessage({
-            variables: {
-              invitees: values.invitees.map((user) => user.id),
-              message: values.message,
-              threadId: values.threadId,
-              sentTo: values.sentTo,
-              images: values?.images?.map(({ name }) => name) ?? [],
-            },
-            update(cache, { data }) {
-              try {
-                const cacheMessagesByThread =
-                  cache.readQuery<GetMessagesByThreadIdQuery>({
-                    query: GetMessagesByThreadIdDocument,
-                    variables: {
-                      input: {
-                        threadId: values.threadId,
-                        take: 15,
-                      },
-                    },
-                  });
+            invitees: values.invitees.map((user) => user.id),
+            message: values.message,
+            threadId: values.threadId,
+            sentTo: values.sentTo,
+            images: values?.images?.map(({ name }) => name) ?? [],
 
-                if (cacheMessagesByThread?.getMessagesByThreadId && data) {
-                  const updatedCache: GetMessagesByThreadIdQuery = {
-                    __typename: "Query",
-                    getMessagesByThreadId: {
-                      pageInfo:
-                        cacheMessagesByThread.getMessagesByThreadId.pageInfo,
-                      __typename: "MessageConnection",
-                      edges: [
-                        ...cacheMessagesByThread.getMessagesByThreadId.edges,
-                        {
-                          node: {
-                            __typename: "Message",
-                            id: data.addMessageToThread.message.id,
-                            text: data.addMessageToThread.message.text,
-                            created_at:
-                              data.addMessageToThread.message.created_at,
-                            sentBy: {
-                              __typename: "User",
-                              id: data.addMessageToThread.user.id,
-                            },
-                          },
-                          __typename: "MessageEdge",
-                        },
-                      ],
-                    },
-                  };
+            // update(cache, { data }) {
+            //   try {
+            //     const cacheMessagesByThread =
+            //       cache.readQuery<GetMessagesByThreadIdQuery>({
+            //         query: GetMessagesByThreadIdDocument,
+            //         variables: {
+            //           input: {
+            //             threadId: values.threadId,
+            //             take: 15,
+            //           },
+            //         },
+            //       });
 
-                  cache.writeQuery<GetMessagesByThreadIdQuery>({
-                    query: GetMessagesByThreadIdDocument,
-                    data: updatedCache,
-                    variables: {
-                      input: {
-                        threadId: values.threadId,
-                        take: 15,
-                      },
-                    },
-                  });
-                }
-              } catch (error) {
-                console.warn("CACHE READ ERROR", error);
-              }
-            },
+            //     if (cacheMessagesByThread?.getMessagesByThreadId && data) {
+            //       const updatedCache: GetMessagesByThreadIdQuery = {
+            //         __typename: "Query",
+            //         getMessagesByThreadId: {
+            //           pageInfo:
+            //             cacheMessagesByThread.getMessagesByThreadId.pageInfo,
+            //           __typename: "MessageConnection",
+            //           edges: [
+            //             ...cacheMessagesByThread.getMessagesByThreadId.edges,
+            //             {
+            //               node: {
+            //                 __typename: "Message",
+            //                 id: data.addMessageToThread.message.id,
+            //                 text: data.addMessageToThread.message.text,
+            //                 created_at:
+            //                   data.addMessageToThread.message.created_at,
+            //                 sentBy: {
+            //                   __typename: "User",
+            //                   id: data.addMessageToThread.user.id,
+            //                 },
+            //               },
+            //               __typename: "MessageEdge",
+            //             },
+            //           ],
+            //         },
+            //       };
+
+            //       cache.writeQuery<GetMessagesByThreadIdQuery>({
+            //         query: GetMessagesByThreadIdDocument,
+            //         data: updatedCache,
+            //         variables: {
+            //           input: {
+            //             threadId: values.threadId,
+            //             take: 15,
+            //           },
+            //         },
+            //       });
+            //     }
+            //   } catch (error) {
+            //     console.warn("CACHE READ ERROR", error);
+            //   }
+            // },
           });
           resetForm({
             values: {
@@ -118,7 +116,7 @@ function MessagesPageContent(): JSX.Element {
             },
           });
         } catch (error) {
-          console.warn("ADD MESSAGE SUBMIT ERROR", error);
+          logger.error({ error }, "ADD MESSAGE SUBMIT ERROR");
         }
       }}
     >
@@ -269,7 +267,7 @@ function MessagesPageContent(): JSX.Element {
                     alignItems="center"
                   >
                     <Avatar
-                      name={user.username}
+                      name={user.username ? user.username : undefined}
                       src={user.profileImageUri ?? ""}
                     />
                     <Text isTruncated>{user.username}</Text>

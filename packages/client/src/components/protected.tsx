@@ -7,12 +7,12 @@ interface ProtectedProps {
 }
 
 export function Protected({ children }: ProtectedProps): JSX.Element {
-  const { data, error, loading } = useMeQuery();
+  const [{ data, error, fetching }] = useMeQuery();
   if (error) {
     logger.error(error);
-    return null;
+    return <pre>JSON.stringify(error, null,2)</pre>;
   }
-  if (loading) {
+  if (fetching) {
     return <div>loading...</div>;
   }
   if (data && data.me) {
@@ -20,4 +20,5 @@ export function Protected({ children }: ProtectedProps): JSX.Element {
     return <>{children}</>;
   }
   // We hope this is impossible?
+  return <div>loading...</div>;
 }

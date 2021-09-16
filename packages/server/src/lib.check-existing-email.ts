@@ -7,18 +7,16 @@ import {
 import { getConnection } from "typeorm";
 import { configBuildAndValidate } from "./config.build-config";
 import { User } from "./entity.user";
+import { handleAsyncSimple, handleAsyncWithArgs } from "./lib.handle-async";
+import { handleCatchBlockError } from "./lib.handle-catch-block-error";
 
 @ValidatorConstraint({ async: true })
 export class DoesEmailAlreadyExistConstraint implements ValidatorConstraintInterface {
   async validate(email: string) {
-    let config;
+    const [config, configError] = await handleAsyncSimple(configBuildAndValidate);
 
-    try {
-      config = await configBuildAndValidate();
-    } catch (error) {
-      console.error("ERROR GETTING CONFIG IN 'DOES EMAIL EXIST' CUSTOM CONSTRAINT");
-      console.error(error);
-      throw Error(error);
+    if (configError) {
+      handleCatchBlockError(configError);
     }
 
     // Must use 'getConnection' here or
@@ -26,16 +24,15 @@ export class DoesEmailAlreadyExistConstraint implements ValidatorConstraintInter
     // a specified connection TypeOrm will use
     // 'default'. I now believe 'default' should be
     // tested for and generally avoided, if possible.
-    let user;
-    try {
-      const conn = getConnection(config.env);
 
-      const userRepo = conn.getRepository(User);
-      user = await userRepo.findOne({ where: { email } });
-    } catch (error) {
-      console.error("ERROR SELECTING USER - CHECK EXISTING EMAIL");
-      console.error(error);
-      throw Error(error);
+    // let user;
+
+    const conn = getConnection(config.env);
+
+    const userRepo = conn.getRepository(User);
+    const [user, userError] = await handleAsyncWithArgs(userRepo.findOne, [{ where: { email } }]);
+    if (userError) {
+      handleCatchBlockError(userError);
     }
 
     return user === undefined;
@@ -43,7 +40,7 @@ export class DoesEmailAlreadyExistConstraint implements ValidatorConstraintInter
 }
 
 export function DoesEmailAlreadyExist(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: Record<string, any>, propertyName: string): void {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,

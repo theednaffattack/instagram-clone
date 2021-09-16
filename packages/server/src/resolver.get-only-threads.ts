@@ -37,7 +37,7 @@ export class GetOnlyThreads {
     // export const MoreThanDate = (date: Date) => MoreThan(format(date, 'YYYY-MM-DD HH:MM:SS'))
     // export const LessThanDate = (date: Date) => LessThan(format(date, 'YYYY-MM-DD HH:MM:SS')
 
-    let findThreads = await context.dbConnection
+    const findThreads = await context.dbConnection
       .getRepository(Thread)
       .createQueryBuilder("thread")
       .loadRelationCountAndMap("thread.message_count", "thread.messages")
@@ -55,7 +55,7 @@ export class GetOnlyThreads {
 
     // @TODO: This will have to be changed to hybrid data. Forcing an empty array
     // isn't enough information to handle very many cases
-    findThreads && findThreads.length > 0 ? findThreads : (findThreads = []);
+    // findThreads && findThreads.length > 0 ? findThreads : (findThreads = []);
 
     const threadsSelected = findThreads.reverse();
 
@@ -106,13 +106,13 @@ export class GetOnlyThreads {
           })
         : [];
 
-    let response = {
+    const response = {
       edges: myThreadEdges,
       pageInfo: {
         startCursor: startCursor,
         endCursor: newCursor,
-        hasNextPage: afterThreads.length > 0 ? true : false,
-        hasPreviousPage: beforeThreads.length > 0 ? true : false,
+        hasNextPage: afterThreads.length > 0,
+        hasPreviousPage: beforeThreads.length > 0,
       },
     };
     return response;

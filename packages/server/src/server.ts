@@ -1,55 +1,69 @@
 import { ApolloServer, ExpressContext } from "apollo-server-express";
+import { json } from "body-parser";
 import cookieParser from "cookie-parser";
 import cors, { CorsOptions } from "cors";
 import * as Express from "express";
 import http from "http";
 import "reflect-metadata";
-import { Connection, createConnection } from "typeorm";
-import { json } from "body-parser";
+import { createConnection } from "typeorm";
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
 import { configApolloContext } from "./config.apollo-context";
 import { configGraphQLSubscriptions } from "./config.apollo-subscriptions";
 import { ServerConfigProps } from "./config.build-config";
 import { formatGraphQLErrors } from "./config.format-apollo-errors";
 import { serverOnListen } from "./config.server.on-listen";
-import { configSessionMiddleware } from "./config.session-middleware";
 import { createSchema } from "./lib.apollo.create-schema";
+import { handleAsyncSimple, handleAsyncWithArgs } from "./lib.handle-async";
+import { handleCatchBlockError } from "./lib.handle-catch-block-error";
+import { logger } from "./lib.logger";
 import { loggingMiddleware } from "./lib.middleware.gql-logging";
 import { getConnectionOptionsCustom } from "./lib.orm-config";
 import { productionMigrations } from "./lib.production-migrations";
 import { refreshTokenController } from "./lib.refresh-token-controller";
 
-export async function server(config: ServerConfigProps) {
-  let dbConnection: Connection;
+export async function server(config: ServerConfigProps): Promise<void> {
+  // let dbConnection: Connection;
 
   const connectOptions: PostgresConnectionOptions = getConnectionOptionsCustom(config);
 
-  try {
-    dbConnection = await createConnection(connectOptions);
-  } catch (error) {
-    console.warn("CONNECTION ERROR");
-    console.error(error);
-    throw Error(error);
+  const [dbConnection, dbConnectionError] = await handleAsyncWithArgs(createConnection, [connectOptions]);
+  if (dbConnectionError) {
+    handleCatchBlockError(dbConnectionError);
   }
+  // try {
+  //   dbConnection = await createConnection(connectOptions);
+  // } catch (error) {
+  //   logger.error("CONNECTION ERROR");
+  //   logger.error({ error });
+  //   // We want to pass the error on here
+  //   // because we'd like DB connection issues
+  //   // to be show-stopping until they can somehow
+  //   // be mitigated (with failovers, I guess???).
+  //   if (error instanceof Error) {
+  //     throw new Error(error.message);
+  //   }
+  //   // If it's (bad) old JS code with
+  //   // error strings, throw it in a new Error.
+  //   if (typeof error === "string") {
+  //     throw new Error(error);
+  //   }
+  //   // Any errors of unexpected shape
+  //   // get stringified and thrown as new
+  //   // Errors.
+  //   throw new Error(JSON.stringify(error));
+  // }
 
   if (config.env === "production" || config.migration === true) {
-    try {
-      await productionMigrations(dbConnection, connectOptions);
-    } catch (error) {
-      console.error("ERROR RUNNING MIGRATIONS");
-      console.error(error);
-      throw Error(error);
+    const [, dbMigrationError] = await handleAsyncWithArgs(productionMigrations, [dbConnection, connectOptions]);
+    if (dbMigrationError) {
+      logger.error("ERROR RUNNING MIGRATIONS");
+      handleCatchBlockError(dbMigrationError);
     }
   }
 
-  let schema;
-
-  try {
-    schema = await createSchema();
-  } catch (error) {
-    console.error("ERROR CREATING SCHEMA");
-    console.error(error);
-    throw Error(error);
+  const [schema, error] = await handleAsyncSimple(createSchema);
+  if (error) {
+    handleCatchBlockError(error);
   }
 
   // let sessionMiddleware;
@@ -87,10 +101,13 @@ export async function server(config: ServerConfigProps) {
         if (!origin || allowedListOfOrigins.indexOf(origin) !== -1) {
           callback(null, true);
         } else {
-          console.error("cors error:: origin: ", {
-            origin,
-            allowedListOfOrigins,
-          });
+          logger.error(
+            {
+              origin,
+              allowedListOfOrigins,
+            },
+            "cors error:: origin: "
+          );
         }
       },
     };
@@ -121,9 +138,17 @@ export async function server(config: ServerConfigProps) {
     apolloServer.applyMiddleware({ app, cors: corsOptions });
 
     app.get("/", (_req, res) => res.send("hello"));
-    app.post("/refresh_token", (req, res) => refreshTokenController(dbConnection, req, res));
 
-    let httpServer = http.createServer(app);
+    app.post("/refresh_token", async (req, res, next) => {
+      try {
+        const result = await refreshTokenController(dbConnection, req, res);
+        res.end(result);
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    const httpServer = http.createServer(app);
     apolloServer.installSubscriptionHandlers(httpServer);
 
     httpServer.listen(config.port, config.ip, () =>

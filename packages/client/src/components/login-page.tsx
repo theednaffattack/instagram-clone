@@ -1,10 +1,4 @@
 import {
-  ApolloClient,
-  FetchResult,
-  MutationFunctionOptions,
-  useApolloClient,
-} from "@apollo/client";
-import {
   Alert,
   AlertDescription,
   AlertIcon,
@@ -17,35 +11,22 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
-import { NextRouter } from "next/dist/next-server/lib/router/router";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { PropsWithChildren, useEffect, useRef, useState } from "react";
 import { Wrapper } from "../components/flex-wrapper";
 import { InputField } from "../components/forms.input-field";
-import {
-  LoginMutation,
-  LoginMutationVariables,
-  useLoginMutation,
-} from "../generated/graphql";
+import { useLoginMutation } from "../generated/graphql";
+import { handleAsyncSimple } from "../lib/lib.handle-async-client";
+import { setToken } from "../lib/lib.in-memory-access-token";
 import { logger } from "../lib/lib.logger";
-import { useAuth } from "./authentication-provider";
 import { LoginErrorMessage } from "./login-error-message";
-
-interface LoginFormProps {
-  username: string;
-  password: string;
-  user_confirmed: JSX.Element;
-}
 
 export function LoginPage(): JSX.Element {
   const router = useRouter();
-  const [flashMessage, setFlashMessage] = useState<string>(null);
-  const { signIn } = useAuth();
+  const [flashMessage, setFlashMessage] = useState<string | null>(null);
 
-  const client = useApolloClient();
-  const [login] = useLoginMutation();
-
+  const [, loginFunc] = useLoginMutation();
   const { message } = router.query;
 
   useEffect(() => {
@@ -58,14 +39,104 @@ export function LoginPage(): JSX.Element {
   return (
     <Formik
       initialValues={{ username: "", password: "", user_confirmed: <></> }}
-      onSubmit={(values) =>
-        handleSubmit({ values, login, setFlashMessage, router, client, signIn })
-      }
+      onSubmit={async (values, { setErrors }) => {
+        const [response, loginError] = await handleAsyncSimple(async () => {
+          return await loginFunc({
+            username: values.username,
+            password: values.password,
+          });
+        });
+
+        if (loginError) {
+          logger.error("UH OH LOGIN ERROR");
+          logger.error({ error: loginError });
+        }
+
+        if (response?.data?.login?.errors) {
+          setErrors({
+            [response.data.login.errors[0].field]:
+              response.data.login.errors[0].message,
+          });
+        }
+        if (response?.data?.login?.tokenData?.userId) {
+          // setAccessToken(response.data.login.tokenData.accessToken);
+          logger.info("SETTING TOKEN DATA - 1");
+          logger.info(response.data.login.tokenData);
+          if (response.data.login.tokenData.accessToken) {
+            logger.info("SETTING TOKEN DATA -  2");
+
+            setToken(response.data.login.tokenData);
+          }
+          // Can't se the refresh token since the API doesn't repsond
+          // with it.
+          // localStorage.setItem(
+          //   "refreshToken",
+          //   response.data.refreshLogin.refreshToken
+          // );
+          if (router.query.next && router.query.next !== "/") {
+            // If there is a next query variable then use it as the URL.
+            router.push(router.query.next as string);
+          } else {
+            // default
+            router.push("/feed");
+          }
+        }
+
+        // let response;
+        // try {
+        //   response = await loginFunc({
+        //     username: values.username,
+        //     password: values.password,
+        //   });
+
+        //   logger.info("What is the RESPONSE?");
+        //   logger.info(response);
+
+        //   if (response?.data?.login?.errors) {
+        //     setErrors({
+        //       [response.data.login.errors[0].field]:
+        //         response.data.login.errors[0].message,
+        //     });
+        //   }
+        //   if (response?.data?.login?.tokenData?.userId) {
+        //     // setAccessToken(response.data.login.tokenData.accessToken);
+        //     logger.info("SETTING TOKEN DATA - 1");
+        //     logger.info(response.data.login.tokenData);
+        //     if (response.data.login.tokenData.accessToken) {
+        //       logger.info("SETTING TOKEN DATA -  2");
+
+        //       setToken(response.data.login.tokenData);
+        //     }
+        //     // Can't se the refresh token since the API doesn't repsond
+        //     // with it.
+        //     // localStorage.setItem(
+        //     //   "refreshToken",
+        //     //   response.data.refreshLogin.refreshToken
+        //     // );
+        //     if (router.query.next && router.query.next !== "/") {
+        //       // If there is a next query variable then use it as the URL.
+        //       router.push(router.query.next as string);
+        //     } else {
+        //       // default
+        //       router.push("/feed");
+        //     }
+        //   }
+        // } catch (error) {
+        //   logger.error("SIGN IN ERROR");
+        //   logger.error({ error });
+        //   throw new Error("Sign in error.");
+        // }
+
+        if (response && response.error && response.error.message) {
+          setFlashMessage(response.error.message);
+        }
+      }}
     >
       {({ handleSubmit, isSubmitting }) => {
         return (
           <Wrapper flexDirection="column">
             <>
+              {/* {JSON.stringify(getToken(), null, 2)} */}
               {flashMessage ? (
                 <LoginFlash
                   errorTitle={
@@ -131,13 +202,15 @@ export function LoginPage(): JSX.Element {
 function LoginFlash({
   children,
   errorTitle,
-}: PropsWithChildren<{ errorTitle: string }>): JSX.Element {
-  const [flashVisibility, setFlashVisibility] =
-    useState<"isHidden" | "isVisible">("isVisible");
+}: PropsWithChildren<{ errorTitle: string }>): JSX.Element | null {
+  const [flashVisibility, setFlashVisibility] = useState<
+    "isHidden" | "isVisible"
+  >("isVisible");
+
   const closeButtonFocusRef = useRef<HTMLButtonElement>();
 
   useEffect(() => {
-    closeButtonFocusRef.current.focus();
+    closeButtonFocusRef.current?.focus();
   }, []);
 
   if (flashVisibility === "isHidden") {
@@ -157,6 +230,7 @@ function LoginFlash({
         <AlertTitle mr={2}>{errorTitle}</AlertTitle>
       </Flex>
       <AlertDescription>{children}</AlertDescription>
+      <button ref={closeButtonFocusRef as any}>close</button>
       <CloseButton
         position="absolute"
         right="8px"
@@ -168,65 +242,8 @@ function LoginFlash({
         }}
         tabIndex={0}
         type="button"
-        ref={closeButtonFocusRef}
+        ref={closeButtonFocusRef as any}
       />
     </Alert>
   );
-}
-
-interface HandleSubmitProps {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  client: ApolloClient<object>;
-  login: (
-    options?: MutationFunctionOptions<LoginMutation, LoginMutationVariables>
-  ) => Promise<
-    FetchResult<LoginMutation, Record<string, any>, Record<string, any>>
-  >;
-  router: NextRouter;
-  setFlashMessage: React.Dispatch<React.SetStateAction<string>>;
-  signIn: (token: string, userId: string) => void;
-  values: LoginFormProps;
-}
-
-async function handleSubmit({
-  values,
-  login,
-  setFlashMessage,
-  router,
-  client,
-  signIn,
-}: HandleSubmitProps): Promise<void> {
-  let response;
-  try {
-    await client.resetStore();
-    response = await login({
-      variables: { username: values.username, password: values.password },
-    });
-  } catch (error) {
-    logger.error(error, "SIGN IN ERROR");
-    throw new Error("Sign in error.");
-  }
-  if (response && response.errors && response.errors.length) {
-    setFlashMessage(response.errors[0].message);
-  }
-  if (
-    response &&
-    response.data &&
-    response.data.login &&
-    response.data.login.tokenData &&
-    response.data.login.tokenData.userId
-  ) {
-    const token = response.data.login.tokenData.accessToken;
-    const userId = response.data.login.tokenData.userId;
-
-    signIn(token, userId);
-    // setAccessToken(response.data.login.tokenData.accessToken);
-    if (router.query.next && router.query.next !== "/") {
-      // If there is a next query variable then use it as the URL.
-      router.push(router.query.next as string);
-    } else {
-      // default
-      router.push("/feed");
-    }
-  }
 }

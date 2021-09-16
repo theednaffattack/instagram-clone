@@ -1,5 +1,7 @@
 import { Ctx, Query, Resolver, UseMiddleware } from "type-graphql";
 import { User } from "./entity.user";
+import { handleAsyncWithArgs } from "./lib.handle-async";
+import { handleCatchBlockError } from "./lib.handle-catch-block-error";
 import { logger } from "./lib.logger";
 import { isAuth } from "./middleware.is-auth";
 import { MyContext } from "./typings";
@@ -22,12 +24,10 @@ export class MeResolver {
       return null;
     }
 
-    let user;
-    try {
-      user = await ctx.dbConnection.getRepository(User).findOne(ctx.userId);
-    } catch (error) {
-      console.error(error);
-      throw Error(error);
+    const [user, userError] = await handleAsyncWithArgs(ctx.dbConnection.getRepository(User).findOne, [ctx.userId]);
+
+    if (userError) {
+      handleCatchBlockError(userError);
     }
 
     if (user) {

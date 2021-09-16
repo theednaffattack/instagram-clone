@@ -11,8 +11,6 @@ export async function sendPostmarkEmail(
 ): Promise<postmark.Models.MessageSendingResponse | undefined> {
   // Setup the Postmark client
 
-  let mailSentResponse;
-
   const client = new postmark.ServerClient(config.postmarkToken);
 
   const welcomeMessage = createWelcomeMessage({ confirmationUri: uri, toEmail });
@@ -20,7 +18,7 @@ export async function sendPostmarkEmail(
   // I believe we can provide a callback to client.sendEmail that uses the response
   // as well
 
-  mailSentResponse = await client
+  const mailSentResponse = await client
     .sendEmail(welcomeMessage)
     .then((data) => {
       if (!data.Message || data.Message !== "OK") {

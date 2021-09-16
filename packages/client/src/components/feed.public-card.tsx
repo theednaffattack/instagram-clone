@@ -196,11 +196,11 @@ export function PublicFeedCard({ cardProps }: CardProps): JSX.Element {
         src={images && images[0] ? images[0].uri : ""}
       /> */}
       <FeedTopBar>
-        <CardShareMenu postTitle={text} />
+        <CardShareMenu postTitle={text ?? ""} />
       </FeedTopBar>
 
       <FeedBoxedImage
-        images={images}
+        images={images ?? []}
         imageLoadState={imageLoadState}
         setImageLoadState={setImageLoadState}
       />
@@ -231,7 +231,7 @@ export function PublicFeedCard({ cardProps }: CardProps): JSX.Element {
         >
           {errorFlash.visibility === "visible" ? (
             <ErrorFlash
-              errorMessage={errorFlash.message}
+              errorMessage={errorFlash.message ?? ""}
               dispatchErrorFlash={dispatchErrorFlash}
             />
           ) : (

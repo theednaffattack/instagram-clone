@@ -12,7 +12,7 @@ type LayoutProps = {
 export function Layout({ children }: LayoutProps): JSX.Element {
   // const router = useRouter();
   useIsAuth();
-  const { data: dataMe, loading: loadingMe } = useMeQuery({
+  const [{ data: dataMe, fetching: loadingMe }] = useMeQuery({
     // Do not run this query on the server.
     // pause: isServer()
   });

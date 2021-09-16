@@ -1,4 +1,5 @@
 import * as Relay from "graphql-relay";
+import { Connection as ConnectionType } from "graphql-relay";
 import { ObjectType, Field, ArgsType, ClassType } from "type-graphql";
 
 type ExtractNodeType<EdgeType> = EdgeType extends Relay.Edge<infer NodeType> ? NodeType : never;
@@ -47,13 +48,14 @@ class PageInfoType implements Relay.PageInfo {
   @Field(() => Boolean)
   hasPreviousPage: boolean;
 
-  @Field(() => String, { nullable: true })
-  startCursor?: Relay.ConnectionCursor;
+  @Field(() => String)
+  startCursor: Relay.ConnectionCursor;
 
-  @Field(() => String, { nullable: true })
-  endCursor?: Relay.ConnectionCursor;
+  @Field(() => String)
+  endCursor: Relay.ConnectionCursor;
 }
 
+// eslint-disable-next-line no-use-before-define
 export function ConnectionType<EdgeType extends Relay.Edge<NodeType>, NodeType = ExtractNodeType<EdgeType>>(
   nodeName: string,
   edgeClass: ClassType<EdgeType>

@@ -1,8 +1,12 @@
 import { verify } from "jsonwebtoken";
+import type { JwtPayload } from "jsonwebtoken";
 import { JwtExpirationError, JwtMalformedError } from "./config.apollo-errors";
-import { ServerConfigProps } from "./config.build-config";
+import type { ServerConfigProps } from "./config.build-config";
+import { handleCatchBlockError } from "./lib.handle-catch-block-error";
+import { guardFilterError } from "./lib.guardFilterError";
 import { logger } from "./lib.logger";
-import { MyContext } from "./typings";
+import type { MyContext } from "./typings";
+import type { Connection } from "typeorm";
 
 interface ConfigApolloProps {
   req: MyContext["req"];
@@ -12,8 +16,22 @@ interface ConfigApolloProps {
   config: ServerConfigProps;
 }
 
-export function configApolloContext({ req, res, connection, config, dbConnection }: ConfigApolloProps) {
-  if (connection) {
+type ContextConnection = {
+  req: any;
+  res: any;
+  payload: string | JwtPayload;
+  dbConnection: Connection;
+  config: ServerConfigProps;
+};
+
+export function configApolloContext({
+  req,
+  res,
+  connection,
+  config,
+  dbConnection,
+}: ConfigApolloProps): ConfigApolloProps | ContextConnection | undefined {
+  if (connection !== undefined) {
     return getContextFromSubscription({ req, res, dbConnection, config, connection });
     // return {
     //   ...getContextFromSubscription(connection),
@@ -41,14 +59,23 @@ const getContextFromHttpRequest = ({ req, res, dbConnection, config }: ConfigApo
 
   // JWT implementation
   const authorization = req.headers["authorization"];
+  const defaultReturn = { req, res, config, dbConnection };
 
+  logger.info({ path: req.path, url: req.url });
+  // DECISIONS
+  // If this is accessed during login return default
+  if (req.url === "/") {
+    return defaultReturn;
+  }
+
+  // Otherwise look for authorization header
   if (authorization && authorization !== "Bearer public") {
     let token;
     try {
       token = authorization.split(" ")[1];
       const payload = verify(token, config.accessTokenSecret);
 
-      return {
+      const authenticatedReturn = {
         req,
         res,
         payload,
@@ -56,44 +83,21 @@ const getContextFromHttpRequest = ({ req, res, dbConnection, config }: ConfigApo
         dbConnection,
         config,
       };
+
+      return authenticatedReturn;
     } catch (err) {
-      logger.error(err, "ERROR VERIFYING TOKEN - HTTP REQUESTS");
-      logger.error(authorization.split(" ")[1]);
-
-      if (err.message.includes("jwt expired")) {
-        logger.error(err, "JWT EXPIRED");
-
-        // throw createAuthenticationError({
-        //   message: "Your session has expired, please log in.",
-        // });
-        throw JwtExpirationError;
-      }
-      if (err.message.includes("jwt malformed")) {
-        logger.error(err, "JWT MALFORMED");
-
-        // throw createAuthenticationError({
-        //   message: "Your session has expired, please log in.",
-        // });
-        throw JwtMalformedError;
-      }
-
-      // If it's not expired or malformed, but some other error?
-      throw new Error(err);
-      // return { req, res, config, dbConnection };
-
-      // throw new Error("Not authenticated");
-      // return {
-      //   req,
-      //   res,
-      //   payload: {
-      //     token: undefined,
-      //     errors: [err],
-      //   },
-      //   token: req.headers.authorization || "",
-      // };
+      logger.error("ERROR VERIFYING TOKEN - HTTP REQUESTS");
+      const expired = { errorToThrow: JwtExpirationError, errorMessageToSearch: "jwt expired" };
+      const malformed = { errorToThrow: JwtMalformedError, errorMessageToSearch: "jwt malformed" };
+      // Catch expired JWT
+      guardFilterError(err, expired);
+      // Catch improperly formatted JWT
+      guardFilterError(err, malformed);
+      // Catch all other errors
+      handleCatchBlockError(err);
     }
   } else {
-    return { req, res, config, dbConnection };
+    return defaultReturn;
   }
 };
 
@@ -101,29 +105,28 @@ const getContextFromSubscription = ({ config, connection, dbConnection }: Config
   // old cookie implementation
   if (connection) {
     const authorization = connection.context.req.headers["authorization"];
+    if (authorization) {
+      let token;
+      let payload;
 
-    let token;
-    let payload;
+      try {
+        token = authorization.split(" ")[1];
+        payload = verify(token, config.accessTokenSecret);
+        return { req: connection.context.req, res: connection.context.res, payload, dbConnection, config };
+      } catch (error) {
+        logger.error("ERROR VERIFYING JWT - SUBSCRIPTIONS");
 
-    try {
-      token = authorization.split(" ")[1];
-      payload = verify(token, config.accessTokenSecret);
-      return { req: connection.context.req, res: connection.context.res, payload, dbConnection, config };
-    } catch (error) {
-      console.error("ERROR VERIFYING JWT - SUBSCRIPTIONS");
-      console.error(error);
-      if (error.message.includes("jwt expired")) {
-        console.error("JWT EXPIRED");
-        console.error(error);
-
-        // throw createAuthenticationError({
-        //   message: "Your session has expired, please log in.",
-        // });
-        throw JwtExpirationError;
-        // throw new Error("Your session has expired, please log in.");
+        const expired = { errorToThrow: JwtExpirationError, errorMessageToSearch: "jwt expired" };
+        const malformed = { errorToThrow: JwtMalformedError, errorMessageToSearch: "jwt malformed" };
+        // Catch expired JWT
+        guardFilterError(error, expired);
+        // Catch improperly formatted JWT
+        guardFilterError(error, malformed);
+        // Catch all other errors
+        handleCatchBlockError(error);
       }
+      return { req: connection.context.req, res: connection.context.res, dbConnection, config };
     }
-    return { req: connection.context.req, res: connection.context.res, dbConnection, config };
   }
   // JSON Web token implementation
   // const authorization = connection.context.authorization;

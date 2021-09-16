@@ -1,6 +1,6 @@
-import { FetchResult } from "@apollo/client";
 import axios, { AxiosRequestConfig } from "axios";
 import format from "date-fns/format";
+import { CombinedError } from "urql";
 import { SignS3Mutation } from "../generated/graphql";
 import { logger } from "./lib.logger";
 import { PreviewFile, SignS3Func } from "./types";
@@ -24,28 +24,40 @@ export async function uploadToS3(
       filename: file.name,
       type: file.type,
     });
-  } catch (error) {
-    logger.error(error);
-    throw Error(error);
-  }
 
-  if (!newFileToUpload) {
-    throw Error("Error uploading file to web storage.");
-  }
-
-  try {
-    await axios.put(signedRequest, newFileToUpload, options);
+    try {
+      await axios.put(signedRequest, newFileToUpload, options);
+    } catch (error) {
+      logger.error("ERROR SENDING FILES TO S3.", error);
+      if (error instanceof Error) {
+        throw Error(error.message);
+      }
+    }
   } catch (error) {
-    logger.error("ERROR SENDING FILES TO S3.", error);
-    throw Error(error);
+    logger.error({ error });
+    if (error instanceof Error) {
+      throw Error(error.message);
+    }
   }
 }
 
-export async function signAndUploadFiles(
-  values: File[],
-  signFile: SignS3Func,
-  previewFiles: PreviewFile[]
-): Promise<any[]> {
+interface SignAndUploadFileProps {
+  data: SignS3Mutation | undefined;
+  error: CombinedError | undefined;
+  // values: File[];
+  signFile: SignS3Func;
+  previewFiles: PreviewFile[];
+}
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export async function signAndUploadFiles({
+  data,
+  error,
+  previewFiles,
+  signFile,
+}: SignAndUploadFileProps): Promise<(SignS3Mutation | undefined)[]> {
+  // const [{ data, error }, signFile] = useSignS3Mutation();
+
   return await Promise.all(
     previewFiles.map(async (imageFile) => {
       if (imageFile.type.includes("image")) {
@@ -57,28 +69,34 @@ export async function signAndUploadFiles(
           type: imageFile.type,
         };
 
-        let response: FetchResult<SignS3Mutation>;
+        // let response: FetchResult<SignS3Mutation>;
 
         // Get file signatures from S3 (make the files okay to upload below)
         try {
-          response = await signFile({
-            variables: {
-              files: [preppedFile],
-            },
+          await signFile({
+            files: [preppedFile],
           });
         } catch (error) {
-          console.warn("SIGN FILE ERROR", error);
+          logger.error("SIGN FILE ERROR");
+          logger.error({ error });
+        }
+
+        if (error) {
+          logger.error("SIGN FILE ERROR RESPONSE");
+          logger.error(error);
+          throw error;
         }
 
         // PUT ADDITIONAL UPLOAD VIA AXIOS TO STORAGE BUCKET
         // Utilize the signatures to upload the files to our storage bucket
         // via the axios 'PUT' method.
 
-        const [{ signedRequest }] = response?.data?.signS3.signatures;
-        if (!signedRequest) {
-          throw Error("Unexpected error while uploading. Please try again");
-        }
-        if (signedRequest) {
+        if (data?.signS3?.signatures) {
+          const [{ signedRequest }] = data?.signS3?.signatures;
+
+          if (!signedRequest) {
+            throw Error("Unexpected error while uploading. Please try again");
+          }
           try {
             await uploadToS3(imageFile, signedRequest);
           } catch (error) {
@@ -86,7 +104,7 @@ export async function signAndUploadFiles(
           }
         }
 
-        return response;
+        return data;
       }
     })
   );
@@ -119,7 +137,7 @@ export function onFilesAdded(
 
   let array;
 
-  if (evt && evt.target) {
+  if (evt && evt.target && evt.target.files) {
     array = fileListToArray(evt.target.files);
     const previewFiles = makeObjectUrls(array);
     setPreviewFile([...previewFiles]);
@@ -131,12 +149,19 @@ export function onFilesAdded(
   // a totally different event. If the if statement above DOES NOT
   // execute the below if statement DOES execute.
   // I suppose now it should just be a switch or something.
-  if (evt && evt.currentTarget && evt.currentTarget !== evt.target) {
+  if (
+    evt &&
+    evt.currentTarget &&
+    evt.currentTarget.files &&
+    evt.currentTarget !== evt.target
+  ) {
     array = fileListToArray(evt.currentTarget.files);
     const previewFiles = makeObjectUrls(array);
     setPreviewFile([...previewFiles]);
     return previewFiles;
   }
+
+  throw new Error("Unknown error. Cannot find files to preview.");
 }
 
 export function fileListToArray(list: FileList): any[] {

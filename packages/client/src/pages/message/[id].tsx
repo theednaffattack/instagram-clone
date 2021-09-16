@@ -3,14 +3,13 @@ import { useRouter } from "next/router";
 import React from "react";
 import { LayoutAuthenticated } from "../../components/layout-authenticated";
 import { useGetGlobalPostByIdQuery } from "../../generated/graphql";
-import withApollo from "../../lib/lib.apollo-client_v2";
 
 function MessageById(): JSX.Element {
   const router = useRouter();
   const {
     query: { id },
   } = router;
-  const { data, error, loading } = useGetGlobalPostByIdQuery({
+  const [{ data, error, fetching }] = useGetGlobalPostByIdQuery({
     variables: {
       getpostinput: {
         postId: id as string,
@@ -19,7 +18,7 @@ function MessageById(): JSX.Element {
   });
   return (
     <Flex>
-      {loading ? <Text>loading... </Text> : null}
+      {fetching ? <Text>loading... </Text> : null}
       <Heading>{data?.getGlobalPostById?.title}</Heading>
       {data?.getGlobalPostById?.images?.map((image) => {
         return <Image key={image.id} src={image.uri} />;
@@ -32,6 +31,4 @@ function MessageById(): JSX.Element {
 
 MessageById.layout = LayoutAuthenticated;
 
-const MessageByIdApollo = withApollo(MessageById);
-
-export default MessageByIdApollo;
+export { MessageById as default };

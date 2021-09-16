@@ -21,16 +21,16 @@ export class TransUserReturn {
 export class GetListToCreateThread {
   @Query(() => TransUserReturn, { nullable: true })
   async getListToCreateThread(@Ctx() ctx: MyContext): Promise<any> {
-    let me = ctx.userId;
+    const me = ctx.userId;
     // ctx.req && ctx.req.session ? (ctx.req.session as any).userId : null;
     if (me) {
       const thoseICanMessage: any[] = [];
 
-      let meWithFollowers = await ctx.dbConnection.getRepository(User).findOne(me, {
+      const meWithFollowers = await ctx.dbConnection.getRepository(User).findOne(me, {
         relations: ["followers", "following"],
       });
 
-      let returnObj: any = {};
+      const returnObj: any = {};
       if (meWithFollowers) {
         meWithFollowers.followers.forEach((follower) => {
           thoseICanMessage.push(follower);
@@ -40,13 +40,11 @@ export class GetListToCreateThread {
           thoseICanMessage.push(Ifollow);
         });
 
-        const finalMessageList = new Set(thoseICanMessage);
+        // const finalMessageList = new Set(thoseICanMessage);
 
-        // @ts-ignore
-        const finalUniqMessageList = [...new Set(thoseICanMessage.map((user) => user.id))];
+        // const finalUniqMessageList = [...new Set(thoseICanMessage.map((user) => user.id))];
 
-        // @ts-ignore
-        const finalMsgListArray = Array.from(finalMessageList);
+        // const finalMsgListArray = Array.from(finalMessageList);
 
         returnObj.id = meWithFollowers.id;
 

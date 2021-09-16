@@ -45,7 +45,7 @@ export class File extends BaseEntity {
     enum: FileTypeEnum,
     default: FileTypeEnum.OTHER,
   })
-  file_type: FileTypeEnum;
+  fileType: FileTypeEnum;
 
   @Field(() => Message, { nullable: true })
   @ManyToOne(() => Message, (message) => message.files, {
@@ -56,7 +56,7 @@ export class File extends BaseEntity {
 
   @Field(() => User)
   @ManyToOne(() => User, (user) => user.files, { onDelete: "CASCADE" })
-  upload_user: User;
+  uploadUser: User;
 }
 
 @InputType()
@@ -99,5 +99,5 @@ export class FileInputHelper {
     enum: FileTypeEnum,
     default: FileTypeEnum.OTHER,
   })
-  file_type: FileTypeEnum;
+  fileType: FileTypeEnum;
 }

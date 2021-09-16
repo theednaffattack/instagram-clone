@@ -3,7 +3,8 @@ import React, { useEffect } from "react";
 import { ErrorMessage } from "../components/error-message";
 import { AppLayout } from "../components/layout.app";
 import { useLogoutMutation } from "../generated/graphql";
-import withApollo from "../lib/lib.apollo-client_v2";
+import { setToken } from "../lib/lib.in-memory-access-token";
+import { logoutAllTabs } from "../lib/logoutAllTabs";
 
 // type LogoutServerSideProps = Promise<{
 //   props: {
@@ -14,7 +15,7 @@ import withApollo from "../lib/lib.apollo-client_v2";
 // }>;
 
 const Logout = (): JSX.Element | void => {
-  const [logoutFunc, { data, error, loading }] = useLogoutMutation();
+  const [{ data, error, fetching }, logoutFunc] = useLogoutMutation();
   useEffect(() => {
     logoutFunc();
   }, []);
@@ -22,10 +23,12 @@ const Logout = (): JSX.Element | void => {
   if (error) {
     return <ErrorMessage message={error.message} />;
   }
-  if (loading) {
+  if (fetching) {
     return <div>loading...</div>;
   }
   if (data) {
+    setToken(null);
+    logoutAllTabs();
     if (router) {
       router.push("/");
     }
@@ -35,6 +38,4 @@ const Logout = (): JSX.Element | void => {
 
 Logout.layout = AppLayout;
 
-const LogoutApollo = withApollo(Logout);
-
-export default LogoutApollo;
+export default Logout;

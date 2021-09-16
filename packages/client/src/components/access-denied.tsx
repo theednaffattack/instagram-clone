@@ -36,6 +36,6 @@ export default function AccessDenied({
       </Alert>
     );
   } else {
-    return null;
+    return <span>null</span>;
   }
 }

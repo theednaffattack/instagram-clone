@@ -1,14 +1,10 @@
 import { NextSeo } from "next-seo";
 import React from "react";
-import { useAuth } from "../components/authentication-provider";
+
 import CreatePostForm from "../components/create-post-form";
 import { LayoutAuthenticated } from "../components/layout-authenticated";
-import { flexContainer } from "../components/styles";
-import withApollo from "../lib/lib.apollo-client_v2";
 
 function CreatePost(): JSX.Element {
-  const { authState } = useAuth();
-
   return (
     <>
       <NextSeo
@@ -43,21 +39,12 @@ function CreatePost(): JSX.Element {
           cardType: "summary_large_image",
         }}
       />
-      {authState.userId ? (
-        <>
-          <CreatePostForm />
-        </>
-      ) : (
-        <div className={flexContainer}>Oh no, not authenticated</div>
-      )}
+
+      <CreatePostForm />
     </>
   );
 }
 
 CreatePost.layout = LayoutAuthenticated;
 
-const CreatePostApollo = withApollo(CreatePost);
-
-CreatePostApollo.layout = LayoutAuthenticated;
-
-export default CreatePostApollo;
+export { CreatePost as default };

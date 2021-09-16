@@ -82,3 +82,6 @@ administrative/src/downloaded
 
 # Hide admin dev files
 administrative/.env
+
+# Hide yarn 3 directory
+.yarn
