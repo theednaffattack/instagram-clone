@@ -1,4 +1,5 @@
 import { LoginMutation } from "../generated/graphql";
+import { logger } from "./lib.logger";
 import { isServer } from "./utilities.is-server";
 
 export type InMemoryTokenType = LoginMutation["login"]["tokenData"] | null;
@@ -16,8 +17,11 @@ export function getToken(): LocalStorageAccessToken {
   let parsedToken: LocalStorageAccessToken;
   if (token) {
     parsedToken = JSON.parse(token);
+
     return parsedToken;
   } else {
+    logger.info("VIEW THE PARSED TOKEN AND TOKEN - 'ELSE'");
+    logger.info({ parsedToken, token });
     return undefined;
   }
   // return inMemoryToken;

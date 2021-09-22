@@ -16,6 +16,7 @@ import { createSchema } from "./lib.apollo.create-schema";
 import { handleAsyncSimple, handleAsyncWithArgs } from "./lib.handle-async";
 import { handleCatchBlockError } from "./lib.handle-catch-block-error";
 import { logger } from "./lib.logger";
+import { appLoggingMiddleware } from "./lib.middleware.app-server-logging";
 import { loggingMiddleware } from "./lib.middleware.gql-logging";
 import { getConnectionOptionsCustom } from "./lib.orm-config";
 import { productionMigrations } from "./lib.production-migrations";
@@ -26,7 +27,8 @@ export async function server(config: ServerConfigProps): Promise<void> {
 
   const connectOptions: PostgresConnectionOptions = getConnectionOptionsCustom(config);
 
-  const [dbConnection, dbConnectionError] = await handleAsyncWithArgs(createConnection, [connectOptions]);
+  // const [dbConnection, dbConnectionError] = await handleAsyncWithArgs(createConnection, [connectOptions]);
+  const [dbConnection, dbConnectionError] = await handleAsyncSimple(async () => await createConnection(connectOptions));
   if (dbConnectionError) {
     handleCatchBlockError(dbConnectionError);
   }
@@ -54,7 +56,8 @@ export async function server(config: ServerConfigProps): Promise<void> {
   // }
 
   if (config.env === "production" || config.migration === true) {
-    const [, dbMigrationError] = await handleAsyncWithArgs(productionMigrations, [dbConnection, connectOptions]);
+    // const [, dbMigrationError] = await handleAsyncWithArgs(productionMigrations, [dbConnection, connectOptions]);
+    const [, dbMigrationError] = await handleAsyncSimple(async () => await productionMigrations(dbConnection));
     if (dbMigrationError) {
       logger.error("ERROR RUNNING MIGRATIONS");
       handleCatchBlockError(dbMigrationError);
@@ -131,6 +134,8 @@ export async function server(config: ServerConfigProps): Promise<void> {
     app.use(cookieParser());
     // app.use(sessionMiddleware);
 
+    app.use(appLoggingMiddleware);
+
     // timing middleware
     // adapted from: https://www.youtube.com/watch?v=ejWS2g0Td08&ab_channel=BenAwad
     app.use("/graphql", loggingMiddleware);
@@ -140,11 +145,11 @@ export async function server(config: ServerConfigProps): Promise<void> {
     app.get("/", (_req, res) => res.send("hello"));
 
     app.post("/refresh_token", async (req, res, next) => {
-      try {
-        const result = await refreshTokenController(dbConnection, req, res);
-        res.end(result);
-      } catch (error) {
-        next(error);
+      const [, refreshError] = await handleAsyncSimple(
+        async () => await refreshTokenController(dbConnection, req, res)
+      );
+      if (refreshError) {
+        next(refreshError);
       }
     });
 

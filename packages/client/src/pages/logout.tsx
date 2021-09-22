@@ -1,4 +1,5 @@
-import router from "next/router";
+// import router from "next/router";
+import { useRouter } from "next/router";
 import React, { useEffect } from "react";
 import { ErrorMessage } from "../components/error-message";
 import { AppLayout } from "../components/layout.app";
@@ -6,25 +7,15 @@ import { useLogoutMutation } from "../generated/graphql";
 import { setToken } from "../lib/lib.in-memory-access-token";
 import { logoutAllTabs } from "../lib/logoutAllTabs";
 
-// type LogoutServerSideProps = Promise<{
-//   props: {
-//     initialApolloState: Record<string, unknown>;
-//     revalidate: number;
-//     response: any;
-//   };
-// }>;
-
 const Logout = (): JSX.Element | void => {
-  const [{ data, error, fetching }, logoutFunc] = useLogoutMutation();
+  const router = useRouter();
+  const [{ data, error }, logoutFunc] = useLogoutMutation();
   useEffect(() => {
     logoutFunc();
-  }, []);
+  }, [logoutFunc]);
 
   if (error) {
     return <ErrorMessage message={error.message} />;
-  }
-  if (fetching) {
-    return <div>loading...</div>;
   }
   if (data) {
     setToken(null);
@@ -33,7 +24,7 @@ const Logout = (): JSX.Element | void => {
       router.push("/");
     }
   }
-  return <div>LOUGOUT</div>;
+  return <></>;
 };
 
 Logout.layout = AppLayout;

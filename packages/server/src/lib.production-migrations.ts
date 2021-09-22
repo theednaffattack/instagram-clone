@@ -8,7 +8,7 @@ export async function productionMigrations(dbConnection: Connection): Promise<vo
   // Loop to run migrations. Keep
   // trying until
   while (retries) {
-    const [viewMigrations, error] = await handleAsyncSimple(dbConnection?.runMigrations);
+    const [viewMigrations, error] = await handleAsyncSimple(async () => await dbConnection?.runMigrations());
     if (error) {
       logger.error("ERROR RUNNING TYPEORM MIGRATIONS");
       handleCatchBlockError(error);

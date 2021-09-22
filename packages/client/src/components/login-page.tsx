@@ -20,6 +20,7 @@ import { useLoginMutation } from "../generated/graphql";
 import { handleAsyncSimple } from "../lib/lib.handle-async-client";
 import { setToken } from "../lib/lib.in-memory-access-token";
 import { logger } from "../lib/lib.logger";
+import { removeLogout } from "../lib/lib.multi-tab-logout-manager";
 import { LoginErrorMessage } from "./login-error-message";
 
 export function LoginPage(): JSX.Element {
@@ -59,20 +60,13 @@ export function LoginPage(): JSX.Element {
           });
         }
         if (response?.data?.login?.tokenData?.userId) {
-          // setAccessToken(response.data.login.tokenData.accessToken);
-          logger.info("SETTING TOKEN DATA - 1");
-          logger.info(response.data.login.tokenData);
           if (response.data.login.tokenData.accessToken) {
-            logger.info("SETTING TOKEN DATA -  2");
-
+            // Remove the multi-tab logout storage entry
+            removeLogout();
+            // Set local storage token
             setToken(response.data.login.tokenData);
           }
-          // Can't se the refresh token since the API doesn't repsond
-          // with it.
-          // localStorage.setItem(
-          //   "refreshToken",
-          //   response.data.refreshLogin.refreshToken
-          // );
+
           if (router.query.next && router.query.next !== "/") {
             // If there is a next query variable then use it as the URL.
             router.push(router.query.next as string);
@@ -81,51 +75,6 @@ export function LoginPage(): JSX.Element {
             router.push("/feed");
           }
         }
-
-        // let response;
-        // try {
-        //   response = await loginFunc({
-        //     username: values.username,
-        //     password: values.password,
-        //   });
-
-        //   logger.info("What is the RESPONSE?");
-        //   logger.info(response);
-
-        //   if (response?.data?.login?.errors) {
-        //     setErrors({
-        //       [response.data.login.errors[0].field]:
-        //         response.data.login.errors[0].message,
-        //     });
-        //   }
-        //   if (response?.data?.login?.tokenData?.userId) {
-        //     // setAccessToken(response.data.login.tokenData.accessToken);
-        //     logger.info("SETTING TOKEN DATA - 1");
-        //     logger.info(response.data.login.tokenData);
-        //     if (response.data.login.tokenData.accessToken) {
-        //       logger.info("SETTING TOKEN DATA -  2");
-
-        //       setToken(response.data.login.tokenData);
-        //     }
-        //     // Can't se the refresh token since the API doesn't repsond
-        //     // with it.
-        //     // localStorage.setItem(
-        //     //   "refreshToken",
-        //     //   response.data.refreshLogin.refreshToken
-        //     // );
-        //     if (router.query.next && router.query.next !== "/") {
-        //       // If there is a next query variable then use it as the URL.
-        //       router.push(router.query.next as string);
-        //     } else {
-        //       // default
-        //       router.push("/feed");
-        //     }
-        //   }
-        // } catch (error) {
-        //   logger.error("SIGN IN ERROR");
-        //   logger.error({ error });
-        //   throw new Error("Sign in error.");
-        // }
 
         if (response && response.error && response.error.message) {
           setFlashMessage(response.error.message);
@@ -136,7 +85,6 @@ export function LoginPage(): JSX.Element {
         return (
           <Wrapper flexDirection="column">
             <>
-              {/* {JSON.stringify(getToken(), null, 2)} */}
               {flashMessage ? (
                 <LoginFlash
                   errorTitle={

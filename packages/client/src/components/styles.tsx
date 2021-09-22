@@ -10,11 +10,19 @@ export const innerGridWrapper = css`
   height: 100%;
   max-width: 900px;
   overflow: hidden;
+  /* border: 2px dashed limegreen;
+  background-color: magenta; */
+`;
+
+export const outerWrapper = css`
+  /* height: 100%; */
+  border: 2px dashed limegreen;
 `;
 
 export const topRow = css`
   border-bottom: 1px solid rgb(219, 219, 219);
   display: flex;
+  flex-direction: row;
   align-items: center;
 `;
 
@@ -77,6 +85,18 @@ export const iconDivWrapper = css`
   display: flex;
 
   align-items: center;
+`;
+
+export const center = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+`;
+
+export const devBorder = css`
+  border: 2px dashed limegreen;
 `;
 
 export const button = css`

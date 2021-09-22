@@ -1,8 +1,7 @@
 import { NextSeo } from "next-seo";
 import React from "react";
-
 import CreatePostForm from "../components/create-post-form";
-import { LayoutAuthenticated } from "../components/layout-authenticated";
+import LayoutMultiState from "../components/layout-multi-state";
 
 function CreatePost(): JSX.Element {
   return (
@@ -45,6 +44,6 @@ function CreatePost(): JSX.Element {
   );
 }
 
-CreatePost.layout = LayoutAuthenticated;
+CreatePost.layout = LayoutMultiState;
 
 export { CreatePost as default };

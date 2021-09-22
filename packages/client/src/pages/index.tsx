@@ -45,14 +45,6 @@ export function Home(): JSX.Element {
 
 Home.layout = AppLayout;
 
-// const HomeUrql: WithUrqlAndLayout = withUrqlClient((_ssrExchange, _ctx) => ({
-//   // ...add your Client options here
-//   fetchOptions: { credentials: "include" },
-//   url: process.env.NEXT_PUBLIC_DEVELOPMENT_GQL_URI,
-// }))(Home);
-
-// HomeUrql.layout = AppLayout;
-
 export default Home;
 
 // export async function getServerSideProps(ctx: MyContext): Promise<{

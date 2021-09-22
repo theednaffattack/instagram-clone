@@ -1,11 +1,15 @@
 import type { Operation } from "@urql/core";
 import { makeOperation } from "@urql/core";
+import { logger } from "./lib.logger";
 import type { AuthExchangeArgs } from "./types";
 
 export function addAuthToOperation({
   authState,
   operation,
 }: AuthExchangeArgs): Operation<any, any> {
+  // logger.info("INSIDE ADD AUTH TO OPERATION");
+  // logger.info({ authState });
+  logger.info({});
   if (!authState || !authState.authState?.accessToken) {
     return operation;
   }

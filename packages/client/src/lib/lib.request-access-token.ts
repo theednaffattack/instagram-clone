@@ -1,9 +1,6 @@
 import { setAccessToken } from "./lib.access-token";
+import { handleAsyncSimple } from "./lib.handle-async-client";
 import { handleCatchBlockError } from "./lib.handle-catch-block-error";
-import {
-  handleAsyncSimple,
-  handleAsyncWithArgs,
-} from "./lib.handle-async-client";
 
 function getRefreshUrl(): string {
   const url =
@@ -17,25 +14,29 @@ function getRefreshUrl(): string {
   }
 }
 export async function requestAccessToken(): Promise<any> {
-  const fetchOptions = {
+  const fetchOptions: RequestInit = {
     method: "POST",
     headers: {
       "content-type": "application/json",
     },
     credentials: "include",
-    body: JSON.stringify({ data: { from: "lib.urql-client.ts" } }),
+    body: JSON.stringify({
+      data: { from: "lib.urql-client.ts" },
+      operationName: "REFRESH-TOKEN",
+    }),
   };
 
-  const [response, refreshError] = await handleAsyncWithArgs(fetch, [
-    () => getRefreshUrl(),
-    fetchOptions,
-  ]);
+  const [refreshResponse, refreshError] = await handleAsyncSimple(
+    async () => await fetch(getRefreshUrl(), fetchOptions)
+  );
 
   if (refreshError) {
     handleCatchBlockError(refreshError);
   }
 
-  const [resJson, resJsonError] = await handleAsyncSimple(response.json);
+  const [resJson, resJsonError] = await handleAsyncSimple(
+    async () => await refreshResponse.json()
+  );
 
   if (resJsonError) {
     handleCatchBlockError(resJsonError);

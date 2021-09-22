@@ -1,8 +1,7 @@
-import dynamic from "next/dynamic";
+import { Heading } from "@chakra-ui/layout";
 import { useRouter } from "next/router";
 import React, { ReactNode, useState } from "react";
 import { globalStyles } from "../styles/global-styles";
-import ModalDynamic from "./modal";
 import { NavIconsBottom } from "./nav-icons-bottom";
 import { NavIconsTop } from "./nav-icons-top";
 import {
@@ -13,6 +12,8 @@ import {
   topRow,
 } from "./styles";
 
+import dynamic from "next/dynamic";
+const ModalDynamic = dynamic(() => import("../components/modal"));
 const CreatePostFormDynamic = dynamic(() => import("./create-post-form"));
 const PostByIdDynamic = dynamic(() => import("./post-by-id.page-content"));
 
@@ -47,11 +48,25 @@ function LayoutMultiState({ children }: LayoutProps): JSX.Element {
   }
   return (
     <>
-      <div className={innerGridWrapper + " " + globalStyles}>
-        <div className={topRow}>
-          <h1>InstaClone</h1>
-          <nav className={topNav}>
-            <NavIconsTop
+      <>
+        <div className={innerGridWrapper + " " + globalStyles} id="auth-grid">
+          <div className={topRow} id="top-row">
+            <Heading>InstaClone</Heading>
+            <nav className={topNav}>
+              <NavIconsTop
+                router={router}
+                open={openModalPage}
+                setOpen={setOpenModalPage}
+                callerPage={router.pathname}
+              />
+            </nav>
+          </div>
+
+          <div className={middleRow} id="middle">
+            {children}
+          </div>
+          <nav className={bottomRow} id="bottom">
+            <NavIconsBottom
               router={router}
               open={openModalPage}
               setOpen={setOpenModalPage}
@@ -59,19 +74,8 @@ function LayoutMultiState({ children }: LayoutProps): JSX.Element {
             />
           </nav>
         </div>
-
-        <div className={middleRow}>{children}</div>
-        <nav className={bottomRow}>
-          <NavIconsBottom
-            router={router}
-            open={openModalPage}
-            setOpen={setOpenModalPage}
-            callerPage="feed"
-          />
-        </nav>
-      </div>
-
-      <ModalDynamic identifier={pageToOpen}>{modalBody}</ModalDynamic>
+        <ModalDynamic identifier={pageToOpen}>{modalBody}</ModalDynamic>
+      </>
     </>
   );
 }

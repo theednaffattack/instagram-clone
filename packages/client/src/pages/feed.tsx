@@ -115,4 +115,4 @@ export function Feed(): JSX.Element {
 
 Feed.layout = LayoutMultiState;
 
-export { Feed as default };
+export default Feed;

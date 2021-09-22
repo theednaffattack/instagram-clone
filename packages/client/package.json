@@ -54,6 +54,7 @@
     "@urql/exchange-auth": "^0.1.6",
     "@urql/exchange-graphcache": "^4.3.0",
     "@urql/exchange-retry": "^0.2.1",
+    "@use-it/event-listener": "^0.1.6",
     "@zeit/next-css": "^1.0.1",
     "apollo-link-token-refresh": "^0.3.2",
     "aws-sdk": "^2.948.0",

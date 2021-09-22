@@ -15,7 +15,7 @@ export function NavIconsTop({
 }): JSX.Element {
   const navLinkInfo: NavLinkAttrs[] = [
     {
-      linkHref: `/${callerPage}?createPost=open`,
+      linkHref: `/create-post`,
       linkAs: `/create-post`,
       svgKey: "create",
       svgViewbox: "0 0 16 16",

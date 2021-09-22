@@ -5,7 +5,7 @@ import type { CombinedError, Operation } from "@urql/core";
 import type { NextComponentType, NextPage, NextPageContext } from "next";
 import type { NextUrqlContext, WithUrqlProps } from "next-urql";
 import type NextApp from "next/app";
-import type { PropsWithChildren } from "react";
+import type { PropsWithChildren, ReactChild } from "react";
 import type { UseMutationResponse } from "urql";
 // import type { LayoutAuthenticatedProps } from "../components/layout-authenticated";
 import { AppLayout } from "../components/layout.app";
@@ -80,3 +80,13 @@ interface MyNetworkError extends Error {
 export interface BetterCombinedError extends SortaCombinedError {
   networkError?: MyNetworkError;
 }
+
+export type RChildren = ReactChild | ReactChild[];
+
+export type WrapperReturn =
+  | string
+  | number
+  | ReactChild[]
+  | ReactChild
+  | JSX.Element
+  | undefined;

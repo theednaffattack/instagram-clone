@@ -14,6 +14,7 @@ export const globalStyles = css`
       padding: 0;
       margin: 0;
       height: 100%;
+      text-rendering: optimizeLegibility;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,

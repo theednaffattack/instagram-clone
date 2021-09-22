@@ -43,8 +43,8 @@ export async function getAuth({
   // fail on HMR and refreshes.
   if (!authState) {
     const token = getToken();
-    logger.info("INSIDE GET AUTH");
-    logger.info({ token });
+    // logger.info("INSIDE GET AUTH");
+    // logger.info({ token });
     if (!token) {
       return null;
     }
@@ -57,11 +57,11 @@ export async function getAuth({
 
   // If there is an auth state try refreshing
   const token = getToken();
-  logger.info({
-    newDate: new Date(),
-    tokenExpiresIn: new Date(token?.expiresIn),
-    compare: new Date() > new Date(token?.expiresIn),
-  });
+  // logger.info({
+  //   newDate: new Date(),
+  //   tokenExpiresIn: new Date(token?.expiresIn),
+  //   compare: new Date() > new Date(token?.expiresIn),
+  // });
   if (token && new Date() > new Date(token?.expiresIn)) {
     let result: RefreshResponse;
     try {
@@ -80,8 +80,8 @@ export async function getAuth({
       throw new Error(JSON.stringify(error));
     }
 
-    logger.info("VIEW REFRESH RESPONSE");
-    logger.info(result);
+    // logger.info("VIEW REFRESH RESPONSE");
+    // logger.info(result);
 
     // If we successfully get a new access token
     if (result.tokenData?.accessToken) {

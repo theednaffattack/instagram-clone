@@ -25,12 +25,13 @@ type ReturnTuple<ElementType> = [
 export function useHandleElement<ElementType>(
   methodName?: ReturnType<() => keyof ElementType>
 ): ReturnTuple<ElementType> {
-  const [element, setElement] =
-    useState<ElementType | ElementType[keyof ElementType]>();
+  const [element, setElement] = useState<
+    ElementType | ElementType[keyof ElementType]
+  >();
   const refLike = useCallback<(node: ElementType) => void>(
     (node) => {
-      logger.info("INSIDE USE CALLBACK");
-      logger.info({ node, methodName });
+      // logger.info("INSIDE USE CALLBACK");
+      // logger.info({ node, methodName });
       setElement(() => {
         // If a method name was supplied, apply it
         if (node && methodName && typeof node[methodName] === "function") {

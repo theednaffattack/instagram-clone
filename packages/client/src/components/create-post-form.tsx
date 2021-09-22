@@ -44,12 +44,13 @@ function CreatePostForm(): JSX.Element {
 
   const [previewFiles, setPreviewFiles] = useState<PreviewFile[]>([]);
 
-  const [beginS3Process, setBeginS3Process] =
-    useState<"init" | "loading" | "completed">("init");
+  const [beginS3Process, setBeginS3Process] = useState<
+    "init" | "loading" | "completed"
+  >("init");
 
   const initialValues: FormValues = { title: "", text: "", images: [] };
   return (
-    <Box>
+    <Box width="container.lg" mx="auto">
       <Text fontSize="3xl">Create Post</Text>
       <Formik
         initialValues={initialValues}
